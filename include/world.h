@@ -6,6 +6,8 @@
 #include <osg/Group>
 #include <osg/Geometry>
 #include <osg/Geode>
+#include <osg/Texture2D>
+#include <osgDB/ReadFile>
 
 namespace cube
 {
@@ -133,6 +135,14 @@ namespace cube
     {
       osg::Geode* geode = new osg::Geode;
 
+      osg::StateSet* ss = geode->getOrCreateStateSet();
+
+      osg::Texture2D* tex = new osg::Texture2D;
+      osg::Image* img = osgDB::readImageFile("./res/ground.jpg");
+      tex->setImage(img);
+
+      ss->setTextureAttributeAndModes(0, tex, osg::StateAttribute::ON);
+
       RegionsContainer::iterator rg;
       for(rg = _regions.begin(); rg != _regions.end(); rg++)
       {
@@ -147,6 +157,7 @@ namespace cube
         osg::Vec3Array* coords;
         osg::Vec4Array* colours;
         osg::Vec3Array* normals;
+        osg::Vec2Array* tcoords;
 
         osg::DrawArrays* drawArr;
 
@@ -173,6 +184,7 @@ namespace cube
                 colours = new osg::Vec4Array();
                 normals = new osg::Vec3Array();
                 drawArr = new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0, 4);
+                tcoords = new osg::Vec2Array();
 
                 curGeom->setVertexArray(coords);
                 curGeom->setColorArray(colours);
@@ -181,6 +193,8 @@ namespace cube
                 curGeom->setNormalBinding(osg::Geometry::BIND_PER_PRIMITIVE);
 
                 curGeom->addPrimitiveSet(drawArr);
+
+                curGeom->setTexCoordArray(0,tcoords);
               }
               else
               {
@@ -189,12 +203,15 @@ namespace cube
                 normals = dynamic_cast<osg::Vec3Array*>(curGeom->getNormalArray());
 
                 drawArr = dynamic_cast<osg::DrawArrays*>(curGeom->getPrimitiveSet(0));
+
+                tcoords = dynamic_cast<osg::Vec2Array*>(curGeom->getTexCoordArray(0));
               }
 
               osg::Vec4d color;
 
               if(cub._type == cube::Cub::Ground)
-                color = osg::Vec4d(0.5, 0.25, 0.0, 1.0);
+                //color = osg::Vec4d(0.5, 0.25, 0.0, 1.0);
+                color = osg::Vec4d(1.0, 1.0, 1.0, 1.0);
               else if(cub._type == cube::Cub::Air)
                 color = osg::Vec4d(0.0, 0.5, 1.0, 1.0);
 
@@ -203,6 +220,11 @@ namespace cube
                 coords->push_back(pos + osg::Vec3d(1.0, 0.0, 0.0));
                 coords->push_back(pos + osg::Vec3d(1.0, 0.0, 1.0));
                 coords->push_back(pos + osg::Vec3d(0.0, 0.0, 1.0));
+
+                tcoords->push_back(osg::Vec2d(0,0));
+                tcoords->push_back(osg::Vec2d(1,0));
+                tcoords->push_back(osg::Vec2d(1,1));
+                tcoords->push_back(osg::Vec2d(0,1));
 
                 colours->push_back(color);
                 normals->push_back(osg::Vec3d(0.0, -1.0, 0.0));
@@ -214,6 +236,11 @@ namespace cube
                 coords->push_back(pos + osg::Vec3d(1.0, 1.0, 1.0));
                 coords->push_back(pos + osg::Vec3d(1.0, 0.0, 1.0));
 
+                tcoords->push_back(osg::Vec2d(0,0));
+                tcoords->push_back(osg::Vec2d(1,0));
+                tcoords->push_back(osg::Vec2d(1,1));
+                tcoords->push_back(osg::Vec2d(0,1));
+
                 colours->push_back(color);
                 normals->push_back(osg::Vec3d(1.0, 0.0, 0.0));
               }
@@ -223,6 +250,11 @@ namespace cube
                 coords->push_back(pos + osg::Vec3d(0.0, 1.0, 0.0));
                 coords->push_back(pos + osg::Vec3d(0.0, 1.0, 1.0));
                 coords->push_back(pos + osg::Vec3d(1.0, 1.0, 1.0));
+
+                tcoords->push_back(osg::Vec2d(0,0));
+                tcoords->push_back(osg::Vec2d(1,0));
+                tcoords->push_back(osg::Vec2d(1,1));
+                tcoords->push_back(osg::Vec2d(0,1));
 
                 colours->push_back(color);
                 normals->push_back(osg::Vec3d(0.0, 1.0, 0.0));
@@ -234,6 +266,11 @@ namespace cube
                 coords->push_back(pos + osg::Vec3d(0.0, 0.0, 1.0));
                 coords->push_back(pos + osg::Vec3d(0.0, 1.0, 1.0));
 
+                tcoords->push_back(osg::Vec2d(0,0));
+                tcoords->push_back(osg::Vec2d(1,0));
+                tcoords->push_back(osg::Vec2d(1,1));
+                tcoords->push_back(osg::Vec2d(0,1));
+
                 colours->push_back(color);
                 normals->push_back(osg::Vec3d(-1.0, 0.0, 0.0));
               }
@@ -244,6 +281,11 @@ namespace cube
                 coords->push_back(pos + osg::Vec3d(1.0, 1.0, 1.0));
                 coords->push_back(pos + osg::Vec3d(0.0, 1.0, 1.0));
 
+                tcoords->push_back(osg::Vec2d(0,0));
+                tcoords->push_back(osg::Vec2d(1,0));
+                tcoords->push_back(osg::Vec2d(1,1));
+                tcoords->push_back(osg::Vec2d(0,1));
+
                 colours->push_back(color);
                 normals->push_back(osg::Vec3d(0.0, 0.0, 1.0));
               }
@@ -253,6 +295,11 @@ namespace cube
                 coords->push_back(pos + osg::Vec3d(1.0, 1.0, 0.0));
                 coords->push_back(pos + osg::Vec3d(1.0, 0.0, 0.0));
                 coords->push_back(pos + osg::Vec3d(0.0, 0.0, 0.0));
+
+                tcoords->push_back(osg::Vec2d(0,0));
+                tcoords->push_back(osg::Vec2d(1,0));
+                tcoords->push_back(osg::Vec2d(1,1));
+                tcoords->push_back(osg::Vec2d(0,1));
 
                 colours->push_back(color);
                 normals->push_back(osg::Vec3d(0.0, 0.0, -1.0));

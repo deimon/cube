@@ -263,8 +263,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
-				EnableIntrinsicFunctions="true"
+				Optimization="0"
+				EnableIntrinsicFunctions="false"
 				AdditionalIncludeDirectories="./include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
@@ -284,7 +284,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				LinkIncremental="1"
+				LinkIncremental="0"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				OptimizeReferences="2"

@@ -1,7 +1,7 @@
 #ifndef __CUBE_H__
 #define __CUBE_H__
 
-#define CUBE_SIZE 1.1
+#define CUBE_SIZE 1
 
 namespace cube
 {
