@@ -327,6 +327,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\region.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\world.cpp"
 				>
 			</File>
