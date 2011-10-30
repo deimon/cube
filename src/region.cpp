@@ -94,7 +94,7 @@ void Region::GenNoise()
        //проходим по всем элементам массива и заполняем их значениями   
        //pNoise[i*size+j]=PerlinNoise_2D(float(i),float(j),fac);
 
-      int height = REGION_SIZE / 3 + ((PerlinNoise_2D(float(i),float(j),fac) * (REGION_SIZE / 4)) / 255);
+      int height = REGION_SIZE / 10 + ((PerlinNoise_2D(float(i),float(j),fac) * (REGION_SIZE / 4)) / 255);
 
       for(int z = 0; z <= height && height < REGION_SIZE; z++)
       {

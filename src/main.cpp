@@ -16,6 +16,8 @@
 #include <osgGA/TerrainManipulator>
 #include "geoMaker.h"
 
+#include <personManipulator.h>
+
 int main( void )
 {
   cube::World* world = new cube::World;
@@ -25,10 +27,10 @@ int main( void )
 
   osg::ref_ptr<osgGA::KeySwitchMatrixManipulator> keyswitchManipulator = new osgGA::KeySwitchMatrixManipulator;
 
-  keyswitchManipulator->addMatrixManipulator( '1', "Trackball", new osgGA::TrackballManipulator() );
+  keyswitchManipulator->addMatrixManipulator( '1', "FirstPerson", new cube::PersonManipulator() );
   keyswitchManipulator->addMatrixManipulator( '2', "Flight", new osgGA::FlightManipulator() );
   keyswitchManipulator->addMatrixManipulator( '3', "Terrain", new osgGA::TerrainManipulator() );
-  keyswitchManipulator->addMatrixManipulator( '4', "FirstPerson", new osgGA::FirstPersonManipulator() );
+  keyswitchManipulator->addMatrixManipulator( '4', "Trackball", new osgGA::TrackballManipulator() );
 
   viewer.setCameraManipulator( keyswitchManipulator.get() );
 
