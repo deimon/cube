@@ -13,10 +13,10 @@ World::World()
 {
   srand(time(NULL));
 
-  _regions.push_back(cube::Region::Generation(osg::Vec3d(0.0, 0.0, 0.0)));
-  //_regions.push_back(cube::Region::Generation(osg::Vec3d(REGION_WIDTH, 0.0, 0.0)));
-  //_regions.push_back(cube::Region::Generation(osg::Vec3d(0.0, REGION_WIDTH, 0.0)));
-  //_regions.push_back(cube::Region::Generation(osg::Vec3d(REGION_WIDTH, REGION_WIDTH, 0.0)));
+  _regions[0][0] = cube::Region::Generation(osg::Vec3d(0.0, 0.0, 0.0));
+  _regions[1][0] = cube::Region::Generation(osg::Vec3d(REGION_WIDTH, 0.0, 0.0));
+  _regions[0][1] = cube::Region::Generation(osg::Vec3d(0.0, REGION_WIDTH, 0.0));
+  _regions[1][1] = cube::Region::Generation(osg::Vec3d(REGION_WIDTH, REGION_WIDTH, 0.0));
 /*
   _regions.push_back(cube::Region::Generation(osg::Vec3d(-REGION_WIDTH, 0.0, 0.0)));
   _regions.push_back(cube::Region::Generation(osg::Vec3d(0.0, -REGION_WIDTH, 0.0)));
@@ -60,19 +60,23 @@ osg::Geometry* World::createGeometry()
   osg::Vec3Array* normals = new osg::Vec3Array();
   int numQuads = 0;
 
-  RegionsContainer::iterator rg;
-  for(rg = _regions.begin(); rg != _regions.end(); rg++)
+  RegionsContainer::iterator xrg;
+  YRegionsContainer::iterator yrg;
+  for(xrg = _regions.begin(); xrg != _regions.end(); xrg++)
+    for(yrg = xrg->second.begin(); yrg != xrg->second.end(); yrg++)
   {
+    cube::Region* rg = yrg->second;
+
     for(int x = 0; x < REGION_SIZE; x++)
     for(int y = 0; y < REGION_SIZE; y++)
     for(int z = 0; z < REGION_SIZE; z++)
     {
-      const cube::Cub &cub = (*rg)->GetCub(x, y, z);
+      const cube::Cub &cub = rg->GetCub(x, y, z);
 
       if(cub._type == cube::Cub::Ground) //!!!!!!!
         continue;
 
-      osg::Vec3d pos = (*rg)->GetPosition() + osg::Vec3d(x * CUBE_SIZE, y * CUBE_SIZE, z * CUBE_SIZE);
+      osg::Vec3d pos = rg->GetPosition() + osg::Vec3d(x * CUBE_SIZE, y * CUBE_SIZE, z * CUBE_SIZE);
 
       coords->push_back(pos + osg::Vec3d(0.0, 0.0, 0.0));
       coords->push_back(pos + osg::Vec3d(1.0, 0.0, 0.0));
@@ -121,9 +125,13 @@ osg::Geode* World::createGeometry2()
   tex->setFilter(osg::Texture::MIN_FILTER , osg::Texture::NEAREST);
   tex->setFilter(osg::Texture::MAG_FILTER , osg::Texture::NEAREST);
 
-  RegionsContainer::iterator rg;
-  for(rg = _regions.begin(); rg != _regions.end(); rg++)
+  RegionsContainer::iterator xrg;
+  YRegionsContainer::iterator yrg;
+  for(xrg = _regions.begin(); xrg != _regions.end(); xrg++)
+    for(yrg = xrg->second.begin(); yrg != xrg->second.end(); yrg++)
   {
+    cube::Region* rg = yrg->second;
+
     osg::Geometry* geom[GEOM_SIZE][GEOM_SIZE][GEOM_SIZE];
     for(int x = 0; x < GEOM_SIZE; x++)
       for(int y = 0; y < GEOM_SIZE; y++)
@@ -143,12 +151,12 @@ osg::Geode* World::createGeometry2()
       for(int y = 0; y < REGION_SIZE; y++)
         for(int z = 0; z < REGION_SIZE; z++)
         {
-          const cube::Cub &cub = (*rg)->GetCub(x, y, z);
+          const cube::Cub &cub = rg->GetCub(x, y, z);
 
           if(cub._type == cube::Cub::Air) //!!!!!!!
             continue;
 
-          osg::Vec3d pos = (*rg)->GetPosition() + osg::Vec3d(x * CUBE_SIZE, y * CUBE_SIZE, z * CUBE_SIZE);
+          osg::Vec3d pos = rg->GetPosition() + osg::Vec3d(x * CUBE_SIZE, y * CUBE_SIZE, z * CUBE_SIZE);
 
           osg::Geometry* curGeom = geom[x / GEOM_DEVIDER_SIZE][y / GEOM_DEVIDER_SIZE][z / GEOM_DEVIDER_SIZE];
 

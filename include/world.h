@@ -8,6 +8,7 @@
 #include <osg/Geode>
 #include <osg/Texture2D>
 #include <osgDB/ReadFile>
+#include "singleton.h"
 
 namespace cube
 {
@@ -24,10 +25,11 @@ namespace cube
     cube::World *_world;
   };
 
-  class World
+  class World : public utils::Singleton<World>
   {
   public:
-    typedef std::vector<cube::Region*> RegionsContainer;
+    typedef std::map<int, cube::Region*> YRegionsContainer;
+    typedef std::map<int, YRegionsContainer> RegionsContainer;
 
     World();
     ~World(){}

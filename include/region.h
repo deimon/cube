@@ -5,7 +5,8 @@
 #define REGION_WIDTH REGION_SIZE * CUBE_SIZE
 #define GEOM_DEVIDER_SIZE 8
 #define GEOM_SIZE REGION_SIZE / GEOM_DEVIDER_SIZE
-#define NUM_OCTAVES 1
+#define NUM_OCTAVES 4
+#define PERSON_HEIGHT 1.8
 
 #include "cube.h"
 #include <osg/Vec3d>

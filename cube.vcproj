@@ -365,6 +365,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\include\singleton.h"
+				>
+			</File>
+			<File
 				RelativePath=".\include\world.h"
 				>
 			</File>
