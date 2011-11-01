@@ -79,8 +79,6 @@ void World::update()
         normals->clear();
         tcoords->clear();
 
-        curGeom->dirtyDisplayList();
-
       for(int x = 0; x < GEOM_DEVIDER_SIZE; x++)
       for(int y = 0; y < GEOM_DEVIDER_SIZE; y++)
         for(int z = 0; z < GEOM_DEVIDER_SIZE; z++)
@@ -195,6 +193,8 @@ void World::update()
 
           drawArr->setCount(coords->size());
         }
+
+        curGeom->dirtyDisplayList();
     }
   }
 
