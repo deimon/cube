@@ -40,6 +40,14 @@ int main( void )
 
   viewer.setSceneData(world.GetGeometry());
 
-  viewer.setUpViewInWindow(100, 100, 640, 480, 1);
+  viewer.setUpViewInWindow(100, 100, 1024, 576, 0);
+
+  osg::Camera* cam = viewer.getCamera();
+
+  double fovy,aspectRatio,z1,z2;
+  cam->getProjectionMatrixAsPerspective(fovy,aspectRatio,z1,z2);
+  //aspectRatio=double(traits->width)/double(traits->height);
+  cam->setProjectionMatrixAsPerspective(70,aspectRatio,z1,z2);
+
   viewer.run();
 }

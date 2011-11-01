@@ -204,7 +204,7 @@ bool PersonManipulator::handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GU
 
   if(_jump)
   {
-    _eye += osg::Vec3d(0.0, 0.0, 15.0) * _delta_frame_time;
+    _eye += osg::Vec3d(0.0, 0.0, 5.0) * _delta_frame_time;
 
     if((_eye.z() - _startJump) > 1.2f)
       _jump = false;
