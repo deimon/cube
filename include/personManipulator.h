@@ -15,6 +15,7 @@ namespace cube
       virtual bool handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us );
 
       bool _moveBackward, _moveForward;
+      bool _moveLeft, _moveRight;
       bool _jump;
       float _startJump;
   };

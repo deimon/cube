@@ -23,7 +23,9 @@ int main( void )
   cube::World& world = cube::World::Instance();
 
   osgViewer::Viewer viewer;
-  viewer.addEventHandler(new osgViewer::StatsHandler);
+  osgViewer::StatsHandler* sh = new osgViewer::StatsHandler;
+  sh ->setKeyEventTogglesOnScreenStats(osgGA::GUIEventAdapter::KEY_F1);
+  viewer.addEventHandler(sh);
 
   osg::ref_ptr<osgGA::KeySwitchMatrixManipulator> keyswitchManipulator = new osgGA::KeySwitchMatrixManipulator;
   keyswitchManipulator->setAutoComputeHomePosition(false);
