@@ -11,6 +11,7 @@ PersonManipulator::PersonManipulator()
 
   _moveBackward = false;
   _moveForward = false;
+  _jump = false;
 }
 
 bool PersonManipulator::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us )
@@ -32,8 +33,11 @@ bool PersonManipulator::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GU
 
       case osgGA::GUIEventAdapter::KEY_T:
         {
-          _eye += osg::Vec3d(.0, .0, 1.2);
-          us.requestRedraw();
+          if(!_jump)
+          {
+            _jump = true;
+            _startJump = _eye.z();
+          }
           return true;
         }
         break;
@@ -72,44 +76,61 @@ bool PersonManipulator::handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GU
   if(_moveForward)
   {
     osg::Vec3d vDir = _rotation * osg::Vec3d(0., 0., -_wheelMovement) * _delta_frame_time;
-    vDir.z() = 0;
 
-    osg::Vec3d newEye = _eye + vDir;
-    const cube::Cub& cub = world.GetCub(newEye.x(), newEye.y(), newEye.z() - (PERSON_HEIGHT-1));
+    osg::Vec3d newEye = _eye;
 
-    if(cub._type == cube::Cub::Air)
-      _eye = newEye;
+    if(world.GetCub(_eye.x() + vDir.x(), _eye.y(), _eye.z() - (PERSON_HEIGHT-1))._type == cube::Cub::Air)
+      newEye.x() += vDir.x();
+
+    if(world.GetCub(_eye.x(), _eye.y() + vDir.y(), _eye.z() - (PERSON_HEIGHT-1))._type == cube::Cub::Air)
+      newEye.y() += vDir.y();
+
+    _eye = newEye;
     us.requestRedraw();
   }
 
   if(_moveBackward)
   {
     osg::Vec3d vDir = _rotation * osg::Vec3d(0., 0., _wheelMovement) * _delta_frame_time;
-    vDir.z() = 0;
 
-    osg::Vec3d newEye = _eye + vDir;
-    const cube::Cub& cub = world.GetCub(newEye.x(), newEye.y(), newEye.z() - (PERSON_HEIGHT-1));
+    osg::Vec3d newEye = _eye;
 
-    if(cub._type == cube::Cub::Air)
-      _eye = newEye;
+    if(world.GetCub(_eye.x() + vDir.x(), _eye.y(), _eye.z() - (PERSON_HEIGHT-1))._type == cube::Cub::Air)
+      newEye.x() += vDir.x();
+
+    if(world.GetCub(_eye.x(), _eye.y() + vDir.y(), _eye.z() - (PERSON_HEIGHT-1))._type == cube::Cub::Air)
+      newEye.y() += vDir.y();
+
+    _eye = newEye;
     us.requestRedraw();
   }
 
-  osg::Vec3d prevEye = _eye;
-
-  const cube::Cub& cub = world.GetCub(prevEye.x(), prevEye.y(), prevEye.z() - PERSON_HEIGHT);
-
-  if(cub._type == cube::Cub::Air)
+  if(_jump)
   {
-    prevEye += osg::Vec3d(0.0, 0.0, -9.0) * _delta_frame_time;
+    _eye += osg::Vec3d(0.0, 0.0, 15.0) * _delta_frame_time;
 
-    const cube::Cub& newCub = world.GetCub(prevEye.x(), prevEye.y(), prevEye.z() - PERSON_HEIGHT);
+    if((_eye.z() - _startJump) > 1.2f)
+      _jump = false;
+
+    us.requestRedraw();
+  }
+  else
+  {
+    osg::Vec3d prevEye = _eye;
+    const cube::Cub& cub = world.GetCub(prevEye.x(), prevEye.y(), prevEye.z() - PERSON_HEIGHT);
 
     if(cub._type == cube::Cub::Air)
-      setTransformation(prevEye, _rotation);
-    else
     {
+      prevEye += osg::Vec3d(0.0, 0.0, -9.0) * _delta_frame_time;
 
+      const cube::Cub& newCub = world.GetCub(prevEye.x(), prevEye.y(), prevEye.z() - PERSON_HEIGHT);
+
+      if(cub._type == cube::Cub::Air)
+        setTransformation(prevEye, _rotation);
+      else
+      {
+
+      }
     }
   }
   //else if(cub._type == cube::Cub::Ground)
