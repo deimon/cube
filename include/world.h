@@ -37,7 +37,10 @@ namespace cube
     osg::Group* GetGeometry();
     void update();
 
+    cube::Region* GetRegion(float x, float y);
     const cube::Cub& GetCub(float x, float y, float z);
+
+    std::vector<osg::Vec3d> _cubUpdate;
 
   protected:
     osg::Geometry* createGeometry();

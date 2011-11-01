@@ -101,14 +101,20 @@ bool PersonManipulator::handleKeyDown( const osgGA::GUIEventAdapter& ea, osgGA::
           cube::Cub& cub = (cube::Cub&)world.GetCub(newEye.x(), newEye.y(), newEye.z());
 
           if(cub._type != cube::Cub::Air)
+          {
             cub._type = cube::Cub::Air;
+            world._cubUpdate.push_back(newEye);
+          }
           else
           {
             newEye = _eye + vDir * 2.0;
 
             cube::Cub& cub = (cube::Cub&)world.GetCub(newEye.x(), newEye.y(), newEye.z());
             if(cub._type != cube::Cub::Air)
+            {
               cub._type = cube::Cub::Air;
+              world._cubUpdate.push_back(newEye);
+            }
           }
 
 
