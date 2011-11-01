@@ -69,25 +69,17 @@ bool PersonManipulator::handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GU
 
   cube::World& world = cube::World::Instance();
 
-  int x = _eye.x() / REGION_SIZE;
-  int y = _eye.y() / REGION_SIZE;
-  cube::Region* rg = world._regions[x][y];
-
   if(_moveForward)
   {
     osg::Vec3d vDir = _rotation * osg::Vec3d(0., 0., -_wheelMovement) * _delta_frame_time;
     vDir.z() = 0;
 
     osg::Vec3d newEye = _eye + vDir;
-    const cube::Cub& cub = rg->GetCub(newEye.x(), newEye.y(), newEye.z() - (PERSON_HEIGHT-1));
+    const cube::Cub& cub = world.GetCub(newEye.x(), newEye.y(), newEye.z() - (PERSON_HEIGHT-1));
 
-    // move forward
-    //_eye += rotation * Vec3d( 0., 0., -distance );
     if(cub._type == cube::Cub::Air)
       _eye = newEye;
-    //_thrown = false;
     us.requestRedraw();
-    //us.requestContinuousUpdate( isAnimating() || _thrown );
   }
 
   if(_moveBackward)
@@ -96,27 +88,22 @@ bool PersonManipulator::handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GU
     vDir.z() = 0;
 
     osg::Vec3d newEye = _eye + vDir;
-    const cube::Cub& cub = rg->GetCub(newEye.x(), newEye.y(), newEye.z() - (PERSON_HEIGHT-1));
+    const cube::Cub& cub = world.GetCub(newEye.x(), newEye.y(), newEye.z() - (PERSON_HEIGHT-1));
 
-    // move backward
-    //_eye += rotation * Vec3d( 0., 0., -distance );
     if(cub._type == cube::Cub::Air)
       _eye = newEye;
     us.requestRedraw();
-    //us.requestContinuousUpdate( isAnimating() || _thrown );
   }
 
   osg::Vec3d prevEye = _eye;
 
-  osg::Vec3d rPos = prevEye - rg->GetPosition();
-
-  const cube::Cub& cub = rg->GetCub(rPos.x(), rPos.y(), rPos.z() - PERSON_HEIGHT);
+  const cube::Cub& cub = world.GetCub(prevEye.x(), prevEye.y(), prevEye.z() - PERSON_HEIGHT);
 
   if(cub._type == cube::Cub::Air)
   {
     prevEye += osg::Vec3d(0.0, 0.0, -9.0) * _delta_frame_time;
 
-    const cube::Cub& newCub = rg->GetCub(prevEye.x(), prevEye.y(), prevEye.z() - PERSON_HEIGHT);
+    const cube::Cub& newCub = world.GetCub(prevEye.x(), prevEye.y(), prevEye.z() - PERSON_HEIGHT);
 
     if(cub._type == cube::Cub::Air)
       setTransformation(prevEye, _rotation);

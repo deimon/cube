@@ -1,11 +1,11 @@
 #ifndef __REGION_H__
 #define __REGION_H__
 
-#define REGION_SIZE 32
+#define REGION_SIZE 16
 #define REGION_WIDTH REGION_SIZE * CUBE_SIZE
 #define GEOM_DEVIDER_SIZE 8
 #define GEOM_SIZE REGION_SIZE / GEOM_DEVIDER_SIZE
-#define NUM_OCTAVES 4
+#define NUM_OCTAVES 1
 #define PERSON_HEIGHT 1.8
 
 #include "cube.h"

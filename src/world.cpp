@@ -51,6 +51,25 @@ void World::update()
   geode->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE | osg::StateAttribute::PROTECTED);
 }
 
+const cube::Cub& World::GetCub(float x, float y, float z)
+{
+  int i = x / REGION_SIZE;
+  int j = y / REGION_SIZE;
+
+  cube::Region* rg = _regions[i][j];
+
+  if(rg)
+  {
+    x -= rg->GetPosition().x();
+    y -= rg->GetPosition().y();
+    return rg->GetCub(x, y, z);
+  }
+
+  cube::Cub cub;
+
+  return cub;
+}
+
 osg::Geometry* World::createGeometry()
 {
   osg::Geometry* geom = new osg::Geometry;

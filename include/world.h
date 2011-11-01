@@ -37,6 +37,8 @@ namespace cube
     osg::Group* GetGeometry();
     void update();
 
+    const cube::Cub& GetCub(float x, float y, float z);
+
   protected:
     osg::Geometry* createGeometry();
     osg::Geode* createGeometry2();
