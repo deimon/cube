@@ -12,6 +12,7 @@ namespace cube
     virtual bool handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us );
 
     protected:
+      void calcStep(osg::Vec3d vDir, osgGA::GUIActionAdapter& us);
       virtual bool handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us );
 
       bool _moveBackward, _moveForward;
