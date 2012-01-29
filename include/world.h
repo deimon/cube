@@ -40,13 +40,34 @@ namespace cube
     cube::Region* GetRegion(float x, float y);
     const cube::Cub& GetCub(float x, float y, float z);
 
-    std::vector<osg::Vec3d> _cubUpdate;
+    void RemoveCub(osg::Vec3d vec);
+
+    struct DataUpdate
+    {
+      DataUpdate(osg::Geometry* geom, cube::Region* reg, osg::Vec3d& vec)
+      {
+        _geom = geom;
+        _reg = reg;
+        _xCubOff = GEOM_DEVIDER_SIZE * (int)vec.x();
+        _yCubOff = GEOM_DEVIDER_SIZE * (int)vec.y();
+        _zCubOff = GEOM_DEVIDER_SIZE * (int)vec.z();
+      }
+
+      osg::Geometry* _geom;
+      cube::Region* _reg;
+      int _xCubOff, _yCubOff, _zCubOff;
+    };
+
+    std::vector<DataUpdate> _dataUpdate;
 
   protected:
     osg::Geometry* createGeometry();
     osg::Geode* createGeometry2();
 
     osg::Group* _group;
+    osg::Geode* _geode;
+
+    std::vector<osg::Vec3d> _sides;
 
   public:
     RegionsContainer _regions;

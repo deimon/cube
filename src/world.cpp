@@ -25,6 +25,13 @@ World::World()
   _regions.push_back(cube::Region::Generation(osg::Vec3d(REGION_WIDTH, -REGION_WIDTH, 0.0)));
   _regions.push_back(cube::Region::Generation(osg::Vec3d(-REGION_WIDTH, REGION_WIDTH, 0.0)));
 */
+
+  _sides.push_back(osg::Vec3d( 1.0f,  0.0f,  0.0f));
+  _sides.push_back(osg::Vec3d(-1.0f,  0.0f,  0.0f));
+  _sides.push_back(osg::Vec3d( 0.0f,  1.0f,  0.0f));
+  _sides.push_back(osg::Vec3d( 0.0f, -1.0f,  0.0f));
+  _sides.push_back(osg::Vec3d( 0.0f,  0.0f,  1.0f));
+  _sides.push_back(osg::Vec3d( 0.0f,  0.0f, -1.0f));
 }
 
 osg::Group* World::GetGeometry()
@@ -37,27 +44,20 @@ osg::Group* World::GetGeometry()
   //osg::Geode *geode = new osg::Geode();
   //osg::Geometry* geom = createGeometry();
 
-  osg::Geode *geode = createGeometry2();
-  _group->addChild(geode);
+  _geode = createGeometry2();
+  _group->addChild(_geode);
   //geode->addDrawable(geom);
 
-  geode->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE | osg::StateAttribute::PROTECTED);
+  _geode->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE | osg::StateAttribute::PROTECTED);
 
   return _group;
 }
 
 void World::update()
 {
-  for(int i = 0; i < _cubUpdate.size(); i++)
+  for(int i = 0; i < _dataUpdate.size(); i++)
   {
-    osg::Vec3d eye = _cubUpdate[i];
-    cube::Region* reg = GetRegion(eye.x(), eye.y());
-
-    eye -= reg->GetPosition();
-    eye /= GEOM_DEVIDER_SIZE;
-
-    osg::Geometry* curGeom = reg->GetGeometry(eye.x(), eye.y(), eye.z());
-    if(curGeom)
+    if(_dataUpdate[i]._geom)
     {
         osg::Vec3Array* coords;
         osg::Vec4Array* colours;
@@ -66,13 +66,13 @@ void World::update()
 
         osg::DrawArrays* drawArr;
 
-        coords = dynamic_cast<osg::Vec3Array*>(curGeom->getVertexArray());
-        colours = dynamic_cast<osg::Vec4Array*>(curGeom->getColorArray());
-        normals = dynamic_cast<osg::Vec3Array*>(curGeom->getNormalArray());
+        coords = dynamic_cast<osg::Vec3Array*>(_dataUpdate[i]._geom->getVertexArray());
+        colours = dynamic_cast<osg::Vec4Array*>(_dataUpdate[i]._geom->getColorArray());
+        normals = dynamic_cast<osg::Vec3Array*>(_dataUpdate[i]._geom->getNormalArray());
 
-        drawArr = dynamic_cast<osg::DrawArrays*>(curGeom->getPrimitiveSet(0));
+        drawArr = dynamic_cast<osg::DrawArrays*>(_dataUpdate[i]._geom->getPrimitiveSet(0));
 
-        tcoords = dynamic_cast<osg::Vec2Array*>(curGeom->getTexCoordArray(0));
+        tcoords = dynamic_cast<osg::Vec2Array*>(_dataUpdate[i]._geom->getTexCoordArray(0));
 
         coords->clear();
         colours->clear();
@@ -83,15 +83,15 @@ void World::update()
       for(int y = 0; y < GEOM_DEVIDER_SIZE; y++)
         for(int z = 0; z < GEOM_DEVIDER_SIZE; z++)
         {
-          const cube::Cub &cub = reg->GetCub(x + GEOM_DEVIDER_SIZE * (int)eye.x(), y + GEOM_DEVIDER_SIZE * (int)eye.y(), z + GEOM_DEVIDER_SIZE * (int)eye.z());
+          const cube::Cub &cub = _dataUpdate[i]._reg->GetCub(x + _dataUpdate[i]._xCubOff, y + _dataUpdate[i]._yCubOff, z + _dataUpdate[i]._zCubOff);
 
-          if(cub._type == cube::Cub::Air) //!!!!!!!
+          if(cub._type == cube::Cub::Air || !cub._rendered) //!!!!!!!
             continue;
 
-          osg::Vec3d pos = reg->GetPosition() 
-            + osg::Vec3d( (x + GEOM_DEVIDER_SIZE * (int)eye.x()) * CUBE_SIZE,
-                          (y + GEOM_DEVIDER_SIZE * (int)eye.y()) * CUBE_SIZE, 
-                          (z + GEOM_DEVIDER_SIZE * (int)eye.z()) * CUBE_SIZE);
+          osg::Vec3d pos = _dataUpdate[i]._reg->GetPosition() 
+            + osg::Vec3d( (x + _dataUpdate[i]._xCubOff) * CUBE_SIZE,
+                          (y + _dataUpdate[i]._yCubOff) * CUBE_SIZE, 
+                          (z + _dataUpdate[i]._zCubOff) * CUBE_SIZE);
 
           osg::Vec4d color;
 
@@ -194,11 +194,11 @@ void World::update()
           drawArr->setCount(coords->size());
         }
 
-        curGeom->dirtyDisplayList();
+        _dataUpdate[i]._geom->dirtyDisplayList();
     }
   }
 
-  _cubUpdate.clear();
+  _dataUpdate.clear();
 }
 
 cube::Region* World::GetRegion(float x, float y)
@@ -223,6 +223,66 @@ const cube::Cub& World::GetCub(float x, float y, float z)
   cube::Cub cub;
 
   return cub;
+}
+
+osg::Geometry* NewOSGGeom()
+{
+  osg::Geometry* curGeom = new osg::Geometry;
+
+  osg::Vec3Array* coords;
+  osg::Vec4Array* colours;
+  osg::Vec3Array* normals;
+  osg::Vec2Array* tcoords;
+  osg::DrawArrays* drawArr;
+
+  coords = new osg::Vec3Array();
+  colours = new osg::Vec4Array();
+  normals = new osg::Vec3Array();
+  drawArr = new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0, 4);
+  tcoords = new osg::Vec2Array();
+
+  curGeom->setVertexArray(coords);
+  curGeom->setColorArray(colours);
+  curGeom->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE);
+  curGeom->setNormalArray(normals);
+  curGeom->setNormalBinding(osg::Geometry::BIND_PER_PRIMITIVE);
+
+  curGeom->addPrimitiveSet(drawArr);
+
+  curGeom->setTexCoordArray(0,tcoords);
+
+  return curGeom;
+}
+
+void World::RemoveCub(osg::Vec3d vec)
+{
+  cube::Cub& cub = (cube::Cub&)GetCub(vec.x(), vec.y(), vec.z());
+
+  cub._type = cube::Cub::Air;
+  cub._rendered = false;
+
+  for(int i = 0; i < _sides.size(); i++)
+  {
+    osg::Vec3d pos = vec + _sides[i];
+    cube::Cub& scub = (cube::Cub&)GetCub(pos.x(), pos.y(), pos.z());
+    if(scub._type != cube::Cub::Air)
+      scub._rendered = true;
+  }
+
+  cube::Region* reg = GetRegion(vec.x(), vec.y());
+  vec -= reg->GetPosition();
+  vec /= GEOM_DEVIDER_SIZE;
+  osg::Geometry* curGeom = reg->GetGeometry(vec.x(), vec.y(), vec.z());
+
+  if(curGeom == NULL)
+  {
+    curGeom = NewOSGGeom();
+    reg->SetGeometry(vec.x(), vec.y(), vec.z(), curGeom);
+
+    _geode->addDrawable(curGeom);
+  }
+
+  _dataUpdate.push_back(DataUpdate(curGeom, reg, vec));
 }
 
 osg::Geometry* World::createGeometry()
@@ -319,7 +379,7 @@ osg::Geode* World::createGeometry2()
         {
           const cube::Cub &cub = rg->GetCub(x, y, z);
 
-          if(cub._type == cube::Cub::Air) //!!!!!!!
+          if(cub._type == cube::Cub::Air || !cub._rendered) //!!!!!!!
             continue;
 
           osg::Vec3d pos = rg->GetPosition() + osg::Vec3d(x * CUBE_SIZE, y * CUBE_SIZE, z * CUBE_SIZE);
@@ -328,28 +388,12 @@ osg::Geode* World::createGeometry2()
 
           if(curGeom == NULL)
           {
-            curGeom = new osg::Geometry;
+            curGeom = NewOSGGeom();
             rg->SetGeometry(x / GEOM_DEVIDER_SIZE, y / GEOM_DEVIDER_SIZE, z / GEOM_DEVIDER_SIZE, curGeom);
 
             geode->addDrawable(curGeom);
-
-            coords = new osg::Vec3Array();
-            colours = new osg::Vec4Array();
-            normals = new osg::Vec3Array();
-            drawArr = new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0, 4);
-            tcoords = new osg::Vec2Array();
-
-            curGeom->setVertexArray(coords);
-            curGeom->setColorArray(colours);
-            curGeom->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE);
-            curGeom->setNormalArray(normals);
-            curGeom->setNormalBinding(osg::Geometry::BIND_PER_PRIMITIVE);
-
-            curGeom->addPrimitiveSet(drawArr);
-
-            curGeom->setTexCoordArray(0,tcoords);
           }
-          else
+
           {
             coords = dynamic_cast<osg::Vec3Array*>(curGeom->getVertexArray());
             colours = dynamic_cast<osg::Vec4Array*>(curGeom->getColorArray());

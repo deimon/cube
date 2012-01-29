@@ -7,15 +7,6 @@ cube::Region* Region::Generation(osg::Vec3d& position)
   cube::Region* region = new Region();
   region->_position = position;
 
-  for(int x = 0; x < REGION_SIZE; x++)
-  for(int y = 0; y < REGION_SIZE; y++)
-  for(int z = 0; z < REGION_SIZE; z++)
-  {
-    cube::Cub* cub = &(region->_m[x][y][z]);
-    
-    cub->_type = cube::Cub::Air;
-  }
-
   region->GenNoise();
 
   for(int x = 0; x < GEOM_SIZE; x++)
@@ -94,19 +85,40 @@ void Region::GenNoise()
   // случайность в нашу текстуру
   float fac =osg::PI*2*10 + ((float)rand() / RAND_MAX)* (osg::PI*3*10 - osg::PI*2*10);
 
-  for(int i=0 ;i<REGION_SIZE;i++)
+  for(int i=0; i<REGION_SIZE; i++)
   {
-    for(int j=0 ;j<REGION_SIZE;j++)
+    for(int j=0; j<REGION_SIZE; j++)
     {
        //проходим по всем элементам массива и заполняем их значениями   
        //pNoise[i*size+j]=PerlinNoise_2D(float(i),float(j),fac);
 
-      int height = REGION_SIZE / 10 + ((PerlinNoise_2D(float(i),float(j),fac) * (REGION_SIZE / 4)) / 255);
+      int height = REGION_SIZE / 4 + ((PerlinNoise_2D(float(i),float(j),fac) * (REGION_SIZE / 4)) / 255);
+      _height[i][j] = height;
+
+      cube::Cub* cub = &(_m[i][j][height]);
+      cub->_type = cube::Cub::Ground;
+      cub->_rendered = true;
 
       for(int z = 0; z <= height && height < REGION_SIZE; z++)
       {
         cube::Cub* cub = &(_m[i][j][z]);
         cub->_type = cube::Cub::Ground;
+      }
+    }
+  }
+
+  for(int i=1; i<REGION_SIZE-1; i++)
+  {
+    for(int j=1; j<REGION_SIZE-1; j++)
+    {
+
+      int min = std::min<int>(std::min<int>(_height[i-1][j], _height[i+1][j]),
+                              std::min<int>(_height[i][j-1], _height[i][j+1]));
+      for(int k = min+1; k < _height[i][j]; k++)
+      {
+        cube::Cub* cub = &(_m[i][j][k]);
+        //cub->_type = cube::Cub::Ground;
+        cub->_rendered = true;
       }
     }
   }

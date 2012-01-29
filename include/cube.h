@@ -14,7 +14,15 @@ namespace cube
       Ground = 1
     };
   public:
+
+    Cub()
+      : _rendered(false)
+      , _type(Air)
+    {
+    }
+
     CubeType _type;
+    bool _rendered;
   };
 }
 
