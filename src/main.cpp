@@ -42,6 +42,15 @@ int main( void )
 
   viewer.setUpViewInWindow(100, 100, 1024, 576, 0);
 
+  osgViewer::ViewerBase::Windows windows;
+  viewer.getWindows(windows);
+
+  for (osgViewer::ViewerBase::Windows::iterator itr = windows.begin(); itr != windows.end(); ++itr)
+  {
+      (*itr)->useCursor(false);
+      //(*itr)->setCursor(osgViewer::GraphicsWindow::NoCursor);
+  }
+
   osg::Camera* cam = viewer.getCamera();
 
   double fovy,aspectRatio,z1,z2;

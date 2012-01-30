@@ -13,10 +13,14 @@ World::World()
 {
   srand(time(NULL));
 
-  _regions[0][0] = cube::Region::Generation(osg::Vec3d(0.0, 0.0, 0.0));
-  _regions[1][0] = cube::Region::Generation(osg::Vec3d(REGION_WIDTH, 0.0, 0.0));
-  _regions[0][1] = cube::Region::Generation(osg::Vec3d(0.0, REGION_WIDTH, 0.0));
-  _regions[1][1] = cube::Region::Generation(osg::Vec3d(REGION_WIDTH, REGION_WIDTH, 0.0));
+  osg::Vec3d v1(0.0, 0.0, 0.0);
+  osg::Vec3d v2(REGION_WIDTH, 0.0, 0.0);
+  osg::Vec3d v3(0.0, REGION_WIDTH, 0.0);
+  osg::Vec3d v4(REGION_WIDTH, REGION_WIDTH, 0.0);
+  _regions[0][0] = cube::Region::Generation(v1);
+  _regions[1][0] = cube::Region::Generation(v2);
+  _regions[0][1] = cube::Region::Generation(v3);
+  _regions[1][1] = cube::Region::Generation(v4);
 /*
   _regions.push_back(cube::Region::Generation(osg::Vec3d(-REGION_WIDTH, 0.0, 0.0)));
   _regions.push_back(cube::Region::Generation(osg::Vec3d(0.0, -REGION_WIDTH, 0.0)));
@@ -88,9 +92,9 @@ void World::update()
           if(cub._type == cube::Cub::Air || !cub._rendered) //!!!!!!!
             continue;
 
-          osg::Vec3d pos = _dataUpdate[i]._reg->GetPosition() 
+          osg::Vec3d pos = _dataUpdate[i]._reg->GetPosition()
             + osg::Vec3d( (x + _dataUpdate[i]._xCubOff) * CUBE_SIZE,
-                          (y + _dataUpdate[i]._yCubOff) * CUBE_SIZE, 
+                          (y + _dataUpdate[i]._yCubOff) * CUBE_SIZE,
                           (z + _dataUpdate[i]._zCubOff) * CUBE_SIZE);
 
           osg::Vec4d color;
@@ -381,6 +385,7 @@ osg::Geode* World::createGeometry2()
 
           if(cub._type == cube::Cub::Air || !cub._rendered) //!!!!!!!
             continue;
+
 
           osg::Vec3d pos = rg->GetPosition() + osg::Vec3d(x * CUBE_SIZE, y * CUBE_SIZE, z * CUBE_SIZE);
 

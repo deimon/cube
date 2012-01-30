@@ -73,5 +73,4 @@ namespace cube
     RegionsContainer _regions;
   };
 }
-
-#endif 
+#endif
