@@ -26,4 +26,4 @@ namespace cube
   };
 }
 
-#endif 
+#endif

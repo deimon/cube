@@ -14,6 +14,7 @@ cube::Region* Region::Generation(osg::Vec3d& position)
   for(int z = 0; z < GEOM_SIZE; z++)
   {
     region->_geom[x][y][z] = NULL;
+
   }
 
   return region;
@@ -34,7 +35,7 @@ float Region::CompileNoise(float x, float y)
   //интерполируем значения 1 и 2 пары и производим интерполяцию между ними
   float i1 = Cosine_Interpolate(v1 , v2 , fractional_X);
   float i2 = Cosine_Interpolate(v3 , v4 , fractional_X);
-//я использовал косинусною интерполяцию ИМХО лучше 
+//я использовал косинусною интерполяцию ИМХО лучше
 //по параметрам быстрота-//качество
   return Cosine_Interpolate(i1 , i2 , fractional_Y);
 }
@@ -42,18 +43,18 @@ float Region::CompileNoise(float x, float y)
 int Region::PerlinNoise_2D(float x,float y,float factor)
 {
    float total = 0;
-   // это число может иметь и другие значения хоть cosf(sqrtf(2))*3.14f 
+   // это число может иметь и другие значения хоть cosf(sqrtf(2))*3.14f
    // главное чтобы было красиво и результат вас устраивал
    float persistence=0.5f;
 
-   // экспериментируйте с этими значениями, попробуйте ставить 
+   // экспериментируйте с этими значениями, попробуйте ставить
    // например sqrtf(3.14f)*0.25f или что-то потяжелее для понимания J)
    float frequency = 0.25f;
    float amplitude=1;//амплитуда, в прямой зависимости от значения настойчивости
 
    // вводим фактор случайности, чтобы облака не были всегда одинаковыми
-   // (Мы ведь помним что ф-ция шума когерентна?) 
-    
+   // (Мы ведь помним что ф-ция шума когерентна?)
+
    x+= (factor);
    y+= (factor);
 
@@ -69,7 +70,7 @@ int Region::PerlinNoise_2D(float x,float y,float factor)
     //например:
     //total=sqrt(total);
     // total=total*total;
-    // total=sqrt(1.0f/float(total)); 
+    // total=sqrt(1.0f/float(total));
     //total=255-total;-и.т.д все зависит от желаемого результата
     total=fabsf(total);
     int res=int(total*255.0f);//приводим цвет к значению 0-255…
@@ -89,7 +90,7 @@ void Region::GenNoise()
   {
     for(int j=0; j<REGION_SIZE; j++)
     {
-       //проходим по всем элементам массива и заполняем их значениями   
+       //проходим по всем элементам массива и заполняем их значениями
        //pNoise[i*size+j]=PerlinNoise_2D(float(i),float(j),fac);
 
       int height = REGION_SIZE / 4 + ((PerlinNoise_2D(float(i),float(j),fac) * (REGION_SIZE / 4)) / 255);

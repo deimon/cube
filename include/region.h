@@ -30,7 +30,7 @@ namespace cube
 
   protected:
 
-    _inline float Noise2D(int x, int y)
+    inline float Noise2D(int x, int y)
     {
       int n = x + y * 57;
       n = (n<<13) ^ n;
@@ -38,14 +38,14 @@ namespace cube
           1073741824.0f);
     }
 
-    _inline float Cosine_Interpolate(float x, float y, float a)
+    inline float Cosine_Interpolate(float x, float y, float a)
     {
       float fac1 = 3*powf(1-a, 2) - 2*powf(1-a,3);
       float fac2 = 3*powf(a, 2) - 2*powf(a, 3);
       return x*fac1 + y*fac2;
     }
 
-    _inline float SmoothedNoise2D(float x, float y)
+    inline float SmoothedNoise2D(float x, float y)
     {
       float corners = ( Noise2D(x-1, y-1)+Noise2D(x+1, y-1)+
            Noise2D(x-1, y+1)+Noise2D(x+1, y+1) ) / 16;
