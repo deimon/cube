@@ -357,6 +357,10 @@ bool PersonManipulator::handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GU
       _jump = false;
 
     us.requestRedraw();
+
+    osg::CoordinateFrame coordinateFrame = getCoordinateFrame( _eye );
+    osg::Vec3d localUp = getUpVector( coordinateFrame );
+    fixVerticalAxis(_rotation, localUp, true );
   }
   else
   {
@@ -377,10 +381,6 @@ bool PersonManipulator::handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GU
       }
     }
   }
-
-  osg::CoordinateFrame coordinateFrame = getCoordinateFrame( _eye );
-  osg::Vec3d localUp = getUpVector( coordinateFrame );
-  fixVerticalAxis(_rotation, localUp, true );
 
   float x = (ea.getXmin() + ea.getXmax()) / 2.0f;
   float y = (ea.getYmin() + ea.getYmax()) / 2.0f;
