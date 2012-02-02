@@ -13,22 +13,13 @@ World::World()
 {
   srand(time(NULL));
 
-  osg::Vec3d v1(0.0, 0.0, 0.0);
-  osg::Vec3d v2(REGION_WIDTH, 0.0, 0.0);
-  osg::Vec3d v3(0.0, REGION_WIDTH, 0.0);
-  osg::Vec3d v4(REGION_WIDTH, REGION_WIDTH, 0.0);
-  _regions[0][0] = cube::Region::Generation(v1);
-  _regions[1][0] = cube::Region::Generation(v2);
-  _regions[0][1] = cube::Region::Generation(v3);
-  _regions[1][1] = cube::Region::Generation(v4);
-/*
-  _regions.push_back(cube::Region::Generation(osg::Vec3d(-REGION_WIDTH, 0.0, 0.0)));
-  _regions.push_back(cube::Region::Generation(osg::Vec3d(0.0, -REGION_WIDTH, 0.0)));
-  _regions.push_back(cube::Region::Generation(osg::Vec3d(-REGION_WIDTH, -REGION_WIDTH, 0.0)));
+  float rnd = osg::PI*2*10 + ((float)rand() / RAND_MAX)* (osg::PI*3*10 - osg::PI*2*10);
 
-  _regions.push_back(cube::Region::Generation(osg::Vec3d(REGION_WIDTH, -REGION_WIDTH, 0.0)));
-  _regions.push_back(cube::Region::Generation(osg::Vec3d(-REGION_WIDTH, REGION_WIDTH, 0.0)));
-*/
+  //cube::Region::Generation(-1, 0, rnd);
+  cube::Region::Generation(this, 0, 0, rnd);
+  cube::Region::Generation(this, 1, 0, rnd);
+  cube::Region::Generation(this, 0, 1, rnd);
+  cube::Region::Generation(this, 1, 1, rnd);
 
   _sides.push_back(osg::Vec3d( 1.0f,  0.0f,  0.0f));
   _sides.push_back(osg::Vec3d(-1.0f,  0.0f,  0.0f));
@@ -205,12 +196,23 @@ void World::update()
   _dataUpdate.clear();
 }
 
-cube::Region* World::GetRegion(float x, float y)
+cube::Region* World::GetRegion(int x, int y)
 {
   int i = x / REGION_SIZE;
   int j = y / REGION_SIZE;
 
   return _regions[i][j];
+}
+
+cube::Region* World::ContainsReion(int xreg, int yreg)
+{
+  if(_regions.count(xreg))
+  {
+    if(_regions[xreg].count(yreg))
+      return _regions[xreg][yreg];
+  }
+
+  return NULL;
 }
 
 const cube::Cub& World::GetCub(float x, float y, float z)

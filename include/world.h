@@ -37,7 +37,8 @@ namespace cube
     osg::Group* GetGeometry();
     void update();
 
-    cube::Region* GetRegion(float x, float y);
+    cube::Region* GetRegion(int x, int y);
+    cube::Region* ContainsReion(int xreg, int yreg);
     const cube::Cub& GetCub(float x, float y, float z);
 
     void RemoveCub(osg::Vec3d vec);

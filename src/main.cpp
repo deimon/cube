@@ -14,7 +14,7 @@
 #include <osgGA/FlightManipulator>
 #include <osgGA/KeySwitchMatrixManipulator>
 #include <osgGA/TerrainManipulator>
-#include "geoMaker.h"
+#include <world.h>
 
 #include <personManipulator.h>
 

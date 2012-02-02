@@ -2,9 +2,30 @@
 
 using namespace cube;
 
-void GeoMaker::FillRegion(cube::Region* rg)
+void GeoMaker::FillRegion(cube::Region* rg, float rnd)
 {
-  GenNoise(rg);
+  GenNoise(rg, rnd);
+
+  for(int i = 0; i < REGION_SIZE; i++)
+  {
+    for(int j = 0; j < REGION_SIZE; j++)
+    {
+      int left = rg->GetHeight(i-1, j);
+      int right = rg->GetHeight(i+1, j);
+      int bottom = rg->GetHeight(i, j-1);
+      int top = rg->GetHeight(i, j+1);
+
+      int min = std::min<int>(std::min<int>(left, right),
+                              std::min<int>(bottom, top));
+
+      for(int k = min+1; k < rg->GetHeight(i, j); k++)
+      {
+        cube::Cub& cub = rg->GetCub(i, j, k);
+        //cub->_type = cube::Cub::Ground;
+        cub._rendered = true;
+      }
+    }
+  }
 }
 
 float GeoMaker::CompileNoise(float x, float y)
@@ -64,25 +85,31 @@ int GeoMaker::PerlinNoise_2D(float x,float y,float factor)
   return res;
 }
 
-void GeoMaker::GenNoise(cube::Region* rg)
+void GeoMaker::GenNoise(cube::Region* rg, float rnd)
 {
   //Взято с gameDev http://www.gamedev.ru/articles/?id=30126
   //srand(time(NULL));
 
   // случайное число, которое призвано внести
   // случайность в нашу текстуру
-  float fac =osg::PI*2*10 + ((float)rand() / RAND_MAX)* (osg::PI*3*10 - osg::PI*2*10);
+  //float fac =osg::PI*2*10 + ((float)rand() / RAND_MAX)* (osg::PI*3*10 - osg::PI*2*10);
 
-  for(int i=0; i<REGION_SIZE; i++)
+  int xOffset = rg->GetX() * REGION_SIZE;
+  int yOffset = rg->GetY() * REGION_SIZE;
+
+  for(int i = -1; i < REGION_SIZE + 1; i++)
   {
-    for(int j=0; j<REGION_SIZE; j++)
+    for(int j = -1; j < REGION_SIZE + 1; j++)
     {
       //проходим по всем элементам массива и заполняем их значениями
       //pNoise[i*size+j]=PerlinNoise_2D(float(i),float(j),fac);
 
-      int height = REGION_SIZE / 4 + ((PerlinNoise_2D(float(i),float(j),fac) * (REGION_SIZE / 4)) / 255);
+      int height = REGION_SIZE / 4 + ((PerlinNoise_2D(float(i + xOffset),float(j + yOffset),rnd) * (REGION_SIZE / 4)) / 255);
       rg->SetHeight(i, j, height);
 
+      if(i < 0 || i >= REGION_SIZE || j < 0 || j >= REGION_SIZE)
+        continue;
+      
       cube::Cub& cub = rg->GetCub(i, j, height);
       cub._type = cube::Cub::Ground;
       cub._rendered = true;
@@ -91,22 +118,6 @@ void GeoMaker::GenNoise(cube::Region* rg)
       {
         cube::Cub& cub = rg->GetCub(i, j, z);
         cub._type = cube::Cub::Ground;
-      }
-    }
-  }
-
-  for(int i=1; i<REGION_SIZE-1; i++)
-  {
-    for(int j=1; j<REGION_SIZE-1; j++)
-    {
-
-      int min = std::min<int>(std::min<int>(rg->GetHeight(i-1, j), rg->GetHeight(i+1, j)),
-        std::min<int>(rg->GetHeight(i, j-1), rg->GetHeight(i, j+1)));
-      for(int k = min+1; k < rg->GetHeight(i, j); k++)
-      {
-        cube::Cub& cub = rg->GetCub(i, j, k);
-        //cub->_type = cube::Cub::Ground;
-        cub._rendered = true;
       }
     }
   }

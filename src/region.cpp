@@ -1,14 +1,17 @@
 #include <region.h>
 #include <geoMaker.h>
+#include <world.h>
 
 using namespace cube;
 
-cube::Region* Region::Generation(osg::Vec3d& position)
+void Region::Generation(cube::World* world, int xreg, int yreg, float rnd)
 {
   cube::Region* region = new Region();
-  region->_position = position;
+  region->_xReg = xreg;
+  region->_yReg = yreg;
+  region->_position.set(REGION_WIDTH * xreg, REGION_WIDTH * yreg, 0.0);
 
-  cube::GeoMaker::FillRegion(region);
+  cube::GeoMaker::FillRegion(region, rnd);
   //region->GenNoise();
 
   for(int x = 0; x < GEOM_SIZE; x++)
@@ -19,5 +22,5 @@ cube::Region* Region::Generation(osg::Vec3d& position)
 
   }
 
-  return region;
+  world->_regions[xreg][yreg] = region;
 }

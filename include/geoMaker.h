@@ -1,15 +1,14 @@
 #ifndef __GEOMAKER_H__
 #define __GEOMAKER_H__
 
-#include "region.h"
-#include "world.h"
+#include <region.h>
 
 namespace cube
 {
   class GeoMaker
   {
   public:
-    static void FillRegion(cube::Region* rg);
+    static void FillRegion(cube::Region* rg, float rnd);
 
   protected:
     static inline float Noise2D(int x, int y)
@@ -39,7 +38,7 @@ namespace cube
 
     static float CompileNoise(float x, float y);
     static int PerlinNoise_2D(float x,float y,float factor);
-    static void GenNoise(cube::Region* rg);
+    static void GenNoise(cube::Region* rg, float rnd);
   };
 }
 
