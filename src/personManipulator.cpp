@@ -382,17 +382,17 @@ bool PersonManipulator::handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GU
     }
   }
 
-  float x = (ea.getXmin() + ea.getXmax()) / 2.0f;
-  float y = (ea.getYmin() + ea.getYmax()) / 2.0f;
-  us.requestWarpPointer( x, y );
+  homeCursorPositionX = (ea.getXmin() + ea.getXmax()) / 2.0f;
+  homeCursorPositionY = (ea.getYmin() + ea.getYmax()) / 2.0f;
+  us.requestWarpPointer(homeCursorPositionX, homeCursorPositionY);
 
   return false;
 }
 
 bool PersonManipulator::handleMouseMove( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us )
 {
-  float dx = ea.getXnormalized() - homeCursorPositionX;
-  float dy = ea.getYnormalized() - homeCursorPositionY;
+  float dx = ea.getX() - homeCursorPositionX;
+  float dy = ea.getY() - homeCursorPositionY;
 
   // return if there is no movement.
   if( dx == 0. && dy == 0. )
@@ -402,7 +402,7 @@ bool PersonManipulator::handleMouseMove( const osgGA::GUIEventAdapter& ea, osgGA
   osg::CoordinateFrame coordinateFrame = getCoordinateFrame( _eye );
   osg::Vec3d localUp = getUpVector( coordinateFrame );
 
-  rotateYawPitch( _rotation, dx, dy, localUp );
+  rotateYawPitch( _rotation, ea.getXnormalized(), ea.getYnormalized(), localUp );
   fixVerticalAxis(_rotation, localUp, true);
 
   return true;
