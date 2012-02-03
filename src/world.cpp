@@ -175,6 +175,7 @@ void updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset)
   }
 
   geom->dirtyDisplayList();
+  geom->dirtyBound();
 }
 
 void World::update()
