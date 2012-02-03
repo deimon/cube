@@ -14,11 +14,9 @@ void Region::Generation(cube::World* world, int xreg, int yreg, float rnd)
   cube::GeoMaker::FillRegion(region, rnd);
   //region->GenNoise();
 
-  for(int x = 0; x < GEOM_SIZE; x++)
-  for(int y = 0; y < GEOM_SIZE; y++)
-  for(int z = 0; z < GEOM_SIZE; z++)
+  for(int z = 0; z < GEOM_COUNT; z++)
   {
-    region->_geom[x][y][z] = NULL;
+    region->_geom[z] = NULL;
 
   }
 

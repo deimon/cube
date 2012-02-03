@@ -49,9 +49,9 @@ namespace cube
       {
         _geom = geom;
         _reg = reg;
-        _xCubOff = GEOM_DEVIDER_SIZE * (int)vec.x();
-        _yCubOff = GEOM_DEVIDER_SIZE * (int)vec.y();
-        _zCubOff = GEOM_DEVIDER_SIZE * (int)vec.z();
+        _xCubOff = GEOM_SIZE * (int)vec.x();
+        _yCubOff = GEOM_SIZE * (int)vec.y();
+        _zCubOff = GEOM_SIZE * (int)vec.z();
       }
 
       osg::Geometry* _geom;
@@ -62,8 +62,7 @@ namespace cube
     std::vector<DataUpdate> _dataUpdate;
 
   protected:
-    osg::Geometry* createGeometry();
-    osg::Geode* createGeometry2();
+    osg::Geode* createGeometry();
 
     osg::Group* _group;
     osg::Geode* _geode;

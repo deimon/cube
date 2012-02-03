@@ -6,9 +6,9 @@ void GeoMaker::FillRegion(cube::Region* rg, float rnd)
 {
   GenNoise(rg, rnd);
 
-  for(int i = 0; i < REGION_SIZE; i++)
+  for(int i = 0; i < REGION_WIDTH; i++)
   {
-    for(int j = 0; j < REGION_SIZE; j++)
+    for(int j = 0; j < REGION_WIDTH; j++)
     {
       int left = rg->GetHeight(i-1, j);
       int right = rg->GetHeight(i+1, j);
@@ -94,27 +94,27 @@ void GeoMaker::GenNoise(cube::Region* rg, float rnd)
   // случайность в нашу текстуру
   //float fac =osg::PI*2*10 + ((float)rand() / RAND_MAX)* (osg::PI*3*10 - osg::PI*2*10);
 
-  int xOffset = rg->GetX() * REGION_SIZE;
-  int yOffset = rg->GetY() * REGION_SIZE;
+  int xOffset = rg->GetX() * REGION_WIDTH;
+  int yOffset = rg->GetY() * REGION_WIDTH;
 
-  for(int i = -1; i < REGION_SIZE + 1; i++)
+  for(int i = -1; i < REGION_WIDTH + 1; i++)
   {
-    for(int j = -1; j < REGION_SIZE + 1; j++)
+    for(int j = -1; j < REGION_WIDTH + 1; j++)
     {
       //проходим по всем элементам массива и заполняем их значениями
       //pNoise[i*size+j]=PerlinNoise_2D(float(i),float(j),fac);
 
-      int height = REGION_SIZE / 4 + ((PerlinNoise_2D(float(i + xOffset),float(j + yOffset),rnd) * (REGION_SIZE / 4)) / 255);
+      int height = REGION_HEIGHT / 4 + ((PerlinNoise_2D(float(i + xOffset),float(j + yOffset),rnd) * (REGION_HEIGHT / 6)) / 255);
       rg->SetHeight(i, j, height);
 
-      if(i < 0 || i >= REGION_SIZE || j < 0 || j >= REGION_SIZE)
+      if(i < 0 || i >= REGION_WIDTH || j < 0 || j >= REGION_WIDTH)
         continue;
       
       cube::Cub& cub = rg->GetCub(i, j, height);
       cub._type = cube::Cub::Ground;
       cub._rendered = true;
 
-      for(int z = 0; z <= height && height < REGION_SIZE; z++)
+      for(int z = 0; z <= height && height < REGION_HEIGHT; z++)
       {
         cube::Cub& cub = rg->GetCub(i, j, z);
         cub._type = cube::Cub::Ground;
