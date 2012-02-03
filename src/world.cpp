@@ -42,149 +42,147 @@ osg::Group* World::GetGeometry()
   return _group;
 }
 
+void updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset)
+{
+  osg::Vec3Array* coords;
+  osg::Vec4Array* colours;
+  osg::Vec3Array* normals;
+  osg::Vec2Array* tcoords;
+
+  osg::DrawArrays* drawArr;
+
+  coords = dynamic_cast<osg::Vec3Array*>(geom->getVertexArray());
+  colours = dynamic_cast<osg::Vec4Array*>(geom->getColorArray());
+  normals = dynamic_cast<osg::Vec3Array*>(geom->getNormalArray());
+  drawArr = dynamic_cast<osg::DrawArrays*>(geom->getPrimitiveSet(0));
+  tcoords = dynamic_cast<osg::Vec2Array*>(geom->getTexCoordArray(0));
+
+  coords->clear();
+  colours->clear();
+  normals->clear();
+  tcoords->clear();
+
+  for(int x = 0; x < GEOM_SIZE; x++)
+  for(int y = 0; y < GEOM_SIZE; y++)
+  for(int z = 0; z < GEOM_SIZE; z++)
+  {
+    const cube::Cub &cub = reg->GetCub(x, y, z + zOffset);
+
+    if(cub._type == cube::Cub::Air || !cub._rendered) //!!!!!!!
+      continue;
+
+    osg::Vec3d pos = reg->GetPosition() + osg::Vec3d( x, y, z + zOffset);
+
+    osg::Vec4d color;
+
+    if(cub._type == cube::Cub::Ground)
+      //color = osg::Vec4d(0.5, 0.25, 0.0, 1.0);
+      color = osg::Vec4d(1.0, 1.0, 1.0, 1.0);
+    else if(cub._type == cube::Cub::Air)
+      color = osg::Vec4d(0.0, 0.5, 1.0, 1.0);
+
+    {
+      coords->push_back(pos + osg::Vec3d(0.0, 0.0, 0.0));
+      coords->push_back(pos + osg::Vec3d(1.0, 0.0, 0.0));
+      coords->push_back(pos + osg::Vec3d(1.0, 0.0, 1.0));
+      coords->push_back(pos + osg::Vec3d(0.0, 0.0, 1.0));
+
+      tcoords->push_back(osg::Vec2d(0,0));
+      tcoords->push_back(osg::Vec2d(1,0));
+      tcoords->push_back(osg::Vec2d(1,1));
+      tcoords->push_back(osg::Vec2d(0,1));
+
+      colours->push_back(color);
+      normals->push_back(osg::Vec3d(0.0, -1.0, 0.0));
+    }
+
+    {
+      coords->push_back(pos + osg::Vec3d(1.0, 0.0, 0.0));
+      coords->push_back(pos + osg::Vec3d(1.0, 1.0, 0.0));
+      coords->push_back(pos + osg::Vec3d(1.0, 1.0, 1.0));
+      coords->push_back(pos + osg::Vec3d(1.0, 0.0, 1.0));
+
+      tcoords->push_back(osg::Vec2d(0,0));
+      tcoords->push_back(osg::Vec2d(1,0));
+      tcoords->push_back(osg::Vec2d(1,1));
+      tcoords->push_back(osg::Vec2d(0,1));
+
+      colours->push_back(color);
+      normals->push_back(osg::Vec3d(1.0, 0.0, 0.0));
+    }
+
+    {
+      coords->push_back(pos + osg::Vec3d(1.0, 1.0, 0.0));
+      coords->push_back(pos + osg::Vec3d(0.0, 1.0, 0.0));
+      coords->push_back(pos + osg::Vec3d(0.0, 1.0, 1.0));
+      coords->push_back(pos + osg::Vec3d(1.0, 1.0, 1.0));
+
+      tcoords->push_back(osg::Vec2d(0,0));
+      tcoords->push_back(osg::Vec2d(1,0));
+      tcoords->push_back(osg::Vec2d(1,1));
+      tcoords->push_back(osg::Vec2d(0,1));
+
+      colours->push_back(color);
+      normals->push_back(osg::Vec3d(0.0, 1.0, 0.0));
+    }
+
+    {
+      coords->push_back(pos + osg::Vec3d(0.0, 1.0, 0.0));
+      coords->push_back(pos + osg::Vec3d(0.0, 0.0, 0.0));
+      coords->push_back(pos + osg::Vec3d(0.0, 0.0, 1.0));
+      coords->push_back(pos + osg::Vec3d(0.0, 1.0, 1.0));
+
+      tcoords->push_back(osg::Vec2d(0,0));
+      tcoords->push_back(osg::Vec2d(1,0));
+      tcoords->push_back(osg::Vec2d(1,1));
+      tcoords->push_back(osg::Vec2d(0,1));
+
+      colours->push_back(color);
+      normals->push_back(osg::Vec3d(-1.0, 0.0, 0.0));
+    }
+
+    {//5
+      coords->push_back(pos + osg::Vec3d(0.0, 0.0, 1.0));
+      coords->push_back(pos + osg::Vec3d(1.0, 0.0, 1.0));
+      coords->push_back(pos + osg::Vec3d(1.0, 1.0, 1.0));
+      coords->push_back(pos + osg::Vec3d(0.0, 1.0, 1.0));
+
+      tcoords->push_back(osg::Vec2d(0,0));
+      tcoords->push_back(osg::Vec2d(1,0));
+      tcoords->push_back(osg::Vec2d(1,1));
+      tcoords->push_back(osg::Vec2d(0,1));
+
+      colours->push_back(color);
+      normals->push_back(osg::Vec3d(0.0, 0.0, 1.0));
+    }
+
+    {//6
+      coords->push_back(pos + osg::Vec3d(0.0, 1.0, 0.0));
+      coords->push_back(pos + osg::Vec3d(1.0, 1.0, 0.0));
+      coords->push_back(pos + osg::Vec3d(1.0, 0.0, 0.0));
+      coords->push_back(pos + osg::Vec3d(0.0, 0.0, 0.0));
+
+      tcoords->push_back(osg::Vec2d(0,0));
+      tcoords->push_back(osg::Vec2d(1,0));
+      tcoords->push_back(osg::Vec2d(1,1));
+      tcoords->push_back(osg::Vec2d(0,1));
+
+      colours->push_back(color);
+      normals->push_back(osg::Vec3d(0.0, 0.0, -1.0));
+    }
+
+    drawArr->setCount(coords->size());
+  }
+
+  geom->dirtyDisplayList();
+}
+
 void World::update()
 {
   for(int i = 0; i < _dataUpdate.size(); i++)
   {
     if(_dataUpdate[i]._geom)
-    {
-        osg::Vec3Array* coords;
-        osg::Vec4Array* colours;
-        osg::Vec3Array* normals;
-        osg::Vec2Array* tcoords;
-
-        osg::DrawArrays* drawArr;
-
-        coords = dynamic_cast<osg::Vec3Array*>(_dataUpdate[i]._geom->getVertexArray());
-        colours = dynamic_cast<osg::Vec4Array*>(_dataUpdate[i]._geom->getColorArray());
-        normals = dynamic_cast<osg::Vec3Array*>(_dataUpdate[i]._geom->getNormalArray());
-
-        drawArr = dynamic_cast<osg::DrawArrays*>(_dataUpdate[i]._geom->getPrimitiveSet(0));
-
-        tcoords = dynamic_cast<osg::Vec2Array*>(_dataUpdate[i]._geom->getTexCoordArray(0));
-
-        coords->clear();
-        colours->clear();
-        normals->clear();
-        tcoords->clear();
-
-      for(int x = 0; x < GEOM_SIZE; x++)
-      for(int y = 0; y < GEOM_SIZE; y++)
-        for(int z = 0; z < GEOM_SIZE; z++)
-        {
-          const cube::Cub &cub = _dataUpdate[i]._reg->GetCub(x + _dataUpdate[i]._xCubOff, y + _dataUpdate[i]._yCubOff, z + _dataUpdate[i]._zCubOff);
-
-          if(cub._type == cube::Cub::Air || !cub._rendered) //!!!!!!!
-            continue;
-
-          osg::Vec3d pos = _dataUpdate[i]._reg->GetPosition()
-            + osg::Vec3d( (x + _dataUpdate[i]._xCubOff),
-                          (y + _dataUpdate[i]._yCubOff),
-                          (z + _dataUpdate[i]._zCubOff));
-
-          osg::Vec4d color;
-
-          if(cub._type == cube::Cub::Ground)
-            //color = osg::Vec4d(0.5, 0.25, 0.0, 1.0);
-            color = osg::Vec4d(1.0, 1.0, 1.0, 1.0);
-          else if(cub._type == cube::Cub::Air)
-            color = osg::Vec4d(0.0, 0.5, 1.0, 1.0);
-
-          {
-            coords->push_back(pos + osg::Vec3d(0.0, 0.0, 0.0));
-            coords->push_back(pos + osg::Vec3d(1.0, 0.0, 0.0));
-            coords->push_back(pos + osg::Vec3d(1.0, 0.0, 1.0));
-            coords->push_back(pos + osg::Vec3d(0.0, 0.0, 1.0));
-
-            tcoords->push_back(osg::Vec2d(0,0));
-            tcoords->push_back(osg::Vec2d(1,0));
-            tcoords->push_back(osg::Vec2d(1,1));
-            tcoords->push_back(osg::Vec2d(0,1));
-
-            colours->push_back(color);
-            normals->push_back(osg::Vec3d(0.0, -1.0, 0.0));
-          }
-
-          {
-            coords->push_back(pos + osg::Vec3d(1.0, 0.0, 0.0));
-            coords->push_back(pos + osg::Vec3d(1.0, 1.0, 0.0));
-            coords->push_back(pos + osg::Vec3d(1.0, 1.0, 1.0));
-            coords->push_back(pos + osg::Vec3d(1.0, 0.0, 1.0));
-
-            tcoords->push_back(osg::Vec2d(0,0));
-            tcoords->push_back(osg::Vec2d(1,0));
-            tcoords->push_back(osg::Vec2d(1,1));
-            tcoords->push_back(osg::Vec2d(0,1));
-
-            colours->push_back(color);
-            normals->push_back(osg::Vec3d(1.0, 0.0, 0.0));
-          }
-
-          {
-            coords->push_back(pos + osg::Vec3d(1.0, 1.0, 0.0));
-            coords->push_back(pos + osg::Vec3d(0.0, 1.0, 0.0));
-            coords->push_back(pos + osg::Vec3d(0.0, 1.0, 1.0));
-            coords->push_back(pos + osg::Vec3d(1.0, 1.0, 1.0));
-
-            tcoords->push_back(osg::Vec2d(0,0));
-            tcoords->push_back(osg::Vec2d(1,0));
-            tcoords->push_back(osg::Vec2d(1,1));
-            tcoords->push_back(osg::Vec2d(0,1));
-
-            colours->push_back(color);
-            normals->push_back(osg::Vec3d(0.0, 1.0, 0.0));
-          }
-
-          {
-            coords->push_back(pos + osg::Vec3d(0.0, 1.0, 0.0));
-            coords->push_back(pos + osg::Vec3d(0.0, 0.0, 0.0));
-            coords->push_back(pos + osg::Vec3d(0.0, 0.0, 1.0));
-            coords->push_back(pos + osg::Vec3d(0.0, 1.0, 1.0));
-
-            tcoords->push_back(osg::Vec2d(0,0));
-            tcoords->push_back(osg::Vec2d(1,0));
-            tcoords->push_back(osg::Vec2d(1,1));
-            tcoords->push_back(osg::Vec2d(0,1));
-
-            colours->push_back(color);
-            normals->push_back(osg::Vec3d(-1.0, 0.0, 0.0));
-          }
-
-          {//5
-            coords->push_back(pos + osg::Vec3d(0.0, 0.0, 1.0));
-            coords->push_back(pos + osg::Vec3d(1.0, 0.0, 1.0));
-            coords->push_back(pos + osg::Vec3d(1.0, 1.0, 1.0));
-            coords->push_back(pos + osg::Vec3d(0.0, 1.0, 1.0));
-
-            tcoords->push_back(osg::Vec2d(0,0));
-            tcoords->push_back(osg::Vec2d(1,0));
-            tcoords->push_back(osg::Vec2d(1,1));
-            tcoords->push_back(osg::Vec2d(0,1));
-
-            colours->push_back(color);
-            normals->push_back(osg::Vec3d(0.0, 0.0, 1.0));
-          }
-
-          {//6
-            coords->push_back(pos + osg::Vec3d(0.0, 1.0, 0.0));
-            coords->push_back(pos + osg::Vec3d(1.0, 1.0, 0.0));
-            coords->push_back(pos + osg::Vec3d(1.0, 0.0, 0.0));
-            coords->push_back(pos + osg::Vec3d(0.0, 0.0, 0.0));
-
-            tcoords->push_back(osg::Vec2d(0,0));
-            tcoords->push_back(osg::Vec2d(1,0));
-            tcoords->push_back(osg::Vec2d(1,1));
-            tcoords->push_back(osg::Vec2d(0,1));
-
-            colours->push_back(color);
-            normals->push_back(osg::Vec3d(0.0, 0.0, -1.0));
-          }
-
-          drawArr->setCount(coords->size());
-        }
-
-        _dataUpdate[i]._geom->dirtyDisplayList();
-    }
+      updateGeom(_dataUpdate[i]._geom, _dataUpdate[i]._reg, _dataUpdate[i]._zCubOff);
   }
 
   _dataUpdate.clear();
@@ -256,33 +254,64 @@ osg::Geometry* NewOSGGeom()
 
 void World::RemoveCub(osg::Vec3d vec)
 {
-  cube::Cub& cub = (cube::Cub&)GetCub(vec.x(), vec.y(), vec.z());
+  cube::Region* reg = GetRegion(vec.x(), vec.y());
+  osg::Vec3d cvec = vec - reg->GetPosition();
+  cube::Cub& cub = reg->GetCub(cvec.x(), cvec.y(), cvec.z());
 
   cub._type = cube::Cub::Air;
   cub._rendered = false;
+  reg->_renderedCubCount[(int)cvec.z() / GEOM_SIZE]--;
+  int renderedCubCount = reg->_renderedCubCount[(int)cvec.z() / GEOM_SIZE];
+
+  cvec /= GEOM_SIZE;
+  osg::Geometry* curGeom = reg->GetGeometry(cvec.z());
+
+  if(renderedCubCount > 0)
+  {
+    if(curGeom == NULL)
+    {
+      curGeom = NewOSGGeom();
+      reg->SetGeometry(cvec.z(), curGeom);
+
+      _geode->addDrawable(curGeom);
+    }
+
+    _dataUpdate.push_back(DataUpdate(curGeom, reg, cvec));
+  }
+  else
+  {
+    _geode->removeDrawable(curGeom);
+    reg->SetGeometry(cvec.z(), NULL);
+  }
+
 
   for(int i = 0; i < _sides.size(); i++)
   {
-    osg::Vec3d pos = vec + _sides[i];
-    cube::Cub& scub = (cube::Cub&)GetCub(pos.x(), pos.y(), pos.z());
-    if(scub._type != cube::Cub::Air)
+    cvec = vec + _sides[i];
+
+    reg = GetRegion(cvec.x(), cvec.y());
+    cvec -= reg->GetPosition();
+    cube::Cub& scub = reg->GetCub(cvec.x(), cvec.y(), cvec.z());
+
+    if(scub._type != cube::Cub::Air && !scub._rendered)
+    {
       scub._rendered = true;
+      reg->_renderedCubCount[(int)cvec.z() / GEOM_SIZE]++;
+
+      cvec /= GEOM_SIZE;
+      curGeom = reg->GetGeometry(cvec.z());
+
+      if(curGeom == NULL)
+      {
+        curGeom = NewOSGGeom();
+        reg->SetGeometry(cvec.z(), curGeom);
+
+        _geode->addDrawable(curGeom);
+      }
+
+      _dataUpdate.push_back(DataUpdate(curGeom, reg, cvec));
+    }
   }
-
-  cube::Region* reg = GetRegion(vec.x(), vec.y());
-  vec -= reg->GetPosition();
-  vec /= GEOM_SIZE;
-  osg::Geometry* curGeom = reg->GetGeometry(vec.z());
-
-  if(curGeom == NULL)
-  {
-    curGeom = NewOSGGeom();
-    reg->SetGeometry(vec.z(), curGeom);
-
-    _geode->addDrawable(curGeom);
-  }
-
-  _dataUpdate.push_back(DataUpdate(curGeom, reg, vec));
 }
 
 osg::Geode* World::createGeometry()
@@ -307,145 +336,24 @@ osg::Geode* World::createGeometry()
   {
     cube::Region* rg = yrg->second;
 
-    osg::Vec3Array* coords;
-    osg::Vec4Array* colours;
-    osg::Vec3Array* normals;
-    osg::Vec2Array* tcoords;
+    for(int offset = 0; offset < GEOM_COUNT; offset++)
+    {
+      if(rg->_renderedCubCount[offset] < 1)
+        continue;
 
-    osg::DrawArrays* drawArr;
+      osg::Geometry* curGeom = rg->GetGeometry(offset);
 
-    for(int x = 0; x < REGION_WIDTH; x++)
-      for(int y = 0; y < REGION_WIDTH; y++)
-        for(int z = 0; z < REGION_HEIGHT; z++)
-        {
-          const cube::Cub &cub = rg->GetCub(x, y, z);
+      if(curGeom == NULL)
+      {
+        curGeom = NewOSGGeom();
+        rg->SetGeometry(offset, curGeom);
 
-          if(cub._type == cube::Cub::Air || !cub._rendered) //!!!!!!!
-            continue;
+        geode->addDrawable(curGeom);
+      }
 
-
-          osg::Vec3d pos = rg->GetPosition() + osg::Vec3d(x, y, z);
-
-          osg::Geometry* curGeom = rg->GetGeometry(z / GEOM_SIZE);
-
-          if(curGeom == NULL)
-          {
-            curGeom = NewOSGGeom();
-            rg->SetGeometry(z / GEOM_SIZE, curGeom);
-
-            geode->addDrawable(curGeom);
-          }
-
-          {
-            coords = dynamic_cast<osg::Vec3Array*>(curGeom->getVertexArray());
-            colours = dynamic_cast<osg::Vec4Array*>(curGeom->getColorArray());
-            normals = dynamic_cast<osg::Vec3Array*>(curGeom->getNormalArray());
-
-            drawArr = dynamic_cast<osg::DrawArrays*>(curGeom->getPrimitiveSet(0));
-
-            tcoords = dynamic_cast<osg::Vec2Array*>(curGeom->getTexCoordArray(0));
-          }
-
-          osg::Vec4d color;
-
-          if(cub._type == cube::Cub::Ground)
-            //color = osg::Vec4d(0.5, 0.25, 0.0, 1.0);
-            color = osg::Vec4d(1.0, 1.0, 1.0, 1.0);
-          else if(cub._type == cube::Cub::Air)
-            color = osg::Vec4d(0.0, 0.5, 1.0, 1.0);
-
-          {
-            coords->push_back(pos + osg::Vec3d(0.0, 0.0, 0.0));
-            coords->push_back(pos + osg::Vec3d(1.0, 0.0, 0.0));
-            coords->push_back(pos + osg::Vec3d(1.0, 0.0, 1.0));
-            coords->push_back(pos + osg::Vec3d(0.0, 0.0, 1.0));
-
-            tcoords->push_back(osg::Vec2d(0,0));
-            tcoords->push_back(osg::Vec2d(1,0));
-            tcoords->push_back(osg::Vec2d(1,1));
-            tcoords->push_back(osg::Vec2d(0,1));
-
-            colours->push_back(color);
-            normals->push_back(osg::Vec3d(0.0, -1.0, 0.0));
-          }
-
-          {
-            coords->push_back(pos + osg::Vec3d(1.0, 0.0, 0.0));
-            coords->push_back(pos + osg::Vec3d(1.0, 1.0, 0.0));
-            coords->push_back(pos + osg::Vec3d(1.0, 1.0, 1.0));
-            coords->push_back(pos + osg::Vec3d(1.0, 0.0, 1.0));
-
-            tcoords->push_back(osg::Vec2d(0,0));
-            tcoords->push_back(osg::Vec2d(1,0));
-            tcoords->push_back(osg::Vec2d(1,1));
-            tcoords->push_back(osg::Vec2d(0,1));
-
-            colours->push_back(color);
-            normals->push_back(osg::Vec3d(1.0, 0.0, 0.0));
-          }
-
-          {
-            coords->push_back(pos + osg::Vec3d(1.0, 1.0, 0.0));
-            coords->push_back(pos + osg::Vec3d(0.0, 1.0, 0.0));
-            coords->push_back(pos + osg::Vec3d(0.0, 1.0, 1.0));
-            coords->push_back(pos + osg::Vec3d(1.0, 1.0, 1.0));
-
-            tcoords->push_back(osg::Vec2d(0,0));
-            tcoords->push_back(osg::Vec2d(1,0));
-            tcoords->push_back(osg::Vec2d(1,1));
-            tcoords->push_back(osg::Vec2d(0,1));
-
-            colours->push_back(color);
-            normals->push_back(osg::Vec3d(0.0, 1.0, 0.0));
-          }
-
-          {
-            coords->push_back(pos + osg::Vec3d(0.0, 1.0, 0.0));
-            coords->push_back(pos + osg::Vec3d(0.0, 0.0, 0.0));
-            coords->push_back(pos + osg::Vec3d(0.0, 0.0, 1.0));
-            coords->push_back(pos + osg::Vec3d(0.0, 1.0, 1.0));
-
-            tcoords->push_back(osg::Vec2d(0,0));
-            tcoords->push_back(osg::Vec2d(1,0));
-            tcoords->push_back(osg::Vec2d(1,1));
-            tcoords->push_back(osg::Vec2d(0,1));
-
-            colours->push_back(color);
-            normals->push_back(osg::Vec3d(-1.0, 0.0, 0.0));
-          }
-
-          {//5
-            coords->push_back(pos + osg::Vec3d(0.0, 0.0, 1.0));
-            coords->push_back(pos + osg::Vec3d(1.0, 0.0, 1.0));
-            coords->push_back(pos + osg::Vec3d(1.0, 1.0, 1.0));
-            coords->push_back(pos + osg::Vec3d(0.0, 1.0, 1.0));
-
-            tcoords->push_back(osg::Vec2d(0,0));
-            tcoords->push_back(osg::Vec2d(1,0));
-            tcoords->push_back(osg::Vec2d(1,1));
-            tcoords->push_back(osg::Vec2d(0,1));
-
-            colours->push_back(color);
-            normals->push_back(osg::Vec3d(0.0, 0.0, 1.0));
-          }
-
-          {//6
-            coords->push_back(pos + osg::Vec3d(0.0, 1.0, 0.0));
-            coords->push_back(pos + osg::Vec3d(1.0, 1.0, 0.0));
-            coords->push_back(pos + osg::Vec3d(1.0, 0.0, 0.0));
-            coords->push_back(pos + osg::Vec3d(0.0, 0.0, 0.0));
-
-            tcoords->push_back(osg::Vec2d(0,0));
-            tcoords->push_back(osg::Vec2d(1,0));
-            tcoords->push_back(osg::Vec2d(1,1));
-            tcoords->push_back(osg::Vec2d(0,1));
-
-            colours->push_back(color);
-            normals->push_back(osg::Vec3d(0.0, 0.0, -1.0));
-          }
-
-          drawArr->setCount(coords->size());
-        }
+      if(curGeom)
+        updateGeom(curGeom, rg, offset * GEOM_SIZE);
+    }
   }
 
   return geode;

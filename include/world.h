@@ -49,14 +49,12 @@ namespace cube
       {
         _geom = geom;
         _reg = reg;
-        _xCubOff = GEOM_SIZE * (int)vec.x();
-        _yCubOff = GEOM_SIZE * (int)vec.y();
         _zCubOff = GEOM_SIZE * (int)vec.z();
       }
 
       osg::Geometry* _geom;
       cube::Region* _reg;
-      int _xCubOff, _yCubOff, _zCubOff;
+      int _zCubOff;
     };
 
     std::vector<DataUpdate> _dataUpdate;

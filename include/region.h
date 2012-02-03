@@ -3,7 +3,7 @@
 
 #define REGION_WIDTH 8
 #define REGION_HEIGHT 128
-#define GEOM_SIZE 8
+#define GEOM_SIZE REGION_WIDTH
 #define GEOM_COUNT 16
 #define NUM_OCTAVES 1
 #define PERSON_HEIGHT 1.8
@@ -35,6 +35,8 @@ namespace cube
 
     int GetX() { return _xReg; }
     int GetY() { return _yReg; }
+
+    int _renderedCubCount[GEOM_COUNT];
 
   protected:
 
