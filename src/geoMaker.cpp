@@ -51,6 +51,8 @@ float GeoMaker::CompileNoise(float x, float y)
 
 int GeoMaker::PerlinNoise_2D(float x,float y,float factor)
 {
+  x += 32000.0f;
+  y += 32000.0f;
   float total = 0;
   // это число может иметь и другие значения хоть cosf(sqrtf(2))*3.14f
   // главное чтобы было красиво и результат вас устраивал
@@ -105,7 +107,7 @@ void GeoMaker::GenNoise(cube::Region* rg, float rnd)
       //проходим по всем элементам массива и заполняем их значениями
       //pNoise[i*size+j]=PerlinNoise_2D(float(i),float(j),fac);
 
-      int height = REGION_HEIGHT / 4 + ((PerlinNoise_2D(float(i + xOffset),float(j + yOffset),rnd) * (REGION_HEIGHT / 6)) / 255);
+      int height = REGION_HEIGHT / 2 + ((PerlinNoise_2D(float(i + xOffset),float(j + yOffset),rnd) * (REGION_HEIGHT / 6)) / 255);
       rg->SetHeight(i, j, height);
 
       if(i < 0 || i >= REGION_WIDTH || j < 0 || j >= REGION_WIDTH)

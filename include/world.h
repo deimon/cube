@@ -37,7 +37,7 @@ namespace cube
     osg::Group* GetGeometry();
     void update();
 
-    cube::Region* GetRegion(int x, int y);
+    cube::Region* World::GetRegion(int i, int j) { return _regions[i][j]; }
     cube::Region* ContainsReion(int xreg, int yreg);
     const cube::Cub& GetCub(float x, float y, float z);
 
@@ -58,6 +58,8 @@ namespace cube
     };
 
     std::vector<DataUpdate> _dataUpdate;
+
+    osg::Vec3d _you;
 
   protected:
     osg::Geode* createGeometry();

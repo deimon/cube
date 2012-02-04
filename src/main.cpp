@@ -29,7 +29,7 @@ int main( void )
 
   osg::ref_ptr<osgGA::KeySwitchMatrixManipulator> keyswitchManipulator = new osgGA::KeySwitchMatrixManipulator;
   keyswitchManipulator->setAutoComputeHomePosition(false);
-  keyswitchManipulator->setHomePosition(osg::Vec3d(5.0, 5.0, 10.0), osg::Vec3d(6.0, 6.0, 10.0), osg::Vec3d(0.0, 0.0, 1.0));
+  keyswitchManipulator->setHomePosition(osg::Vec3d(5.0, 5.0, 100.0), osg::Vec3d(6.0, 5.0, 100.0), osg::Vec3d(0.0, 0.0, 1.0));
 
   keyswitchManipulator->addMatrixManipulator( '1', "FirstPerson", new cube::PersonManipulator() );
   keyswitchManipulator->addMatrixManipulator( '2', "Flight", new osgGA::FlightManipulator() );

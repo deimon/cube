@@ -21,3 +21,11 @@ void Region::Generation(cube::World* world, int xreg, int yreg, float rnd)
 
   world->_regions[xreg][yreg] = region;
 }
+
+int Region::ToRegionIndex(float worldPos)
+{
+  if(worldPos > 0)
+    return (int)worldPos / REGION_WIDTH;
+  else
+    return (int)worldPos / REGION_WIDTH - 1;
+}

@@ -24,6 +24,8 @@ namespace cube
   public:
 
     static void Generation(cube::World* world, int xreg, int yreg, float rnd);
+    static int ToRegionIndex(float worldPos);
+
     cube::Cub& GetCub(int x, int y, int z){ return _m[x][y][z];}
     const osg::Vec3d& GetPosition(){ return _position;}
 

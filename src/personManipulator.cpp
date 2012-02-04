@@ -240,6 +240,9 @@ void PersonManipulator::calcStep(osg::Vec3d vDir, osgGA::GUIActionAdapter& us)
     newEye.y() += vDir.y() - dy;
 
   _eye = newEye;
+
+  world._you = _eye;
+
   us.requestRedraw();
 }
 

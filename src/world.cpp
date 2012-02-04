@@ -15,8 +15,8 @@ World::World()
 
   float rnd = osg::PI*2*10 + ((float)rand() / RAND_MAX)* (osg::PI*3*10 - osg::PI*2*10);
 
-  for(int i = 0; i < 10; i++)
-  for(int j = 0; j < 10; j++)
+  for(int i = -3; i < 3; i++)
+  for(int j = -3; j < 3; j++)
     cube::Region::Generation(this, i, j, rnd);
 
   _sides.push_back(osg::Vec3d( 1.0f,  0.0f,  0.0f));
@@ -189,14 +189,6 @@ void World::update()
   _dataUpdate.clear();
 }
 
-cube::Region* World::GetRegion(int x, int y)
-{
-  int i = x / REGION_WIDTH;
-  int j = y / REGION_WIDTH;
-
-  return _regions[i][j];
-}
-
 cube::Region* World::ContainsReion(int xreg, int yreg)
 {
   if(_regions.count(xreg))
@@ -210,7 +202,7 @@ cube::Region* World::ContainsReion(int xreg, int yreg)
 
 const cube::Cub& World::GetCub(float x, float y, float z)
 {
-  cube::Region* rg = GetRegion(x,y);
+  cube::Region* rg = GetRegion(Region::ToRegionIndex(x), Region::ToRegionIndex(y));
 
   if(rg)
   {
@@ -255,7 +247,7 @@ osg::Geometry* NewOSGGeom()
 
 void World::RemoveCub(osg::Vec3d vec)
 {
-  cube::Region* reg = GetRegion(vec.x(), vec.y());
+  cube::Region* reg = GetRegion(Region::ToRegionIndex(vec.x()), Region::ToRegionIndex(vec.y()));
   osg::Vec3d cvec = vec - reg->GetPosition();
   cube::Cub& cub = reg->GetCub(cvec.x(), cvec.y(), cvec.z());
 
@@ -290,7 +282,7 @@ void World::RemoveCub(osg::Vec3d vec)
   {
     cvec = vec + _sides[i];
 
-    reg = GetRegion(cvec.x(), cvec.y());
+    reg = GetRegion(Region::ToRegionIndex(cvec.x()), Region::ToRegionIndex(cvec.y()));
     cvec -= reg->GetPosition();
     cube::Cub& scub = reg->GetCub(cvec.x(), cvec.y(), cvec.z());
 
