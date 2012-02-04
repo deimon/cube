@@ -1,4 +1,5 @@
 #include <world.h>
+#include <generator.h>
 
 using namespace cube;
 
@@ -11,13 +12,19 @@ void WorldCallback::operator()(osg::Node* node, osg::NodeVisitor* nv)
 
 World::World()
 {
+  // эти параметры надо будет устанавливать
+  // в соответствии с местом появления персонажа
+  _prevRegX = 0;
+  _prevRegY = 0;
+  _you.set(5.0, 5.0, 0.0);
+
   srand(time(NULL));
+  _rnd = osg::PI*2*10 + ((float)rand() / RAND_MAX)* (osg::PI*3*10 - osg::PI*2*10);
 
-  float rnd = osg::PI*2*10 + ((float)rand() / RAND_MAX)* (osg::PI*3*10 - osg::PI*2*10);
-
-  for(int i = -3; i < 3; i++)
-  for(int j = -3; j < 3; j++)
-    cube::Region::Generation(this, i, j, rnd);
+  for(int i = 0; i < VISIBLE_ZONE; i++)
+  for(int j = 0; j < VISIBLE_ZONE; j++)
+    if(Areas::circle[i][j] == 1)
+      cube::Region::Generation(this, i - 5, j - 5, _rnd);
 
   _sides.push_back(osg::Vec3d( 1.0f,  0.0f,  0.0f));
   _sides.push_back(osg::Vec3d(-1.0f,  0.0f,  0.0f));
@@ -34,12 +41,24 @@ osg::Group* World::GetGeometry()
   _group->setUpdateCallback(new WorldCallback(this));
   _group->removeChildren(0, _group->getNumChildren());
 
-  _geode = createGeometry();
+  createGeometry();
   _group->addChild(_geode);
 
   _geode->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE | osg::StateAttribute::PROTECTED);
 
   return _group;
+}
+
+void World::clearRegionGeoms(cube::Region* rg)
+{
+  if(rg != NULL)
+  {
+    for(int i = 0; i < GEOM_COUNT; i++)
+    {
+      _geode->removeDrawable(rg->GetGeometry(i));
+      rg->SetGeometry(i, NULL);
+    }
+  }
 }
 
 void updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset)
@@ -185,8 +204,113 @@ void World::update()
     if(_dataUpdate[i]._geom)
       updateGeom(_dataUpdate[i]._geom, _dataUpdate[i]._reg, _dataUpdate[i]._zCubOff);
   }
-
   _dataUpdate.clear();
+
+  //***************
+  int curRegX = Region::ToRegionIndex(_you.x());
+  int curRegY = Region::ToRegionIndex(_you.y());
+
+  if(curRegX > _prevRegX)
+  {
+    _prevRegX = curRegX;
+
+    for(int i = 0; i < VISIBLE_ZONE; i++)
+    {
+      //add
+      Areas::v2 offs = Areas::xp[i];
+
+      cube::Region* reg = ContainsReion(curRegX + offs.x, curRegY + offs.y);
+      if(reg == NULL)
+        reg = cube::Region::Generation(this, curRegX + offs.x, curRegY + offs.y, _rnd);
+      _addRegions[reg->GetId()] = reg;
+
+      //del
+      Areas::v2 delOff = Areas::xn[i];
+      reg = ContainsReion(curRegX + delOff.x - 1, curRegY + delOff.y);
+      if(reg != NULL)
+        _delRegions[reg->GetId()] = reg;
+    }
+  }
+
+  if(curRegX < _prevRegX)
+  {
+    _prevRegX = curRegX;
+
+    for(int i = 0; i < VISIBLE_ZONE; i++)
+    {
+      //add
+      Areas::v2 offs = Areas::xn[i];
+
+      cube::Region* reg = ContainsReion(curRegX + offs.x, curRegY + offs.y);
+      if(reg == NULL)
+        reg = cube::Region::Generation(this, curRegX + offs.x, curRegY + offs.y, _rnd);
+      _addRegions[reg->GetId()] = reg;
+
+      //del
+      Areas::v2 delOff = Areas::xp[i];
+      reg = ContainsReion(curRegX + delOff.x + 1, curRegY + delOff.y);
+      if(reg != NULL)
+        _delRegions[reg->GetId()] = reg;
+    }
+  }
+
+  if(curRegY > _prevRegY)
+  {
+    _prevRegY = curRegY;
+
+    for(int i = 0; i < VISIBLE_ZONE; i++)
+    {
+      //add
+      Areas::v2 offs = Areas::yp[i];
+
+      cube::Region* reg = ContainsReion(curRegX + offs.x, curRegY + offs.y);
+      if(reg == NULL)
+        reg = cube::Region::Generation(this, curRegX + offs.x, curRegY + offs.y, _rnd);
+      _addRegions[reg->GetId()] = reg;
+
+      //del
+      Areas::v2 delOff = Areas::yn[i];
+      reg = ContainsReion(curRegX + delOff.x, curRegY + delOff.y - 1);
+      if(reg != NULL)
+        _delRegions[reg->GetId()] = reg;
+    }
+  }
+
+  if(curRegY < _prevRegY)
+  {
+    _prevRegY = curRegY;
+
+    for(int i = 0; i < VISIBLE_ZONE; i++)
+    {
+      //add
+      Areas::v2 offs = Areas::yn[i];
+
+      cube::Region* reg = ContainsReion(curRegX + offs.x, curRegY + offs.y);
+      if(reg == NULL)
+        reg = cube::Region::Generation(this, curRegX + offs.x, curRegY + offs.y, _rnd);
+      _addRegions[reg->GetId()] = reg;
+
+      //del
+      Areas::v2 delOff = Areas::yp[i];
+      reg = ContainsReion(curRegX + delOff.x, curRegY + delOff.y + 1);
+      if(reg != NULL)
+        _delRegions[reg->GetId()] = reg;
+    }
+  }
+
+  std::map<long, cube::Region*>::iterator i = _addRegions.begin();
+  for(; i != _addRegions.end(); i++)
+  {
+    UpdateRegionGeoms(i->second);
+  }
+  _addRegions.clear();
+
+  i = _delRegions.begin();
+  for(; i != _delRegions.end(); i++)
+  {
+    clearRegionGeoms(i->second);
+  }
+  _delRegions.clear();
 }
 
 cube::Region* World::ContainsReion(int xreg, int yreg)
@@ -307,11 +431,33 @@ void World::RemoveCub(osg::Vec3d vec)
   }
 }
 
+void World::UpdateRegionGeoms(cube::Region* rg)
+{
+  for(int offset = 0; offset < GEOM_COUNT; offset++)
+  {
+    if(rg->_renderedCubCount[offset] < 1)
+      continue;
+
+    osg::Geometry* curGeom = rg->GetGeometry(offset);
+
+    if(curGeom == NULL)
+    {
+      curGeom = NewOSGGeom();
+      rg->SetGeometry(offset, curGeom);
+
+      _geode->addDrawable(curGeom);
+    }
+
+    if(curGeom)
+      updateGeom(curGeom, rg, offset * GEOM_SIZE);
+  }
+}
+
 osg::Geode* World::createGeometry()
 {
-  osg::Geode* geode = new osg::Geode;
+  _geode = new osg::Geode;
 
-  osg::StateSet* ss = geode->getOrCreateStateSet();
+  osg::StateSet* ss = _geode->getOrCreateStateSet();
 
   osg::Texture2D* tex = new osg::Texture2D;
   osg::Image* img = osgDB::readImageFile("./res/ground.jpg");
@@ -327,27 +473,8 @@ osg::Geode* World::createGeometry()
   for(xrg = _regions.begin(); xrg != _regions.end(); xrg++)
     for(yrg = xrg->second.begin(); yrg != xrg->second.end(); yrg++)
   {
-    cube::Region* rg = yrg->second;
-
-    for(int offset = 0; offset < GEOM_COUNT; offset++)
-    {
-      if(rg->_renderedCubCount[offset] < 1)
-        continue;
-
-      osg::Geometry* curGeom = rg->GetGeometry(offset);
-
-      if(curGeom == NULL)
-      {
-        curGeom = NewOSGGeom();
-        rg->SetGeometry(offset, curGeom);
-
-        geode->addDrawable(curGeom);
-      }
-
-      if(curGeom)
-        updateGeom(curGeom, rg, offset * GEOM_SIZE);
-    }
+    UpdateRegionGeoms(yrg->second);
   }
 
-  return geode;
+  return _geode;
 }

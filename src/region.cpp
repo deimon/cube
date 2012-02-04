@@ -4,7 +4,9 @@
 
 using namespace cube;
 
-void Region::Generation(cube::World* world, int xreg, int yreg, float rnd)
+int Region::countRegion = 0;
+
+cube::Region* Region::Generation(cube::World* world, int xreg, int yreg, float rnd)
 {
   cube::Region* region = new Region();
   region->_xReg = xreg;
@@ -20,6 +22,8 @@ void Region::Generation(cube::World* world, int xreg, int yreg, float rnd)
   cube::GeoMaker::FillRegion(region, rnd);
 
   world->_regions[xreg][yreg] = region;
+
+  return region;
 }
 
 int Region::ToRegionIndex(float worldPos)

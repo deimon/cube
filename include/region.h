@@ -23,7 +23,9 @@ namespace cube
   {
   public:
 
-    static void Generation(cube::World* world, int xreg, int yreg, float rnd);
+    long GetId() { return id; }
+
+    static cube::Region* Generation(cube::World* world, int xreg, int yreg, float rnd);
     static int ToRegionIndex(float worldPos);
 
     cube::Cub& GetCub(int x, int y, int z){ return _m[x][y][z];}
@@ -41,6 +43,15 @@ namespace cube
     int _renderedCubCount[GEOM_COUNT];
 
   protected:
+
+    Region()
+    {
+      id = countRegion;
+      countRegion++;
+    }
+
+    static int countRegion;
+    long id;
 
     cube::Cub _m[REGION_WIDTH][REGION_WIDTH][REGION_HEIGHT];
     int _height[REGION_WIDTH+2][REGION_WIDTH+2];

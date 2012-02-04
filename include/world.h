@@ -42,6 +42,7 @@ namespace cube
     const cube::Cub& GetCub(float x, float y, float z);
 
     void RemoveCub(osg::Vec3d vec);
+    void UpdateRegionGeoms(cube::Region* rg);
 
     struct DataUpdate
     {
@@ -62,6 +63,14 @@ namespace cube
     osg::Vec3d _you;
 
   protected:
+    void clearRegionGeoms(cube::Region* rg);
+
+    float _rnd;
+    int _prevRegX, _prevRegY;
+
+    std::map<long, cube::Region*> _addRegions;
+    std::map<long, cube::Region*> _delRegions;
+
     osg::Geode* createGeometry();
 
     osg::Group* _group;
