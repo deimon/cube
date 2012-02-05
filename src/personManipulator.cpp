@@ -274,32 +274,23 @@ bool PersonManipulator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
       return handleKeyUp( ea, us );
 
     case osgGA::GUIEventAdapter::PUSH:
+    {
+	    cube::World& world = cube::World::Instance();
+	    osg::Vec3d vDir = _rotation * osg::Vec3d(0., 0., -1.0);
+
+      for(float k = 0.1; k < 3.0; k = k + 0.1)
       {
-	cube::World& world = cube::World::Instance();
-
-	osg::Vec3d vDir = _rotation * osg::Vec3d(0., 0., -1.0);
-	osg::Vec3d newEye = _eye + vDir;
-
-	cube::Cub& cub = (cube::Cub&)world.GetCub(newEye.x(), newEye.y(), newEye.z());
-
-	if(cub._type != cube::Cub::Air)
-	{
-	  world.RemoveCub(newEye);
-	}
-	else
-	{
-	  newEye = _eye + vDir * 2.0;
-
-	  cube::Cub& cub = (cube::Cub&)world.GetCub(newEye.x(), newEye.y(), newEye.z());
-	  if(cub._type != cube::Cub::Air)
-	  {
-	    world.RemoveCub(newEye);
-	  }
-	}
-
-
-	return true;
+        osg::Vec3d newEye = _eye + vDir * k;
+        cube::Cub& cub = (cube::Cub&)world.GetCub(newEye.x(), newEye.y(), newEye.z());
+        if(cub._type != cube::Cub::Air)
+        {
+          world.RemoveCub(newEye);
+          break;
+        }
       }
+
+	    return true;
+    }
     case osgGA::GUIEventAdapter::RELEASE:
     case osgGA::GUIEventAdapter::SCROLL:
     default:
