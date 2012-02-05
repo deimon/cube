@@ -21,10 +21,14 @@ World::World()
   srand(time(NULL));
   _rnd = osg::PI*2*10 + ((float)rand() / RAND_MAX)* (osg::PI*3*10 - osg::PI*2*10);
 
-  for(int i = 0; i < VISIBLE_ZONE; i++)
-  for(int j = 0; j < VISIBLE_ZONE; j++)
-    if(Areas::circle[i][j] == 1)
-      cube::Region::Generation(this, i - 5, j - 5, _rnd);
+  int radius = 5;
+
+  cube::Areas::Instance().SetRadius(radius);
+
+  for(int i = 0; i < Areas::Instance().GetSize(); i++)
+  for(int j = 0; j < Areas::Instance().GetSize(); j++)
+    if(Areas::Instance()._circle[i][j] == 1)
+      cube::Region::Generation(this, i - radius, j - radius, _rnd);
 
   _sides.push_back(osg::Vec3d( 1.0f,  0.0f,  0.0f));
   _sides.push_back(osg::Vec3d(-1.0f,  0.0f,  0.0f));
@@ -214,10 +218,10 @@ void World::update()
   {
     _prevRegX = curRegX;
 
-    for(int i = 0; i < VISIBLE_ZONE; i++)
+    for(int i = 0; i < Areas::Instance().GetSize(); i++)
     {
       //add
-      Areas::v2 offs = Areas::xp[i];
+      Areas::v2 offs = Areas::Instance()._xp[i];
 
       cube::Region* reg = ContainsReion(curRegX + offs.x, curRegY + offs.y);
       if(reg == NULL)
@@ -225,7 +229,7 @@ void World::update()
       _addRegions[reg->GetId()] = reg;
 
       //del
-      Areas::v2 delOff = Areas::xn[i];
+      Areas::v2 delOff = Areas::Instance()._xn[i];
       reg = ContainsReion(curRegX + delOff.x - 1, curRegY + delOff.y);
       if(reg != NULL)
         _delRegions[reg->GetId()] = reg;
@@ -236,10 +240,10 @@ void World::update()
   {
     _prevRegX = curRegX;
 
-    for(int i = 0; i < VISIBLE_ZONE; i++)
+    for(int i = 0; i < Areas::Instance().GetSize(); i++)
     {
       //add
-      Areas::v2 offs = Areas::xn[i];
+      Areas::v2 offs = Areas::Instance()._xn[i];
 
       cube::Region* reg = ContainsReion(curRegX + offs.x, curRegY + offs.y);
       if(reg == NULL)
@@ -247,7 +251,7 @@ void World::update()
       _addRegions[reg->GetId()] = reg;
 
       //del
-      Areas::v2 delOff = Areas::xp[i];
+      Areas::v2 delOff = Areas::Instance()._xp[i];
       reg = ContainsReion(curRegX + delOff.x + 1, curRegY + delOff.y);
       if(reg != NULL)
         _delRegions[reg->GetId()] = reg;
@@ -258,10 +262,10 @@ void World::update()
   {
     _prevRegY = curRegY;
 
-    for(int i = 0; i < VISIBLE_ZONE; i++)
+    for(int i = 0; i < Areas::Instance().GetSize(); i++)
     {
       //add
-      Areas::v2 offs = Areas::yp[i];
+      Areas::v2 offs = Areas::Instance()._yp[i];
 
       cube::Region* reg = ContainsReion(curRegX + offs.x, curRegY + offs.y);
       if(reg == NULL)
@@ -269,7 +273,7 @@ void World::update()
       _addRegions[reg->GetId()] = reg;
 
       //del
-      Areas::v2 delOff = Areas::yn[i];
+      Areas::v2 delOff = Areas::Instance()._yn[i];
       reg = ContainsReion(curRegX + delOff.x, curRegY + delOff.y - 1);
       if(reg != NULL)
         _delRegions[reg->GetId()] = reg;
@@ -280,10 +284,10 @@ void World::update()
   {
     _prevRegY = curRegY;
 
-    for(int i = 0; i < VISIBLE_ZONE; i++)
+    for(int i = 0; i < Areas::Instance().GetSize(); i++)
     {
       //add
-      Areas::v2 offs = Areas::yn[i];
+      Areas::v2 offs = Areas::Instance()._yn[i];
 
       cube::Region* reg = ContainsReion(curRegX + offs.x, curRegY + offs.y);
       if(reg == NULL)
@@ -291,7 +295,7 @@ void World::update()
       _addRegions[reg->GetId()] = reg;
 
       //del
-      Areas::v2 delOff = Areas::yp[i];
+      Areas::v2 delOff = Areas::Instance()._yp[i];
       reg = ContainsReion(curRegX + delOff.x, curRegY + delOff.y + 1);
       if(reg != NULL)
         _delRegions[reg->GetId()] = reg;

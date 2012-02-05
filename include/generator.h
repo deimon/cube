@@ -1,23 +1,38 @@
 #ifndef __GENERATOR_H__
 #define __GENERATOR_H__
 
-#define VISIBLE_ZONE 11
+#include <vector>
+#include <map>
+#include "singleton.h"
 
 namespace cube
 {
-  class Areas
+  class Areas : public utils::Singleton<Areas>
   {
   public:
-    static int circle[11][11];
+    struct v2{ v2() { x = y = 0; } v2(int x_, int y_) { x = x_; y = y_; } int x,y; };
 
-    struct v2{ int x,y; };
+    Areas() {}
 
-    static v2 yp[VISIBLE_ZONE]; //y positiv
-    static v2 yn[VISIBLE_ZONE]; //y negativ
-    static v2 xp[VISIBLE_ZONE]; //x positiv
-    static v2 xn[VISIBLE_ZONE]; //x negativ
+    void SetRadius(int rad);
+
+    int GetSize() { return _size; }
+
+    std::vector<v2> _yp; //y positiv
+    std::vector<v2> _yn; //y negativ
+    std::vector<v2> _xp; //x positiv
+    std::vector<v2> _xn; //x negativ
+
+    std::map<int, std::map<int, int>> _circle;
+
+  protected:
+    void setCircle(int i, int j, int value);
+    int getCircle(int i, int j);
+
+    int _rad;
+    int _size;
   };
-
+/*
   int Areas::circle[VISIBLE_ZONE][VISIBLE_ZONE] = { {0,0,0,0,1,1,1,0,0,0,0},
                                                     {0,0,1,1,1,1,1,1,1,0,0},
                                                     {0,1,1,1,1,1,1,1,1,1,0},
@@ -41,6 +56,7 @@ namespace cube
 
   Areas::v2 Areas::xn[VISIBLE_ZONE] 
     = { {-1, -5}, {-3, -4}, {-4, -3}, {-4, -2}, {-5, -1}, {-5,  0}, {-5,  1}, {-4,  2}, {-4,  3}, {-3,  4}, {-1,  5}};
+*/
 }
 
 #endif 
