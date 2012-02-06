@@ -65,7 +65,7 @@ void World::clearRegionGeoms(cube::Region* rg)
   }
 }
 
-void updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset)
+void World::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset)
 {
   osg::Vec3Array* coords;
   osg::Vec4Array* colours;
@@ -98,97 +98,78 @@ void updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset)
 
     osg::Vec4d color;
 
-    if(cub._type == cube::Cub::Ground)
-      //color = osg::Vec4d(0.5, 0.25, 0.0, 1.0);
+    if(cub._type == cube::Cub::Ground || cub._type == cube::Cub::Grass)
       color = osg::Vec4d(1.0, 1.0, 1.0, 1.0);
     else if(cub._type == cube::Cub::Air)
       color = osg::Vec4d(0.0, 0.5, 1.0, 1.0);
 
-    {
+    {//0
       coords->push_back(pos + osg::Vec3d(0.0, 0.0, 0.0));
       coords->push_back(pos + osg::Vec3d(1.0, 0.0, 0.0));
       coords->push_back(pos + osg::Vec3d(1.0, 0.0, 1.0));
       coords->push_back(pos + osg::Vec3d(0.0, 0.0, 1.0));
 
-      tcoords->push_back(osg::Vec2d(0,0));
-      tcoords->push_back(osg::Vec2d(1,0));
-      tcoords->push_back(osg::Vec2d(1,1));
-      tcoords->push_back(osg::Vec2d(0,1));
+      _texInfo->FillTexCoord(cub._type, Cub::Y_BACK, tcoords);
 
       colours->push_back(color);
       normals->push_back(osg::Vec3d(0.0, -1.0, 0.0));
     }
 
-    {
+    {//1
       coords->push_back(pos + osg::Vec3d(1.0, 0.0, 0.0));
       coords->push_back(pos + osg::Vec3d(1.0, 1.0, 0.0));
       coords->push_back(pos + osg::Vec3d(1.0, 1.0, 1.0));
       coords->push_back(pos + osg::Vec3d(1.0, 0.0, 1.0));
 
-      tcoords->push_back(osg::Vec2d(0,0));
-      tcoords->push_back(osg::Vec2d(1,0));
-      tcoords->push_back(osg::Vec2d(1,1));
-      tcoords->push_back(osg::Vec2d(0,1));
+      _texInfo->FillTexCoord(cub._type, Cub::X_FACE, tcoords);
 
       colours->push_back(color);
       normals->push_back(osg::Vec3d(1.0, 0.0, 0.0));
     }
 
-    {
+    {//2
       coords->push_back(pos + osg::Vec3d(1.0, 1.0, 0.0));
       coords->push_back(pos + osg::Vec3d(0.0, 1.0, 0.0));
       coords->push_back(pos + osg::Vec3d(0.0, 1.0, 1.0));
       coords->push_back(pos + osg::Vec3d(1.0, 1.0, 1.0));
 
-      tcoords->push_back(osg::Vec2d(0,0));
-      tcoords->push_back(osg::Vec2d(1,0));
-      tcoords->push_back(osg::Vec2d(1,1));
-      tcoords->push_back(osg::Vec2d(0,1));
+      _texInfo->FillTexCoord(cub._type, Cub::Y_FACE, tcoords);
 
       colours->push_back(color);
       normals->push_back(osg::Vec3d(0.0, 1.0, 0.0));
     }
 
-    {
+    {//3
       coords->push_back(pos + osg::Vec3d(0.0, 1.0, 0.0));
       coords->push_back(pos + osg::Vec3d(0.0, 0.0, 0.0));
       coords->push_back(pos + osg::Vec3d(0.0, 0.0, 1.0));
       coords->push_back(pos + osg::Vec3d(0.0, 1.0, 1.0));
 
-      tcoords->push_back(osg::Vec2d(0,0));
-      tcoords->push_back(osg::Vec2d(1,0));
-      tcoords->push_back(osg::Vec2d(1,1));
-      tcoords->push_back(osg::Vec2d(0,1));
+      _texInfo->FillTexCoord(cub._type, Cub::X_BACK, tcoords);
 
       colours->push_back(color);
       normals->push_back(osg::Vec3d(-1.0, 0.0, 0.0));
     }
 
-    {//5
+    {//4
       coords->push_back(pos + osg::Vec3d(0.0, 0.0, 1.0));
       coords->push_back(pos + osg::Vec3d(1.0, 0.0, 1.0));
       coords->push_back(pos + osg::Vec3d(1.0, 1.0, 1.0));
       coords->push_back(pos + osg::Vec3d(0.0, 1.0, 1.0));
 
-      tcoords->push_back(osg::Vec2d(0,0));
-      tcoords->push_back(osg::Vec2d(1,0));
-      tcoords->push_back(osg::Vec2d(1,1));
-      tcoords->push_back(osg::Vec2d(0,1));
+      _texInfo->FillTexCoord(cub._type, Cub::Z_FACE, tcoords);
 
       colours->push_back(color);
       normals->push_back(osg::Vec3d(0.0, 0.0, 1.0));
     }
 
-    {//6
+    {//5
       coords->push_back(pos + osg::Vec3d(0.0, 1.0, 0.0));
       coords->push_back(pos + osg::Vec3d(1.0, 1.0, 0.0));
       coords->push_back(pos + osg::Vec3d(1.0, 0.0, 0.0));
       coords->push_back(pos + osg::Vec3d(0.0, 0.0, 0.0));
 
-      tcoords->push_back(osg::Vec2d(0,0));
-      tcoords->push_back(osg::Vec2d(1,0));
-      tcoords->push_back(osg::Vec2d(1,1));
-      tcoords->push_back(osg::Vec2d(0,1));
+      _texInfo->FillTexCoord(cub._type, Cub::Z_BACK, tcoords);
 
       colours->push_back(color);
       normals->push_back(osg::Vec3d(0.0, 0.0, -1.0));
@@ -384,6 +365,30 @@ void World::RemoveCub(osg::Vec3d vec)
   reg->_renderedCubCount[(int)cvec.z() / GEOM_SIZE]--;
   int renderedCubCount = reg->_renderedCubCount[(int)cvec.z() / GEOM_SIZE];
 
+  if((int)(cvec.z()) == reg->GetHeight(cvec.x(), cvec.y()))
+  {
+    for(int i = cvec.z(); i >= 0; i--)
+    {
+      cube::Cub& bottomCub = reg->GetCub(cvec.x(), cvec.y(), i);
+      if(bottomCub._type != cube::Cub::Air)
+      {
+        reg->SetHeight(cvec.x(), cvec.y(), i);
+
+        if(bottomCub._type == cube::Cub::Ground)
+        {
+          bottomCub._type = cube::Cub::Grass;
+
+          int bz = i / GEOM_SIZE;
+          osg::Geometry* curGeom = reg->GetGeometry(bz);
+
+          _dataUpdate.push_back(DataUpdate(curGeom, reg, bz));
+        }
+
+        break;
+      }
+    }
+  }
+
   cvec /= GEOM_SIZE;
   osg::Geometry* curGeom = reg->GetGeometry(cvec.z());
 
@@ -397,7 +402,7 @@ void World::RemoveCub(osg::Vec3d vec)
       _geode->addDrawable(curGeom);
     }
 
-    _dataUpdate.push_back(DataUpdate(curGeom, reg, cvec));
+    _dataUpdate.push_back(DataUpdate(curGeom, reg, cvec.z()));
   }
   else
   {
@@ -430,7 +435,7 @@ void World::RemoveCub(osg::Vec3d vec)
         _geode->addDrawable(curGeom);
       }
 
-      _dataUpdate.push_back(DataUpdate(curGeom, reg, cvec));
+      _dataUpdate.push_back(DataUpdate(curGeom, reg, cvec.z()));
     }
   }
 }
@@ -463,14 +468,12 @@ osg::Geode* World::createGeometry()
 
   osg::StateSet* ss = _geode->getOrCreateStateSet();
 
-  osg::Texture2D* tex = new osg::Texture2D;
-  osg::Image* img = osgDB::readImageFile("./res/ground.jpg");
-  tex->setImage(img);
+  _texInfo = new TextureInfo("./res/mc.jpg", 4);
 
-  ss->setTextureAttributeAndModes(0, tex, osg::StateAttribute::ON);
+  ss->setTextureAttributeAndModes(0, _texInfo->GetTexture(), osg::StateAttribute::ON);
 
-  tex->setFilter(osg::Texture::MIN_FILTER , osg::Texture::NEAREST);
-  tex->setFilter(osg::Texture::MAG_FILTER , osg::Texture::NEAREST);
+  //tex->setFilter(osg::Texture::MIN_FILTER , osg::Texture::NEAREST);
+  //tex->setFilter(osg::Texture::MAG_FILTER , osg::Texture::NEAREST);
 
   RegionsContainer::iterator xrg;
   YRegionsContainer::iterator yrg;

@@ -114,11 +114,11 @@ void GeoMaker::GenNoise(cube::Region* rg, float rnd)
         continue;
       
       cube::Cub& cub = rg->GetCub(i, j, height);
-      cub._type = cube::Cub::Ground;
+      cub._type = cube::Cub::Grass;
       cub._rendered = true;
       rg->_renderedCubCount[height / GEOM_SIZE]++;
 
-      for(int z = 0; z <= height && height < REGION_HEIGHT; z++)
+      for(int z = 0; z < height && height < REGION_HEIGHT; z++)
       {
         cube::Cub& cub = rg->GetCub(i, j, z);
         cub._type = cube::Cub::Ground;

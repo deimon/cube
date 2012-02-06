@@ -7,7 +7,6 @@
 #include <osg/Geometry>
 #include <osg/Geode>
 #include <osg/Texture2D>
-#include <osgDB/ReadFile>
 #include "singleton.h"
 
 namespace cube
@@ -46,11 +45,11 @@ namespace cube
 
     struct DataUpdate
     {
-      DataUpdate(osg::Geometry* geom, cube::Region* reg, osg::Vec3d& vec)
+      DataUpdate(osg::Geometry* geom, cube::Region* reg, int geomNumder)
       {
         _geom = geom;
         _reg = reg;
-        _zCubOff = GEOM_SIZE * (int)vec.z();
+        _zCubOff = GEOM_SIZE * geomNumder;
       }
 
       osg::Geometry* _geom;
@@ -63,6 +62,7 @@ namespace cube
     osg::Vec3d _you;
 
   protected:
+    void updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset);
     void clearRegionGeoms(cube::Region* rg);
 
     float _rnd;
@@ -77,6 +77,8 @@ namespace cube
     osg::Geode* _geode;
 
     std::vector<osg::Vec3d> _sides;
+
+    TextureInfo* _texInfo;
 
   public:
     RegionsContainer _regions;
