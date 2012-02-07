@@ -1,5 +1,6 @@
 #include <world.h>
 #include <generator.h>
+#include <mathUtils.h>
 
 using namespace cube;
 
@@ -98,76 +99,16 @@ void World::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset)
 
     osg::Vec4d color = osg::Vec4d(1.0, 1.0, 1.0, 1.0);
 
-    {//0
-      coords->push_back(pos + osg::Vec3d(0.0, 0.0, 0.0));
-      coords->push_back(pos + osg::Vec3d(1.0, 0.0, 0.0));
-      coords->push_back(pos + osg::Vec3d(1.0, 0.0, 1.0));
-      coords->push_back(pos + osg::Vec3d(0.0, 0.0, 1.0));
+    for(int side = CubInfo::FirstSide; side <= CubInfo::EndSide; side++)
+    {
+      CubInfo::CubeSide cside = (CubInfo::CubeSide)side;
 
-      _texInfo->FillTexCoord(cub._type, Cub::Y_BACK, tcoords);
+      CubInfo::Instance().FillVertCoord(cside, coords, pos);
 
-      colours->push_back(color);
-      normals->push_back(osg::Vec3d(0.0, -1.0, 0.0));
-    }
-
-    {//1
-      coords->push_back(pos + osg::Vec3d(1.0, 0.0, 0.0));
-      coords->push_back(pos + osg::Vec3d(1.0, 1.0, 0.0));
-      coords->push_back(pos + osg::Vec3d(1.0, 1.0, 1.0));
-      coords->push_back(pos + osg::Vec3d(1.0, 0.0, 1.0));
-
-      _texInfo->FillTexCoord(cub._type, Cub::X_FACE, tcoords);
+      _texInfo->FillTexCoord(cub._type, cside, tcoords);
 
       colours->push_back(color);
-      normals->push_back(osg::Vec3d(1.0, 0.0, 0.0));
-    }
-
-    {//2
-      coords->push_back(pos + osg::Vec3d(1.0, 1.0, 0.0));
-      coords->push_back(pos + osg::Vec3d(0.0, 1.0, 0.0));
-      coords->push_back(pos + osg::Vec3d(0.0, 1.0, 1.0));
-      coords->push_back(pos + osg::Vec3d(1.0, 1.0, 1.0));
-
-      _texInfo->FillTexCoord(cub._type, Cub::Y_FACE, tcoords);
-
-      colours->push_back(color);
-      normals->push_back(osg::Vec3d(0.0, 1.0, 0.0));
-    }
-
-    {//3
-      coords->push_back(pos + osg::Vec3d(0.0, 1.0, 0.0));
-      coords->push_back(pos + osg::Vec3d(0.0, 0.0, 0.0));
-      coords->push_back(pos + osg::Vec3d(0.0, 0.0, 1.0));
-      coords->push_back(pos + osg::Vec3d(0.0, 1.0, 1.0));
-
-      _texInfo->FillTexCoord(cub._type, Cub::X_BACK, tcoords);
-
-      colours->push_back(color);
-      normals->push_back(osg::Vec3d(-1.0, 0.0, 0.0));
-    }
-
-    {//4
-      coords->push_back(pos + osg::Vec3d(0.0, 0.0, 1.0));
-      coords->push_back(pos + osg::Vec3d(1.0, 0.0, 1.0));
-      coords->push_back(pos + osg::Vec3d(1.0, 1.0, 1.0));
-      coords->push_back(pos + osg::Vec3d(0.0, 1.0, 1.0));
-
-      _texInfo->FillTexCoord(cub._type, Cub::Z_FACE, tcoords);
-
-      colours->push_back(color);
-      normals->push_back(osg::Vec3d(0.0, 0.0, 1.0));
-    }
-
-    {//5
-      coords->push_back(pos + osg::Vec3d(0.0, 1.0, 0.0));
-      coords->push_back(pos + osg::Vec3d(1.0, 1.0, 0.0));
-      coords->push_back(pos + osg::Vec3d(1.0, 0.0, 0.0));
-      coords->push_back(pos + osg::Vec3d(0.0, 0.0, 0.0));
-
-      _texInfo->FillTexCoord(cub._type, Cub::Z_BACK, tcoords);
-
-      colours->push_back(color);
-      normals->push_back(osg::Vec3d(0.0, 0.0, -1.0));
+      normals->push_back(CubInfo::Instance().GetNormal(cside));
     }
 
     drawArr->setCount(coords->size());
@@ -421,6 +362,43 @@ void World::RemoveCub(osg::Vec3d vec)
 
       cvec /= GEOM_SIZE;
       curGeom = reg->GetGeometry(cvec.z());
+
+      if(curGeom == NULL)
+      {
+        curGeom = NewOSGGeom();
+        reg->SetGeometry(cvec.z(), curGeom);
+
+        _geode->addDrawable(curGeom);
+      }
+
+      _dataUpdate.push_back(DataUpdate(curGeom, reg, cvec.z()));
+    }
+  }
+}
+
+void World::AddCub(osg::Vec3d vec)
+{
+  cube::Region* reg = GetRegion(Region::ToRegionIndex(vec.x()), Region::ToRegionIndex(vec.y()));
+  osg::Vec3d cvec = vec - reg->GetPosition();
+
+  CubInfo::CubeSide side = cube::MathUtils::CubIntersection(reg, cvec.x(), cvec.y(), cvec.z(), _you, vec);
+
+  osg::Vec3d norm = CubInfo::Instance().GetNormal(side);
+  {
+    cvec = vec + norm;
+
+    reg = GetRegion(Region::ToRegionIndex(cvec.x()), Region::ToRegionIndex(cvec.y()));
+    cvec -= reg->GetPosition();
+    cube::Cub& scub = reg->GetCub(cvec.x(), cvec.y(), cvec.z());
+
+    if(scub._type == cube::Cub::Air)
+    {
+      scub._type = cube::Cub::Ground;
+      scub._rendered = true;
+      reg->_renderedCubCount[(int)cvec.z() / GEOM_SIZE]++;
+
+      cvec /= GEOM_SIZE;
+      osg::Geometry* curGeom = reg->GetGeometry(cvec.z());
 
       if(curGeom == NULL)
       {

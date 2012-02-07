@@ -275,17 +275,31 @@ bool PersonManipulator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 
     case osgGA::GUIEventAdapter::PUSH:
     {
-	    cube::World& world = cube::World::Instance();
-	    osg::Vec3d vDir = _rotation * osg::Vec3d(0., 0., -1.0);
+      bool found = false;
+      osg::Vec3d newEye;
+      cube::World& world = cube::World::Instance();
+      osg::Vec3d vDir = _rotation * osg::Vec3d(0., 0., -1.0);
 
       for(float k = 0.1; k < 3.0; k = k + 0.1)
       {
-        osg::Vec3d newEye = _eye + vDir * k;
+        newEye = _eye + vDir * k;
         cube::Cub& cub = (cube::Cub&)world.GetCub(newEye.x(), newEye.y(), newEye.z());
         if(cub._type != cube::Cub::Air)
         {
-          world.RemoveCub(newEye);
+          found = true;
           break;
+        }
+      }
+
+      if(found)
+      {
+        if(ea.getButtonMask() & osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON)
+        {
+	        world.RemoveCub(newEye);
+        }
+        else if(ea.getButtonMask() & osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON)
+        {
+          world.AddCub(newEye);
         }
       }
 

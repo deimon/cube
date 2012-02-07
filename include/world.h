@@ -41,6 +41,7 @@ namespace cube
     const cube::Cub& GetCub(float x, float y, float z);
 
     void RemoveCub(osg::Vec3d vec);
+    void AddCub(osg::Vec3d vec);
     void UpdateRegionGeoms(cube::Region* rg);
 
     struct DataUpdate

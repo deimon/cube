@@ -5,22 +5,13 @@
 
 #include <iostream>
 #include <osg/Texture2D>
+#include <singleton.h>
 
 namespace cube
 {
   class Cub
   {
   public:
-
-    enum CubeSide
-    {
-      Y_BACK = 0,
-      X_FACE = 1,
-      Y_FACE = 2,
-      X_BACK = 3,
-      Z_FACE = 4,
-      Z_BACK = 5
-    };
 
     enum CubeType
     {
@@ -41,13 +32,41 @@ namespace cube
     bool _rendered;
   };
 
+  class CubInfo: public utils::Singleton<CubInfo>
+  {
+  public:
+    enum CubeSide
+    {
+      Y_BACK = 0,
+      X_FACE = 1,
+      Y_FACE = 2,
+      X_BACK = 3,
+      Z_FACE = 4,
+      Z_BACK = 5
+    };
+
+    static CubeSide FirstSide;
+    static CubeSide EndSide;
+
+    CubInfo();
+    const osg::Vec3& GetNormal(CubInfo::CubeSide cubeSide);
+    const osg::Vec3& GetVertex(CubInfo::CubeSide cubeSide, int numVertex);
+
+    void FillVertCoord(CubInfo::CubeSide cubeSide, osg::Vec3Array* coords, osg::Vec3d offset);
+
+  protected:
+
+    std::map<CubInfo::CubeSide, osg::Vec3> _normals;
+    std::map<CubInfo::CubeSide, std::map<int, osg::Vec3>> _vertex;
+  };
+
   //***************************************************************************
   //**** Texture Information
   //***************************************************************************
   class TextureInfo
   {
   public:
-    typedef std::map<Cub::CubeSide, int> SidesTexture;
+    typedef std::map<CubInfo::CubeSide, int> SidesTexture;
     typedef std::map<Cub::CubeType, SidesTexture> CubeTextures;
 
     TextureInfo(std::string path, int count);
@@ -55,7 +74,7 @@ namespace cube
     osg::Texture2D* GetTexture() { return _texture; }
     int GetCount() { return _count; }
 
-    void FillTexCoord(Cub::CubeType cubeType, Cub::CubeSide cubeSide, osg::Vec2Array* tcoords);
+    void FillTexCoord(Cub::CubeType cubeType, CubInfo::CubeSide cubeSide, osg::Vec2Array* tcoords);
 
   protected:
     void init();
