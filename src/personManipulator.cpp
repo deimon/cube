@@ -115,6 +115,7 @@ void PersonManipulator::setTransformation( const osg::Vec3d& eye, const osg::Qua
 {
   // set variables
   _eye = eye;
+  cube::World::Instance()._you = _eye;
   _rotation = rotation;
 
   osg::CoordinateFrame coordinateFrame = getCoordinateFrame( _eye );
@@ -360,6 +361,7 @@ bool PersonManipulator::handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GU
   if(_jump)
   {
     _eye += osg::Vec3d(0.0, 0.0, 5.0) * _delta_frame_time;
+    world._you = _eye;
 
     if((_eye.z() - _startJump) > 1.2f)
       _jump = false;
