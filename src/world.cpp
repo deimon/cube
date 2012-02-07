@@ -96,12 +96,7 @@ void World::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset)
 
     osg::Vec3d pos = reg->GetPosition() + osg::Vec3d( x, y, z + zOffset);
 
-    osg::Vec4d color;
-
-    if(cub._type == cube::Cub::Ground || cub._type == cube::Cub::Grass)
-      color = osg::Vec4d(1.0, 1.0, 1.0, 1.0);
-    else if(cub._type == cube::Cub::Air)
-      color = osg::Vec4d(0.0, 0.5, 1.0, 1.0);
+    osg::Vec4d color = osg::Vec4d(1.0, 1.0, 1.0, 1.0);
 
     {//0
       coords->push_back(pos + osg::Vec3d(0.0, 0.0, 0.0));

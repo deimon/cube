@@ -121,7 +121,11 @@ void GeoMaker::GenNoise(cube::Region* rg, float rnd)
       for(int z = 0; z < height && height < REGION_HEIGHT; z++)
       {
         cube::Cub& cub = rg->GetCub(i, j, z);
-        cub._type = cube::Cub::Ground;
+
+        if(z / 85.0 < ((float)rand() / RAND_MAX))
+          cub._type = cube::Cub::Stone;
+        else
+          cub._type = cube::Cub::Ground;
       }
     }
   }

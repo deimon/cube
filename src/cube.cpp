@@ -42,4 +42,11 @@ void TextureInfo::init()
   _csTextures[Cub::Grass][Cub::X_FACE] = 15;
   _csTextures[Cub::Grass][Cub::Y_FACE] = 15;
   _csTextures[Cub::Grass][Cub::Z_FACE] = 12;
+
+  _csTextures[Cub::Stone][Cub::X_BACK] = 13;
+  _csTextures[Cub::Stone][Cub::Y_BACK] = 13;
+  _csTextures[Cub::Stone][Cub::Z_BACK] = 13;
+  _csTextures[Cub::Stone][Cub::X_FACE] = 13;
+  _csTextures[Cub::Stone][Cub::Y_FACE] = 13;
+  _csTextures[Cub::Stone][Cub::Z_FACE] = 11;
 }

@@ -26,7 +26,8 @@ namespace cube
     {
       Air = 0,
       Ground = 1,
-      Grass = 2
+      Grass = 2,
+      Stone = 3
     };
   public:
 
