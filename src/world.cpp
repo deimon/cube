@@ -22,7 +22,7 @@ World::World()
   srand(time(NULL));
   _rnd = osg::PI*2*10 + ((float)rand() / RAND_MAX)* (osg::PI*3*10 - osg::PI*2*10);
 
-  int radius = 5;
+  int radius = 16;
 
   cube::Areas::Instance().SetRadius(radius);
 
@@ -30,13 +30,6 @@ World::World()
   for(int j = 0; j < Areas::Instance().GetSize(); j++)
     if(Areas::Instance()._circle[i][j] == 1)
       cube::Region::Generation(this, i - radius, j - radius, _rnd);
-
-  _sides.push_back(osg::Vec3d( 1.0f,  0.0f,  0.0f));
-  _sides.push_back(osg::Vec3d(-1.0f,  0.0f,  0.0f));
-  _sides.push_back(osg::Vec3d( 0.0f,  1.0f,  0.0f));
-  _sides.push_back(osg::Vec3d( 0.0f, -1.0f,  0.0f));
-  _sides.push_back(osg::Vec3d( 0.0f,  0.0f,  1.0f));
-  _sides.push_back(osg::Vec3d( 0.0f,  0.0f, -1.0f));
 }
 
 osg::Group* World::GetGeometry()
@@ -347,9 +340,10 @@ void World::RemoveCub(osg::Vec3d vec)
   }
 
 
-  for(int i = 0; i < _sides.size(); i++)
+  for(int i = CubInfo::FirstSide; i <= CubInfo::EndSide; i++)
   {
-    cvec = vec + _sides[i];
+    CubInfo::CubeSide side = (CubInfo::CubeSide)i;
+    cvec = vec + CubInfo::Instance().GetNormal(side);
 
     reg = GetRegion(Region::ToRegionIndex(cvec.x()), Region::ToRegionIndex(cvec.y()));
     cvec -= reg->GetPosition();

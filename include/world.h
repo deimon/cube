@@ -77,8 +77,6 @@ namespace cube
     osg::Group* _group;
     osg::Geode* _geode;
 
-    std::vector<osg::Vec3d> _sides;
-
     TextureInfo* _texInfo;
 
   public:
