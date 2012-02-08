@@ -2,7 +2,46 @@
 #include <generator.h>
 #include <mathUtils.h>
 
+#include <OpenThreads/Thread>
+
 using namespace cube;
+
+class CreateGeomThread : public OpenThreads::Thread
+{
+public:
+
+  CreateGeomThread(cube::World* world)
+    : _world(world)
+  {
+    if (!isRunning()) start();
+  }
+
+  virtual void quit(bool waitForThreadToExit = true)
+  {
+    _done = true;
+    if(isRunning() && waitForThreadToExit)
+      join();
+  }
+
+protected:
+  ~CreateGeomThread() { quit(); }
+
+private:
+  virtual void run()
+  {
+    _done = false;
+
+    while (!_done)
+    {
+      microSleep(100);
+      _world->ProcessAddRegions();
+    }
+  }
+
+  bool _done;
+
+  cube::World* _world;
+};
 
 void WorldCallback::operator()(osg::Node* node, osg::NodeVisitor* nv)
 {
@@ -30,6 +69,8 @@ World::World()
   for(int j = 0; j < Areas::Instance().GetSize(); j++)
     if(Areas::Instance()._circle[i][j] == 1)
       cube::Region::Generation(this, i - radius, j - radius, _rnd);
+
+  CreateGeomThread* CGThread = new CreateGeomThread(this);
 }
 
 osg::Group* World::GetGeometry()
@@ -53,7 +94,8 @@ void World::clearRegionGeoms(cube::Region* rg)
   {
     for(int i = 0; i < GEOM_COUNT; i++)
     {
-      _geode->removeDrawable(rg->GetGeometry(i));
+      //_geode->removeDrawable(rg->GetGeometry(i));
+      _delDrwList.push_back(rg->GetGeometry(i));
       rg->SetGeometry(i, NULL);
     }
   }
@@ -113,6 +155,18 @@ void World::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset)
 
 void World::update()
 {
+  if(_addDrwList.size())
+  {
+      _geode->addDrawable(_addDrwList[_addDrwList.size()-1]);
+      _addDrwList.pop_back();
+  }
+
+  if(_delDrwList.size())
+  {
+    _geode->removeDrawable(_delDrwList[_delDrwList.size()-1]);
+    _delDrwList.pop_back();
+  }
+
   for(int i = 0; i < _dataUpdate.size(); i++)
   {
     if(_dataUpdate[i]._geom)
@@ -123,6 +177,9 @@ void World::update()
   //***************
   int curRegX = Region::ToRegionIndex(_you.x());
   int curRegY = Region::ToRegionIndex(_you.y());
+
+  std::map<long, cube::Region*> addRegionsTmp;
+  std::map<long, cube::Region*> delRegionsTmp;
 
   if(curRegX > _prevRegX)
   {
@@ -136,13 +193,13 @@ void World::update()
       cube::Region* reg = ContainsReion(curRegX + offs.x, curRegY + offs.y);
       if(reg == NULL)
         reg = cube::Region::Generation(this, curRegX + offs.x, curRegY + offs.y, _rnd);
-      _addRegions[reg->GetId()] = reg;
+      addRegionsTmp[reg->GetId()] = reg;
 
       //del
       Areas::v2 delOff = Areas::Instance()._xn[i];
       reg = ContainsReion(curRegX + delOff.x - 1, curRegY + delOff.y);
       if(reg != NULL)
-        _delRegions[reg->GetId()] = reg;
+        delRegionsTmp[reg->GetId()] = reg;
     }
   }
 
@@ -158,13 +215,13 @@ void World::update()
       cube::Region* reg = ContainsReion(curRegX + offs.x, curRegY + offs.y);
       if(reg == NULL)
         reg = cube::Region::Generation(this, curRegX + offs.x, curRegY + offs.y, _rnd);
-      _addRegions[reg->GetId()] = reg;
+      addRegionsTmp[reg->GetId()] = reg;
 
       //del
       Areas::v2 delOff = Areas::Instance()._xp[i];
       reg = ContainsReion(curRegX + delOff.x + 1, curRegY + delOff.y);
       if(reg != NULL)
-        _delRegions[reg->GetId()] = reg;
+        delRegionsTmp[reg->GetId()] = reg;
     }
   }
 
@@ -180,13 +237,13 @@ void World::update()
       cube::Region* reg = ContainsReion(curRegX + offs.x, curRegY + offs.y);
       if(reg == NULL)
         reg = cube::Region::Generation(this, curRegX + offs.x, curRegY + offs.y, _rnd);
-      _addRegions[reg->GetId()] = reg;
+      addRegionsTmp[reg->GetId()] = reg;
 
       //del
       Areas::v2 delOff = Areas::Instance()._yn[i];
       reg = ContainsReion(curRegX + delOff.x, curRegY + delOff.y - 1);
       if(reg != NULL)
-        _delRegions[reg->GetId()] = reg;
+        delRegionsTmp[reg->GetId()] = reg;
     }
   }
 
@@ -202,29 +259,22 @@ void World::update()
       cube::Region* reg = ContainsReion(curRegX + offs.x, curRegY + offs.y);
       if(reg == NULL)
         reg = cube::Region::Generation(this, curRegX + offs.x, curRegY + offs.y, _rnd);
-      _addRegions[reg->GetId()] = reg;
+      addRegionsTmp[reg->GetId()] = reg;
 
       //del
       Areas::v2 delOff = Areas::Instance()._yp[i];
       reg = ContainsReion(curRegX + delOff.x, curRegY + delOff.y + 1);
       if(reg != NULL)
-        _delRegions[reg->GetId()] = reg;
+        delRegionsTmp[reg->GetId()] = reg;
     }
   }
 
-  std::map<long, cube::Region*>::iterator i = _addRegions.begin();
-  for(; i != _addRegions.end(); i++)
   {
-    UpdateRegionGeoms(i->second);
-  }
-  _addRegions.clear();
+    OpenThreads::ScopedLock<OpenThreads::Mutex> lock(_mutex);
 
-  i = _delRegions.begin();
-  for(; i != _delRegions.end(); i++)
-  {
-    clearRegionGeoms(i->second);
+    addRegionsTmp.swap(_addRegions);
+    delRegionsTmp.swap(_delRegions);
   }
-  _delRegions.clear();
 }
 
 cube::Region* World::ContainsReion(int xreg, int yreg)
@@ -404,6 +454,52 @@ void World::AddCub(osg::Vec3d vec)
 
       _dataUpdate.push_back(DataUpdate(curGeom, reg, cvec.z()));
     }
+  }
+}
+
+void World::ProcessAddRegions()
+{
+  std::map<long, cube::Region*> addRegionsTmp;
+  std::map<long, cube::Region*> delRegionsTmp;
+
+  {
+    OpenThreads::ScopedLock<OpenThreads::Mutex> lock(_mutex);
+
+    addRegionsTmp.swap(_addRegions);
+    delRegionsTmp.swap(_delRegions);
+  }
+
+  std::map<long, cube::Region*>::iterator i = addRegionsTmp.begin();
+  for(; i != addRegionsTmp.end(); i++)
+  {
+    cube::Region* rg = i->second;
+    //UpdateRegionGeoms(i->second);
+
+    for(int offset = 0; offset < GEOM_COUNT; offset++)
+    {
+      if(rg->_renderedCubCount[offset] < 1)
+        continue;
+
+      osg::Geometry* curGeom = rg->GetGeometry(offset);
+
+      if(curGeom == NULL)
+      {
+        curGeom = NewOSGGeom();
+        rg->SetGeometry(offset, curGeom);
+
+        //_geode->addDrawable(curGeom);
+        _addDrwList.push_back(curGeom);
+      }
+
+      if(curGeom)
+        updateGeom(curGeom, rg, offset * GEOM_SIZE);
+    }
+  }
+
+  i = delRegionsTmp.begin();
+  for(; i != delRegionsTmp.end(); i++)
+  {
+    clearRegionGeoms(i->second);
   }
 }
 

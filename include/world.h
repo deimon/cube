@@ -44,6 +44,8 @@ namespace cube
     void AddCub(osg::Vec3d vec);
     void UpdateRegionGeoms(cube::Region* rg);
 
+    void ProcessAddRegions();
+
     struct DataUpdate
     {
       DataUpdate(osg::Geometry* geom, cube::Region* reg, int geomNumder)
@@ -62,6 +64,8 @@ namespace cube
 
     osg::Vec3d _you;
 
+    mutable OpenThreads::Mutex  _mutex;
+
   protected:
     void updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset);
     void clearRegionGeoms(cube::Region* rg);
@@ -71,6 +75,8 @@ namespace cube
 
     std::map<long, cube::Region*> _addRegions;
     std::map<long, cube::Region*> _delRegions;
+    osg::Geode::DrawableList _addDrwList;
+    osg::Geode::DrawableList _delDrwList;
 
     osg::Geode* createGeometry();
 
