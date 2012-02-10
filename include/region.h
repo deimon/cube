@@ -42,12 +42,16 @@ namespace cube
 
     int _renderedCubCount[GEOM_COUNT];
 
+    bool _geometryCreated;
+
   protected:
 
     Region()
     {
       id = countRegion;
       countRegion++;
+
+      _geometryCreated = false;
     }
 
     static int countRegion;

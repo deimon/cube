@@ -58,6 +58,6 @@ int main( void )
   //aspectRatio=double(traits->width)/double(traits->height);
   cam->setProjectionMatrixAsPerspective(70,aspectRatio,z1,z2);
 
-  viewer.setRunMaxFrameRate(60);
+  //viewer.setRunMaxFrameRate(60);
   viewer.run();
 }

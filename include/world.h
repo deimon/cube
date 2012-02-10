@@ -8,6 +8,7 @@
 #include <osg/Geode>
 #include <osg/Texture2D>
 #include "singleton.h"
+#include <generator.h>
 
 namespace cube
 {
@@ -73,10 +74,8 @@ namespace cube
     float _rnd;
     int _prevRegX, _prevRegY;
 
-    std::map<long, cube::Region*> _addRegions;
-    std::map<long, cube::Region*> _delRegions;
-    osg::Geode::DrawableList _addDrwList;
-    osg::Geode::DrawableList _delDrwList;
+    std::list<Areas::v2> _addRegions;
+    std::list<Areas::v2> _delRegions;
 
     osg::Geode* createGeometry();
 
