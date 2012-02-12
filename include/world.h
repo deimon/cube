@@ -10,6 +10,8 @@
 #include "singleton.h"
 #include <generator.h>
 
+class CreateGeomThread;
+
 namespace cube
 {
   class World;
@@ -38,12 +40,13 @@ namespace cube
     void update();
 
     cube::Region* World::GetRegion(int i, int j) { return _regions[i][j]; }
-    cube::Region* ContainsReion(int xreg, int yreg);
+    cube::Region* ContainsRegion(int xreg, int yreg);
+    bool ContainsRegionSafe(int xreg, int yreg);
     const cube::Cub& GetCub(float x, float y, float z);
 
     void RemoveCub(osg::Vec3d vec);
     void AddCub(osg::Vec3d vec);
-    void UpdateRegionGeoms(cube::Region* rg);
+    void UpdateRegionGeoms(cube::Region* rg, bool addToScene = true);
 
     void ProcessAddRegions();
 
@@ -74,8 +77,9 @@ namespace cube
     float _rnd;
     int _prevRegX, _prevRegY;
 
-    std::list<Areas::v2> _addRegions;
-    std::list<Areas::v2> _delRegions;
+    std::list<std::pair<cube::Region*, Areas::v2>> _addRegions;
+    std::list<std::pair<cube::Region*, Areas::v2>> _delRegions;
+    std::list<cube::Region*> _addToSceneRegions;
 
     osg::Geode* createGeometry();
 
@@ -84,8 +88,15 @@ namespace cube
 
     TextureInfo* _texInfo;
 
+    CreateGeomThread* _cgThread;
+
+    int _frame;
+
   public:
     RegionsContainer _regions;
+    std::map<int, std::map<int, bool>> _regionsCreated;
+
+    friend CreateGeomThread;
   };
 }
 #endif

@@ -1,12 +1,11 @@
 #include <region.h>
 #include <geoMaker.h>
-#include <world.h>
 
 using namespace cube;
 
 int Region::countRegion = 0;
 
-cube::Region* Region::Generation(cube::World* world, int xreg, int yreg, float rnd)
+cube::Region* Region::Generation(int xreg, int yreg, float rnd)
 {
   cube::Region* region = new Region();
   region->_xReg = xreg;
@@ -20,8 +19,6 @@ cube::Region* Region::Generation(cube::World* world, int xreg, int yreg, float r
   }
 
   cube::GeoMaker::FillRegion(region, rnd);
-
-  world->_regions[xreg][yreg] = region;
 
   return region;
 }

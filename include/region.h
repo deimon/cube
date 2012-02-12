@@ -25,7 +25,7 @@ namespace cube
 
     long GetId() { return id; }
 
-    static cube::Region* Generation(cube::World* world, int xreg, int yreg, float rnd);
+    static cube::Region* Generation(int xreg, int yreg, float rnd);
     static int ToRegionIndex(float worldPos);
 
     cube::Cub& GetCub(int x, int y, int z){ return _m[x][y][z];}

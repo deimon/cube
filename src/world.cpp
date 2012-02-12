@@ -11,6 +11,7 @@ public:
 
   CreateGeomThread(cube::World* world)
     : _world(world)
+    , _completed(true)
   {
     if (!isRunning()) start();
   }
@@ -21,6 +22,13 @@ public:
     if(isRunning() && waitForThreadToExit)
       join();
   }
+
+  bool IsCompleted() { return _completed; }
+  void Calculate() { _completed = false; }
+
+  std::list<std::pair<cube::Region*, Areas::v2>> _addRegions;
+
+  std::list<cube::Region*> _addToSceneRegions;
 
 protected:
   ~CreateGeomThread() { quit(); }
@@ -33,11 +41,40 @@ private:
     while (!_done)
     {
       microSleep(100);
-      _world->ProcessAddRegions();
+      //_world->ProcessAddRegions();
+      if(!_completed)
+      {
+        if(!_addRegions.empty())
+        {
+          std::list<std::pair<cube::Region*, Areas::v2>>::iterator i = _addRegions.begin();
+          for(; i != _addRegions.end(); i++)
+          {
+            Areas::v2 regPos = i->second;
+            cube::Region* reg = i->first;
+
+            if(reg == NULL)
+            {
+              reg = cube::Region::Generation(regPos.x, regPos.y, _world->_rnd);
+
+              //_world->_regions[regPos.x][regPos.y] = reg;
+              //_world->_regionsCreated[regPos.x][regPos.y] = true;
+            }
+            _world->UpdateRegionGeoms(reg, false);
+
+            _addToSceneRegions.push_back(reg);
+          }
+
+          _addRegions.clear();
+        }
+
+        _completed = true;
+      }
     }
   }
 
   bool _done;
+
+  bool _completed;
 
   cube::World* _world;
 };
@@ -51,6 +88,7 @@ void WorldCallback::operator()(osg::Node* node, osg::NodeVisitor* nv)
 
 World::World()
 {
+  _frame = 0;
   // эти параметры надо будет устанавливать
   // в соответствии с местом появления персонажа
   _prevRegX = 0;
@@ -67,9 +105,14 @@ World::World()
   for(int i = 0; i < Areas::Instance().GetSize(); i++)
   for(int j = 0; j < Areas::Instance().GetSize(); j++)
     if(Areas::Instance()._circle[i][j] == 1)
-      cube::Region::Generation(this, i - radius, j - radius, _rnd);
+    {
+      cube::Region* region = cube::Region::Generation(i - radius, j - radius, _rnd);
 
-  //CreateGeomThread* CGThread = new CreateGeomThread(this);
+      _regions[i - radius][j - radius] = region;
+      //_regionsCreated[i - radius][j - radius] = true;
+    }
+
+  _cgThread = new CreateGeomThread(this);
 }
 
 osg::Group* World::GetGeometry()
@@ -162,6 +205,22 @@ void World::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset)
 
 void World::update()
 {
+  if(_cgThread->IsCompleted() && !_addRegions.empty())
+  {
+    _cgThread->_addRegions.swap(_addRegions);
+
+    if(_addToSceneRegions.empty())
+      _cgThread->_addToSceneRegions.swap(_addToSceneRegions);
+    else
+    {
+      std::list<cube::Region*>::iterator it = _addToSceneRegions.end();
+      --it;
+      _addToSceneRegions.splice(it, _cgThread->_addToSceneRegions);
+    }
+
+    _cgThread->Calculate();
+  }
+
   for(int i = 0; i < _dataUpdate.size(); i++)
   {
     if(_dataUpdate[i]._geom)
@@ -169,7 +228,38 @@ void World::update()
   }
   _dataUpdate.clear();
 
-  ProcessAddRegions();
+  //ProcessAddRegions();
+
+  if(!_addToSceneRegions.empty() && _frame == 0)
+  {
+    cube::Region* reg = _addToSceneRegions.front();
+    _addToSceneRegions.pop_front();
+
+    _regions[reg->GetX()][reg->GetY()] = reg;
+    //_regionsCreated[regPos.x][regPos.y] = true;
+
+    for(int offset = 0; offset < GEOM_COUNT; offset++)
+    {
+      osg::Geometry* curGeom = reg->GetGeometry(offset);
+
+      if(curGeom != NULL)
+        _geode->addDrawable(curGeom);
+    }
+
+    //del
+    if(!_delRegions.empty())
+    {
+      Areas::v2 regPos = _delRegions.front().second;
+      cube::Region* reg = ContainsRegion(regPos.x, regPos.y);
+      _delRegions.pop_front();
+
+      if(reg != NULL)
+        clearRegionGeoms(reg);
+    }
+  }
+
+  _frame++;
+  _frame %= 5;
 
   //***************
   int curRegX = Region::ToRegionIndex(_you.x());
@@ -185,13 +275,13 @@ void World::update()
       Areas::v2 addOffs = Areas::Instance()._xp[i];
       addOffs.x += curRegX;
       addOffs.y += curRegY;
-      _addRegions.push_back(addOffs);
+      _addRegions.push_back(std::make_pair(ContainsRegion(addOffs.x, addOffs.y), addOffs));
 
       //del
       Areas::v2 delOff = Areas::Instance()._xn[i];
       delOff.x += curRegX - 1;
       delOff.y += curRegY;
-      _delRegions.push_back(delOff);
+      _delRegions.push_back(std::make_pair(ContainsRegion(delOff.x, delOff.y), delOff));
     }
   }
 
@@ -205,13 +295,13 @@ void World::update()
       Areas::v2 addOffs = Areas::Instance()._xn[i];
       addOffs.x += curRegX;
       addOffs.y += curRegY;
-      _addRegions.push_back(addOffs);
+      _addRegions.push_back(std::make_pair(ContainsRegion(addOffs.x, addOffs.y), addOffs));
 
       //del
       Areas::v2 delOff = Areas::Instance()._xp[i];
       delOff.x += curRegX + 1;
       delOff.y += curRegY;
-      _delRegions.push_back(delOff);
+      _delRegions.push_back(std::make_pair(ContainsRegion(delOff.x, delOff.y), delOff));
     }
   }
 
@@ -225,13 +315,13 @@ void World::update()
       Areas::v2 addOffs = Areas::Instance()._yp[i];
       addOffs.x += curRegX;
       addOffs.y += curRegY;
-      _addRegions.push_back(addOffs);
+      _addRegions.push_back(std::make_pair(ContainsRegion(addOffs.x, addOffs.y), addOffs));
 
       //del
       Areas::v2 delOff = Areas::Instance()._yn[i];
       delOff.x += curRegX;
       delOff.y += curRegY - 1;
-      _delRegions.push_back(delOff);
+      _delRegions.push_back(std::make_pair(ContainsRegion(delOff.x, delOff.y), delOff));
     }
   }
 
@@ -245,26 +335,37 @@ void World::update()
       Areas::v2 addOffs = Areas::Instance()._yn[i];
       addOffs.x += curRegX;
       addOffs.y += curRegY;
-      _addRegions.push_back(addOffs);
+      _addRegions.push_back(std::make_pair(ContainsRegion(addOffs.x, addOffs.y), addOffs));
 
       //del
       Areas::v2 delOff = Areas::Instance()._yp[i];
       delOff.x += curRegX;
       delOff.y += curRegY + 1;
-      _delRegions.push_back(delOff);
+      _delRegions.push_back(std::make_pair(ContainsRegion(delOff.x, delOff.y), delOff));
     }
   }
 }
 
-cube::Region* World::ContainsReion(int xreg, int yreg)
+cube::Region* World::ContainsRegion(int xreg, int yreg)
 {
-  if(_regions.count(xreg))
+  if(_regions.find(xreg) != _regions.end())
   {
-    if(_regions[xreg].count(yreg))
+    if(_regions[xreg].find(yreg) != _regions[xreg].end())
       return _regions[xreg][yreg];
   }
 
   return NULL;
+}
+
+bool World::ContainsRegionSafe(int xreg, int yreg)
+{
+  //if(_regionsCreated.find(xreg) != std::map::end())
+  //{
+  //  if(_regionsCreated[xreg].find(yreg) != std::map::end())
+  //    return _regionsCreated[xreg][yreg];
+  //}
+
+  return false;
 }
 
 const cube::Cub& World::GetCub(float x, float y, float z)
@@ -439,29 +540,10 @@ void World::AddCub(osg::Vec3d vec)
 
 void World::ProcessAddRegions()
 {
-  if(!_addRegions.empty())
-  {
-    Areas::v2 regPos = _addRegions.front();
-    _addRegions.pop_front();
-
-    cube::Region* reg = ContainsReion(regPos.x, regPos.y);
-    if(reg == NULL)
-      reg = cube::Region::Generation(this, regPos.x, regPos.y, _rnd);
-    UpdateRegionGeoms(reg);
-  }
-
-  if(!_delRegions.empty())
-  {
-    Areas::v2 regPos = _delRegions.front();
-    _delRegions.pop_front();
-
-    cube::Region* reg = ContainsReion(regPos.x, regPos.y);
-    if(reg != NULL)
-      clearRegionGeoms(reg);
-  }
+  
 }
 
-void World::UpdateRegionGeoms(cube::Region* rg)
+void World::UpdateRegionGeoms(cube::Region* rg, bool addToScene)
 {
   if(!rg->_geometryCreated)
   {
@@ -477,7 +559,8 @@ void World::UpdateRegionGeoms(cube::Region* rg)
         curGeom = NewOSGGeom();
         rg->SetGeometry(offset, curGeom);
 
-        _geode->addDrawable(curGeom);
+        if(addToScene)
+          _geode->addDrawable(curGeom);
       }
 
       if(curGeom)
