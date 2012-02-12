@@ -52,12 +52,9 @@ private:
             Areas::v2 regPos = i->second;
             cube::Region* reg = i->first;
 
-            if(reg == NULL)
+            if(!reg->IsAreaGenerated())
             {
-              reg = cube::Region::Generation(regPos.x, regPos.y, _world->_rnd);
-
-              //_world->_regions[regPos.x][regPos.y] = reg;
-              //_world->_regionsCreated[regPos.x][regPos.y] = true;
+              reg->FillRegion(_world->_rnd);
             }
             _world->UpdateRegionGeoms(reg, false);
 
@@ -98,7 +95,7 @@ World::World()
   srand(time(NULL));
   _rnd = osg::PI*2*10 + ((float)rand() / RAND_MAX)* (osg::PI*3*10 - osg::PI*2*10);
 
-  int radius = 16;
+  int radius = 23;
 
   cube::Areas::Instance().SetRadius(radius);
 
@@ -106,10 +103,9 @@ World::World()
   for(int j = 0; j < Areas::Instance().GetSize(); j++)
     if(Areas::Instance()._circle[i][j] == 1)
     {
-      cube::Region* region = cube::Region::Generation(i - radius, j - radius, _rnd);
-
-      _regions[i - radius][j - radius] = region;
-      //_regionsCreated[i - radius][j - radius] = true;
+      cube::Region* region = cube::Region::Generation(this, i - radius, j - radius);
+      region->FillRegion(_rnd);
+      region->SetVisibleZone(true);
     }
 
   _cgThread = new CreateGeomThread(this);
@@ -235,15 +231,19 @@ void World::update()
     cube::Region* reg = _addToSceneRegions.front();
     _addToSceneRegions.pop_front();
 
-    _regions[reg->GetX()][reg->GetY()] = reg;
-    //_regionsCreated[regPos.x][regPos.y] = true;
-
-    for(int offset = 0; offset < GEOM_COUNT; offset++)
+    if(reg->InVisibleZone() && !reg->InScene())
     {
-      osg::Geometry* curGeom = reg->GetGeometry(offset);
+      reg->SetInScene(true);
+      //_regions[reg->GetX()][reg->GetY()] = reg;
+      //_regionsCreated[regPos.x][regPos.y] = true;
 
-      if(curGeom != NULL)
-        _geode->addDrawable(curGeom);
+      for(int offset = 0; offset < GEOM_COUNT; offset++)
+      {
+        osg::Geometry* curGeom = reg->GetGeometry(offset);
+
+        if(curGeom != NULL)
+          _geode->addDrawable(curGeom);
+      }
     }
 
     //del
@@ -253,8 +253,11 @@ void World::update()
       cube::Region* reg = ContainsRegion(regPos.x, regPos.y);
       _delRegions.pop_front();
 
-      if(reg != NULL)
+      if(reg != NULL && !reg->InVisibleZone() && reg->InScene())
+      {
+        reg->SetInScene(false);
         clearRegionGeoms(reg);
+      }
     }
   }
 
@@ -275,13 +278,19 @@ void World::update()
       Areas::v2 addOffs = Areas::Instance()._xp[i];
       addOffs.x += curRegX;
       addOffs.y += curRegY;
-      _addRegions.push_back(std::make_pair(ContainsRegion(addOffs.x, addOffs.y), addOffs));
+      cube::Region* reg = ContainsRegion(addOffs.x, addOffs.y);
+      if(reg == NULL)
+        reg = cube::Region::Generation(this, addOffs.x, addOffs.y);
+      reg->SetVisibleZone(true);
+      _addRegions.push_back(std::make_pair(reg, addOffs));
 
       //del
       Areas::v2 delOff = Areas::Instance()._xn[i];
       delOff.x += curRegX - 1;
       delOff.y += curRegY;
-      _delRegions.push_back(std::make_pair(ContainsRegion(delOff.x, delOff.y), delOff));
+      reg = ContainsRegion(delOff.x, delOff.y);
+      reg->SetVisibleZone(false);
+      _delRegions.push_back(std::make_pair(reg, delOff));
     }
   }
 
@@ -295,13 +304,19 @@ void World::update()
       Areas::v2 addOffs = Areas::Instance()._xn[i];
       addOffs.x += curRegX;
       addOffs.y += curRegY;
-      _addRegions.push_back(std::make_pair(ContainsRegion(addOffs.x, addOffs.y), addOffs));
+      cube::Region* reg = ContainsRegion(addOffs.x, addOffs.y);
+      if(reg == NULL)
+        reg = cube::Region::Generation(this, addOffs.x, addOffs.y);
+      reg->SetVisibleZone(true);
+      _addRegions.push_back(std::make_pair(reg, addOffs));
 
       //del
       Areas::v2 delOff = Areas::Instance()._xp[i];
       delOff.x += curRegX + 1;
       delOff.y += curRegY;
-      _delRegions.push_back(std::make_pair(ContainsRegion(delOff.x, delOff.y), delOff));
+      reg = ContainsRegion(delOff.x, delOff.y);
+      reg->SetVisibleZone(false);
+      _delRegions.push_back(std::make_pair(reg, delOff));
     }
   }
 
@@ -315,13 +330,19 @@ void World::update()
       Areas::v2 addOffs = Areas::Instance()._yp[i];
       addOffs.x += curRegX;
       addOffs.y += curRegY;
-      _addRegions.push_back(std::make_pair(ContainsRegion(addOffs.x, addOffs.y), addOffs));
+      cube::Region* reg = ContainsRegion(addOffs.x, addOffs.y);
+      if(reg == NULL)
+        reg = cube::Region::Generation(this, addOffs.x, addOffs.y);
+      reg->SetVisibleZone(true);
+      _addRegions.push_back(std::make_pair(reg, addOffs));
 
       //del
       Areas::v2 delOff = Areas::Instance()._yn[i];
       delOff.x += curRegX;
       delOff.y += curRegY - 1;
-      _delRegions.push_back(std::make_pair(ContainsRegion(delOff.x, delOff.y), delOff));
+      reg = ContainsRegion(delOff.x, delOff.y);
+      reg->SetVisibleZone(false);
+      _delRegions.push_back(std::make_pair(reg, delOff));
     }
   }
 
@@ -335,13 +356,19 @@ void World::update()
       Areas::v2 addOffs = Areas::Instance()._yn[i];
       addOffs.x += curRegX;
       addOffs.y += curRegY;
-      _addRegions.push_back(std::make_pair(ContainsRegion(addOffs.x, addOffs.y), addOffs));
+      cube::Region* reg = ContainsRegion(addOffs.x, addOffs.y);
+      if(reg == NULL)
+        reg = cube::Region::Generation(this, addOffs.x, addOffs.y);
+      reg->SetVisibleZone(true);
+      _addRegions.push_back(std::make_pair(reg, addOffs));
 
       //del
       Areas::v2 delOff = Areas::Instance()._yp[i];
       delOff.x += curRegX;
       delOff.y += curRegY + 1;
-      _delRegions.push_back(std::make_pair(ContainsRegion(delOff.x, delOff.y), delOff));
+      reg = ContainsRegion(delOff.x, delOff.y);
+      reg->SetVisibleZone(false);
+      _delRegions.push_back(std::make_pair(reg, delOff));
     }
   }
 }
@@ -566,6 +593,9 @@ void World::UpdateRegionGeoms(cube::Region* rg, bool addToScene)
       if(curGeom)
         updateGeom(curGeom, rg, offset * GEOM_SIZE);
     }
+
+    if(addToScene)
+      rg->SetInScene(true);
 
     rg->_geometryCreated = true;
   }

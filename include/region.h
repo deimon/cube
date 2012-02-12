@@ -25,7 +25,9 @@ namespace cube
 
     long GetId() { return id; }
 
-    static cube::Region* Generation(int xreg, int yreg, float rnd);
+    static cube::Region* Generation(cube::World* world, int xreg, int yreg);
+    void FillRegion(float rnd);
+
     static int ToRegionIndex(float worldPos);
 
     cube::Cub& GetCub(int x, int y, int z){ return _m[x][y][z];}
@@ -44,6 +46,14 @@ namespace cube
 
     bool _geometryCreated;
 
+    bool IsAreaGenerated() { return _areaGenerated; }
+
+    bool InVisibleZone() { return _inVisibleZone; }
+    void SetVisibleZone(bool inVisibleZone) { _inVisibleZone = inVisibleZone; }
+
+    bool InScene() { return _inScene; }
+    void SetInScene(bool inScene) { _inScene = inScene; }
+
   protected:
 
     Region()
@@ -52,7 +62,14 @@ namespace cube
       countRegion++;
 
       _geometryCreated = false;
+      _areaGenerated = false;
+      _inVisibleZone = false;
+      _inScene = false;
     }
+
+    bool _areaGenerated;
+    bool _inVisibleZone;
+    bool _inScene;
 
     static int countRegion;
     long id;
