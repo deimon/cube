@@ -181,12 +181,18 @@ void World::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset)
     {
       CubInfo::CubeSide cside = (CubInfo::CubeSide)side;
 
-      CubInfo::Instance().FillVertCoord(cside, coords, pos);
+      osg::Vec3d sidePos = pos + CubInfo::Instance().GetNormal(cside) + osg::Vec3d(0.1, 0.1, 0.1);
+      cube::Cub* sideCub = GetCub(sidePos.x(), sidePos.y(), sidePos.z());
 
-      _texInfo->FillTexCoord(cub._type, cside, tcoords);
+      if(sideCub == NULL || sideCub->_type == cube::Cub::Air)
+      {
+        CubInfo::Instance().FillVertCoord(cside, coords, pos);
 
-      colours->push_back(color);
-      normals->push_back(CubInfo::Instance().GetNormal(cside));
+        _texInfo->FillTexCoord(cub._type, cside, tcoords);
+
+        colours->push_back(color);
+        normals->push_back(CubInfo::Instance().GetNormal(cside));
+      }
     }
 
     drawArr->setCount(coords->size());
@@ -409,20 +415,18 @@ bool World::ContainsRegionSafe(int xreg, int yreg)
   return false;
 }
 
-const cube::Cub& World::GetCub(float x, float y, float z)
+cube::Cub* World::GetCub(float x, float y, float z)
 {
-  cube::Region* rg = GetRegion(Region::ToRegionIndex(x), Region::ToRegionIndex(y));
+  cube::Region* rg = ContainsRegion(Region::ToRegionIndex(x), Region::ToRegionIndex(y));
 
   if(rg)
   {
     x -= rg->GetPosition().x();
     y -= rg->GetPosition().y();
-    return rg->GetCub(x, y, z);
+    return &(rg->GetCub(x, y, z));
   }
 
-  cube::Cub cub;
-
-  return cub;
+  return NULL;
 }
 
 osg::Geometry* NewOSGGeom()

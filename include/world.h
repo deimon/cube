@@ -42,7 +42,7 @@ namespace cube
     cube::Region* World::GetRegion(int i, int j) { return _regions[i][j]; }
     cube::Region* ContainsRegion(int xreg, int yreg);
     bool ContainsRegionSafe(int xreg, int yreg);
-    const cube::Cub& GetCub(float x, float y, float z);
+    cube::Cub* GetCub(float x, float y, float z);
 
     void RemoveCub(osg::Vec3d vec);
     void AddCub(osg::Vec3d vec);
