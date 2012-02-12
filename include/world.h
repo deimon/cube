@@ -77,7 +77,7 @@ namespace cube
     float _rnd;
     int _prevRegX, _prevRegY;
 
-    std::list<std::pair<cube::Region*, Areas::v2>> _addRegions;
+    std::list<cube::Region*> _addRegions;
     std::list<std::pair<cube::Region*, Areas::v2>> _delRegions;
     std::list<cube::Region*> _addToSceneRegions;
 
