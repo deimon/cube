@@ -465,10 +465,12 @@ void World::RemoveCub(osg::Vec3d vec)
   osg::Vec3d cvec = vec - reg->GetPosition();
   cube::Cub& cub = reg->GetCub(cvec.x(), cvec.y(), cvec.z());
 
+  int geomIndex = cvec.z() / GEOM_SIZE;
+
   cub._type = cube::Cub::Air;
   cub._rendered = false;
-  reg->_renderedCubCount[(int)cvec.z() / GEOM_SIZE]--;
-  int renderedCubCount = reg->_renderedCubCount[(int)cvec.z() / GEOM_SIZE];
+  reg->_renderedCubCount[geomIndex]--;
+  int renderedCubCount = reg->_renderedCubCount[geomIndex];
 
   if((int)(cvec.z()) == reg->GetHeight(cvec.x(), cvec.y()))
   {
@@ -494,25 +496,24 @@ void World::RemoveCub(osg::Vec3d vec)
     }
   }
 
-  cvec /= GEOM_SIZE;
-  osg::Geometry* curGeom = reg->GetGeometry(cvec.z());
+  osg::Geometry* curGeom = reg->GetGeometry(geomIndex);
 
   if(renderedCubCount > 0)
   {
     if(curGeom == NULL)
     {
       curGeom = NewOSGGeom();
-      reg->SetGeometry(cvec.z(), curGeom);
+      reg->SetGeometry(geomIndex, curGeom);
 
       _geode->addDrawable(curGeom);
     }
 
-    _dataUpdate.push_back(DataUpdate(curGeom, reg, cvec.z()));
+    _dataUpdate.push_back(DataUpdate(curGeom, reg, geomIndex));
   }
   else
   {
     _geode->removeDrawable(curGeom);
-    reg->SetGeometry(cvec.z(), NULL);
+    reg->SetGeometry(geomIndex, NULL);
   }
 
 
@@ -521,27 +522,31 @@ void World::RemoveCub(osg::Vec3d vec)
     CubInfo::CubeSide side = (CubInfo::CubeSide)i;
     cvec = vec + CubInfo::Instance().GetNormal(side);
 
-    reg = GetRegion(Region::ToRegionIndex(cvec.x()), Region::ToRegionIndex(cvec.y()));
-    cvec -= reg->GetPosition();
-    cube::Cub& scub = reg->GetCub(cvec.x(), cvec.y(), cvec.z());
+    cube::Region* sideReg = GetRegion(Region::ToRegionIndex(cvec.x()), Region::ToRegionIndex(cvec.y()));
+    cvec -= sideReg->GetPosition();
+    cube::Cub& scub = sideReg->GetCub(cvec.x(), cvec.y(), cvec.z());
 
-    if(scub._type != cube::Cub::Air && !scub._rendered)
+    int geomSideIndex = cvec.z() / GEOM_SIZE;
+
+    if(scub._type != cube::Cub::Air && (!scub._rendered || reg != sideReg || geomIndex != geomSideIndex))
     {
-      scub._rendered = true;
-      reg->_renderedCubCount[(int)cvec.z() / GEOM_SIZE]++;
+      if(!scub._rendered)
+      {
+        scub._rendered = true;
+        sideReg->_renderedCubCount[geomSideIndex]++;
+      }
 
-      cvec /= GEOM_SIZE;
-      curGeom = reg->GetGeometry(cvec.z());
+      curGeom = sideReg->GetGeometry(geomSideIndex);
 
       if(curGeom == NULL)
       {
         curGeom = NewOSGGeom();
-        reg->SetGeometry(cvec.z(), curGeom);
+        sideReg->SetGeometry(geomSideIndex, curGeom);
 
         _geode->addDrawable(curGeom);
       }
 
-      _dataUpdate.push_back(DataUpdate(curGeom, reg, cvec.z()));
+      _dataUpdate.push_back(DataUpdate(curGeom, sideReg, geomSideIndex));
     }
   }
 }
