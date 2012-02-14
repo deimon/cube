@@ -101,7 +101,7 @@ osg::Vec4d& TextureInfo::GetSideColor(Cub::CubeType cubeType, CubInfo::CubeSide 
 
 void TextureInfo::init()
 {
-  for(int ct = 0; ct < 4; ct++)
+  for(int ct = 0; ct < 6; ct++)
     for(int cs = 0; cs < 6; cs++)
       _csColor[(Cub::CubeType)ct][(CubInfo::CubeSide)cs] = osg::Vec4d(1.0, 1.0, 1.0, 1.0);
 
@@ -126,4 +126,24 @@ void TextureInfo::init()
   _csTextures[Cub::Stone][CubInfo::X_FACE] = 241;
   _csTextures[Cub::Stone][CubInfo::Y_FACE] = 241;
   _csTextures[Cub::Stone][CubInfo::Z_FACE] = 241;
+
+  _csTextures[Cub::TruncWood][CubInfo::X_BACK] = 228;
+  _csTextures[Cub::TruncWood][CubInfo::Y_BACK] = 228;
+  _csTextures[Cub::TruncWood][CubInfo::Z_BACK] = 229;
+  _csTextures[Cub::TruncWood][CubInfo::X_FACE] = 228;
+  _csTextures[Cub::TruncWood][CubInfo::Y_FACE] = 228;
+  _csTextures[Cub::TruncWood][CubInfo::Z_FACE] = 229;
+
+  _csTextures[Cub::LeavesWood][CubInfo::X_BACK] = 196;
+  _csTextures[Cub::LeavesWood][CubInfo::Y_BACK] = 196;
+  _csTextures[Cub::LeavesWood][CubInfo::Z_BACK] = 196;
+  _csTextures[Cub::LeavesWood][CubInfo::X_FACE] = 196;
+  _csTextures[Cub::LeavesWood][CubInfo::Y_FACE] = 196;
+  _csTextures[Cub::LeavesWood][CubInfo::Z_FACE] = 196;
+  _csColor[Cub::LeavesWood][CubInfo::X_BACK] = osg::Vec4d(0.68, 0.94, 0.47, 1.0);
+  _csColor[Cub::LeavesWood][CubInfo::Y_BACK] = osg::Vec4d(0.68, 0.94, 0.47, 1.0);
+  _csColor[Cub::LeavesWood][CubInfo::Z_BACK] = osg::Vec4d(0.68, 0.94, 0.47, 1.0);
+  _csColor[Cub::LeavesWood][CubInfo::X_FACE] = osg::Vec4d(0.68, 0.94, 0.47, 1.0);
+  _csColor[Cub::LeavesWood][CubInfo::Y_FACE] = osg::Vec4d(0.68, 0.94, 0.47, 1.0);
+  _csColor[Cub::LeavesWood][CubInfo::Z_FACE] = osg::Vec4d(0.68, 0.94, 0.47, 1.0);
 }

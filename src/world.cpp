@@ -1,4 +1,5 @@
 #include <world.h>
+#include <wood.h>
 #include <mathUtils.h>
 
 #include <OpenThreads/Thread>
@@ -635,6 +636,13 @@ osg::Geode* World::createGeometry()
 
   RegionsContainer::iterator xrg;
   YRegionsContainer::iterator yrg;
+
+  for(xrg = _regions.begin(); xrg != _regions.end(); xrg++)
+    for(yrg = xrg->second.begin(); yrg != xrg->second.end(); yrg++)
+    {
+      cube::Wood::Generate(this, yrg->second, cube::MathUtils::random(0, REGION_WIDTH), cube::MathUtils::random(0, REGION_WIDTH));
+    }
+
   for(xrg = _regions.begin(); xrg != _regions.end(); xrg++)
     for(yrg = xrg->second.begin(); yrg != xrg->second.end(); yrg++)
   {

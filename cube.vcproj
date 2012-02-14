@@ -389,6 +389,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\include\wood.h"
+				>
+			</File>
+			<File
 				RelativePath=".\include\world.h"
 				>
 			</File>
