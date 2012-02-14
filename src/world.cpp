@@ -175,8 +175,6 @@ void World::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset)
 
     osg::Vec3d pos = reg->GetPosition() + osg::Vec3d( x, y, z + zOffset);
 
-    osg::Vec4d color = osg::Vec4d(1.0, 1.0, 1.0, 1.0);
-
     for(int side = CubInfo::FirstSide; side <= CubInfo::EndSide; side++)
     {
       CubInfo::CubeSide cside = (CubInfo::CubeSide)side;
@@ -190,6 +188,7 @@ void World::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset)
 
         _texInfo->FillTexCoord(cub._type, cside, tcoords);
 
+        osg::Vec4d color = _texInfo->GetSideColor(cub._type, cside);
         colours->push_back(color);
         normals->push_back(CubInfo::Instance().GetNormal(cside));
       }
@@ -630,12 +629,9 @@ osg::Geode* World::createGeometry()
 
   osg::StateSet* ss = _geode->getOrCreateStateSet();
 
-  _texInfo = new TextureInfo("./res/mc.jpg", 4);
+  _texInfo = new TextureInfo("./res/mc16.png", 16);
 
   ss->setTextureAttributeAndModes(0, _texInfo->GetTexture(), osg::StateAttribute::ON);
-
-  //tex->setFilter(osg::Texture::MIN_FILTER , osg::Texture::NEAREST);
-  //tex->setFilter(osg::Texture::MAG_FILTER , osg::Texture::NEAREST);
 
   RegionsContainer::iterator xrg;
   YRegionsContainer::iterator yrg;

@@ -73,6 +73,8 @@ TextureInfo::TextureInfo(std::string path, int count)
   _count = count;
 
   _texture = new osg::Texture2D;
+  _texture->setFilter(osg::Texture::MIN_FILTER , osg::Texture::NEAREST);
+  _texture->setFilter(osg::Texture::MAG_FILTER , osg::Texture::NEAREST);
   osg::Image* img = osgDB::readImageFile(path);
   _texture->setImage(img);
 }
@@ -91,26 +93,37 @@ void TextureInfo::FillTexCoord(Cub::CubeType cubeType, CubInfo::CubeSide cubeSid
   tcoords->push_back(osg::Vec2d(step * xk    , step * (yk+1)));
 }
 
+osg::Vec4d& TextureInfo::GetSideColor(Cub::CubeType cubeType, CubInfo::CubeSide cubeSide)
+{
+  return _csColor[cubeType][cubeSide];
+}
+
+
 void TextureInfo::init()
 {
-  _csTextures[Cub::Ground][CubInfo::X_BACK] = 14;
-  _csTextures[Cub::Ground][CubInfo::Y_BACK] = 14;
-  _csTextures[Cub::Ground][CubInfo::Z_BACK] = 14;
-  _csTextures[Cub::Ground][CubInfo::X_FACE] = 14;
-  _csTextures[Cub::Ground][CubInfo::Y_FACE] = 14;
-  _csTextures[Cub::Ground][CubInfo::Z_FACE] = 14;
+  for(int ct = 0; ct < 4; ct++)
+    for(int cs = 0; cs < 6; cs++)
+      _csColor[(Cub::CubeType)ct][(CubInfo::CubeSide)cs] = osg::Vec4d(1.0, 1.0, 1.0, 1.0);
 
-  _csTextures[Cub::Grass][CubInfo::X_BACK] = 15;
-  _csTextures[Cub::Grass][CubInfo::Y_BACK] = 15;
-  _csTextures[Cub::Grass][CubInfo::Z_BACK] = 14;
-  _csTextures[Cub::Grass][CubInfo::X_FACE] = 15;
-  _csTextures[Cub::Grass][CubInfo::Y_FACE] = 15;
-  _csTextures[Cub::Grass][CubInfo::Z_FACE] = 12;
+  _csTextures[Cub::Ground][CubInfo::X_BACK] = 242;
+  _csTextures[Cub::Ground][CubInfo::Y_BACK] = 242;
+  _csTextures[Cub::Ground][CubInfo::Z_BACK] = 242;
+  _csTextures[Cub::Ground][CubInfo::X_FACE] = 242;
+  _csTextures[Cub::Ground][CubInfo::Y_FACE] = 242;
+  _csTextures[Cub::Ground][CubInfo::Z_FACE] = 242;
 
-  _csTextures[Cub::Stone][CubInfo::X_BACK] = 13;
-  _csTextures[Cub::Stone][CubInfo::Y_BACK] = 13;
-  _csTextures[Cub::Stone][CubInfo::Z_BACK] = 13;
-  _csTextures[Cub::Stone][CubInfo::X_FACE] = 13;
-  _csTextures[Cub::Stone][CubInfo::Y_FACE] = 13;
-  _csTextures[Cub::Stone][CubInfo::Z_FACE] = 11;
+  _csTextures[Cub::Grass][CubInfo::X_BACK] = 243;
+  _csTextures[Cub::Grass][CubInfo::Y_BACK] = 243;
+  _csTextures[Cub::Grass][CubInfo::Z_BACK] = 242;
+  _csTextures[Cub::Grass][CubInfo::X_FACE] = 243;
+  _csTextures[Cub::Grass][CubInfo::Y_FACE] = 243;
+  _csTextures[Cub::Grass][CubInfo::Z_FACE] = 240;
+  _csColor[Cub::Grass][CubInfo::Z_FACE] = osg::Vec4d(0.68, 0.94, 0.47, 1.0);
+
+  _csTextures[Cub::Stone][CubInfo::X_BACK] = 241;
+  _csTextures[Cub::Stone][CubInfo::Y_BACK] = 241;
+  _csTextures[Cub::Stone][CubInfo::Z_BACK] = 241;
+  _csTextures[Cub::Stone][CubInfo::X_FACE] = 241;
+  _csTextures[Cub::Stone][CubInfo::Y_FACE] = 241;
+  _csTextures[Cub::Stone][CubInfo::Z_FACE] = 241;
 }

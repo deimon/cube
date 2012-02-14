@@ -6,6 +6,7 @@
 #include <iostream>
 #include <osg/Texture2D>
 #include <singleton.h>
+#include <osg/Vec4>
 
 namespace cube
 {
@@ -69,12 +70,16 @@ namespace cube
     typedef std::map<CubInfo::CubeSide, int> SidesTexture;
     typedef std::map<Cub::CubeType, SidesTexture> CubeTextures;
 
+    typedef std::map<CubInfo::CubeSide, osg::Vec4d> SidesColor;
+    typedef std::map<Cub::CubeType, SidesColor> CubeColors;
+
     TextureInfo(std::string path, int count);
 
     osg::Texture2D* GetTexture() { return _texture; }
     int GetCount() { return _count; }
 
     void FillTexCoord(Cub::CubeType cubeType, CubInfo::CubeSide cubeSide, osg::Vec2Array* tcoords);
+    osg::Vec4d& GetSideColor(Cub::CubeType cubeType, CubInfo::CubeSide cubeSide);
 
   protected:
     void init();
@@ -83,6 +88,7 @@ namespace cube
     osg::Texture2D* _texture;
 
     CubeTextures _csTextures;
+    CubeColors _csColor;
   };
 }
 
