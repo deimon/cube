@@ -28,11 +28,13 @@ namespace cube
     Cub()
       : _rendered(false)
       , _type(Air)
+      , _blend(false)
     {
     }
 
     CubeType _type;
     bool _rendered;
+    bool _blend;
   };
 
   class CubInfo: public utils::Singleton<CubInfo>

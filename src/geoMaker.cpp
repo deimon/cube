@@ -23,7 +23,7 @@ void GeoMaker::FillRegion(cube::Region* rg, float rnd)
         cube::Cub& cub = rg->GetCub(i, j, k);
         //cub->_type = cube::Cub::Ground;
         cub._rendered = true;
-        rg->_renderedCubCount[k / GEOM_SIZE]++;
+        rg->_renderedCubCount[0][k / GEOM_SIZE]++;
       }
     }
   }
@@ -116,7 +116,7 @@ void GeoMaker::GenNoise(cube::Region* rg, float rnd)
       cube::Cub& cub = rg->GetCub(i, j, height);
       cub._type = cube::Cub::Grass;
       cub._rendered = true;
-      rg->_renderedCubCount[height / GEOM_SIZE]++;
+      rg->_renderedCubCount[0][height / GEOM_SIZE]++;
 
       for(int z = 0; z < height && height < REGION_HEIGHT; z++)
       {

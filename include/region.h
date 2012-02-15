@@ -33,8 +33,8 @@ namespace cube
     cube::Cub& GetCub(int x, int y, int z){ return _m[x][y][z];}
     const osg::Vec3d& GetPosition(){ return _position;}
 
-    osg::Geometry* GetGeometry(int k){ return _geom[k]; }
-    void SetGeometry(int k, osg::Geometry* geom){ _geom[k] = geom; }
+    osg::Geometry* GetGeometry(int k, bool blend = false){ if(blend) return _geom[1][k]; else return _geom[0][k]; }
+    void SetGeometry(int k, osg::Geometry* geom, bool blend = false){ if(blend) _geom[1][k] = geom; else _geom[0][k] = geom; }
 
     void SetHeight(int i, int j, int value) { _height[i + 1][j + 1] = value; }
     int GetHeight(int i, int j) { return _height[i + 1][j + 1]; }
@@ -42,7 +42,7 @@ namespace cube
     int GetX() { return _xReg; }
     int GetY() { return _yReg; }
 
-    int _renderedCubCount[GEOM_COUNT];
+    int _renderedCubCount[2][GEOM_COUNT];
 
     bool _geometryCreated;
 
@@ -80,7 +80,7 @@ namespace cube
     int _xReg, _yReg;
     osg::Vec3d _position;
 
-    osg::Geometry* _geom[GEOM_COUNT];
+    osg::Geometry* _geom[2][GEOM_COUNT];
   };
 }
 

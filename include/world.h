@@ -44,6 +44,9 @@ namespace cube
     bool ContainsRegionSafe(int xreg, int yreg);
     cube::Cub* GetCub(float x, float y, float z);
 
+    void del(cube::Cub& cub, cube::Region* reg, int geomIndex);
+    void add(cube::Cub& cub, cube::Region* reg, int geomIndex);
+
     void RemoveCub(osg::Vec3d vec);
     void AddCub(osg::Vec3d vec);
     void UpdateRegionGeoms(cube::Region* rg, bool addToScene = true);
@@ -52,16 +55,18 @@ namespace cube
 
     struct DataUpdate
     {
-      DataUpdate(osg::Geometry* geom, cube::Region* reg, int geomNumder)
+      DataUpdate(osg::Geometry* geom, cube::Region* reg, int geomNumder, bool blend = false)
       {
         _geom = geom;
         _reg = reg;
         _zCubOff = GEOM_SIZE * geomNumder;
+        _blend = blend;
       }
 
       osg::Geometry* _geom;
       cube::Region* _reg;
       int _zCubOff;
+      bool _blend;
     };
 
     std::vector<DataUpdate> _dataUpdate;
@@ -71,7 +76,7 @@ namespace cube
     mutable OpenThreads::Mutex  _mutex;
 
   protected:
-    void updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset);
+    void updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset, bool blend = false);
     void clearRegionGeoms(cube::Region* rg);
 
     float _rnd;
@@ -84,7 +89,7 @@ namespace cube
     osg::Geode* createGeometry();
 
     osg::Group* _group;
-    osg::Geode* _geode;
+    osg::Geode* _geode[2];
 
     TextureInfo* _texInfo;
 

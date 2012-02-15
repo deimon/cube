@@ -22,8 +22,10 @@ void Region::FillRegion(float rnd)
 {
   for(int z = 0; z < GEOM_COUNT; z++)
   {
-    _geom[z] = NULL;
-    _renderedCubCount[z] = 0;
+    _geom[0][z] = NULL;
+    _geom[1][z] = NULL;
+    _renderedCubCount[0][z] = 0;
+    _renderedCubCount[1][z] = 0;
   }
 
   cube::GeoMaker::FillRegion(this, rnd);

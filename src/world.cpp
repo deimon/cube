@@ -117,9 +117,11 @@ osg::Group* World::GetGeometry()
   _group->removeChildren(0, _group->getNumChildren());
 
   createGeometry();
-  _group->addChild(_geode);
+  _group->addChild(_geode[0]);
+  _group->addChild(_geode[1]);
 
-  _geode->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE | osg::StateAttribute::PROTECTED);
+  _geode[0]->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE | osg::StateAttribute::PROTECTED);
+  _geode[1]->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE | osg::StateAttribute::PROTECTED);
 
   return _group;
 }
@@ -130,13 +132,14 @@ void World::clearRegionGeoms(cube::Region* rg)
   {
     if(rg->_geometryCreated)
     {
+      for(int s = 0; s < 2; s++)
       for(int i = 0; i < GEOM_COUNT; i++)
       {
-        osg::Geometry* geom = rg->GetGeometry(i);
+        osg::Geometry* geom = rg->GetGeometry(i, s);
         if(geom)
         {
-          _geode->removeDrawable(rg->GetGeometry(i));
-          rg->SetGeometry(i, NULL);
+          _geode[s]->removeDrawable(geom);
+          rg->SetGeometry(i, NULL, s);
         }
       }
 
@@ -145,7 +148,7 @@ void World::clearRegionGeoms(cube::Region* rg)
   }
 }
 
-void World::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset)
+void World::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset, bool blend)
 {
   osg::Vec3Array* coords;
   osg::Vec4Array* colours;
@@ -171,7 +174,7 @@ void World::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset)
   {
     const cube::Cub &cub = reg->GetCub(x, y, z + zOffset);
 
-    if(cub._type == cube::Cub::Air || !cub._rendered) //!!!!!!!
+    if(cub._type == cube::Cub::Air || !cub._rendered || cub._blend != blend) //!!!!!!!
       continue;
 
     osg::Vec3d pos = reg->GetPosition() + osg::Vec3d( x, y, z + zOffset);
@@ -230,7 +233,7 @@ void World::update()
   for(int i = 0; i < _dataUpdate.size(); i++)
   {
     if(_dataUpdate[i]._geom)
-      updateGeom(_dataUpdate[i]._geom, _dataUpdate[i]._reg, _dataUpdate[i]._zCubOff);
+      updateGeom(_dataUpdate[i]._geom, _dataUpdate[i]._reg, _dataUpdate[i]._zCubOff, _dataUpdate[i]._blend);
   }
   _dataUpdate.clear();
 
@@ -251,12 +254,13 @@ void World::update()
         //_regions[reg->GetX()][reg->GetY()] = reg;
         //_regionsCreated[regPos.x][regPos.y] = true;
 
+        for(int s = 0; s < 2; s++)
         for(int offset = 0; offset < GEOM_COUNT; offset++)
         {
-          osg::Geometry* curGeom = reg->GetGeometry(offset);
+          osg::Geometry* curGeom = reg->GetGeometry(offset, s);
 
           if(curGeom != NULL)
-            _geode->addDrawable(curGeom);
+            _geode[s]->addDrawable(curGeom);
         }
       }
     } while(!add && !_addToSceneRegions.empty());
@@ -459,6 +463,55 @@ osg::Geometry* NewOSGGeom()
   return curGeom;
 }
 
+void World::del(cube::Cub& cub, cube::Region* reg, int geomIndex)
+{
+  cub._type = cube::Cub::Air;
+  cub._rendered = false;
+
+  int renderedCubCount = --reg->_renderedCubCount[cub._blend?1:0][geomIndex];
+
+  osg::Geometry* curGeom = reg->GetGeometry(geomIndex, cub._blend);
+
+  if(renderedCubCount > 0)
+  {
+    if(curGeom == NULL)
+    {
+      curGeom = NewOSGGeom();
+      reg->SetGeometry(geomIndex, curGeom, cub._blend);
+
+      _geode[cub._blend?1:0]->addDrawable(curGeom);
+    }
+
+    _dataUpdate.push_back(DataUpdate(curGeom, reg, geomIndex, cub._blend));
+  }
+  else
+  {
+    _geode[cub._blend?1:0]->removeDrawable(curGeom);
+    reg->SetGeometry(geomIndex, NULL, cub._blend);
+  }
+}
+
+void World::add(cube::Cub& cub, cube::Region* reg, int geomIndex)
+{
+  if(!cub._rendered)
+  {
+    cub._rendered = true;
+    reg->_renderedCubCount[cub._blend?1:0][geomIndex]++;
+  }
+
+  osg::Geometry* curGeom = reg->GetGeometry(geomIndex, cub._blend);
+
+  if(curGeom == NULL)
+  {
+    curGeom = NewOSGGeom();
+    reg->SetGeometry(geomIndex, curGeom, cub._blend);
+
+    _geode[cub._blend?1:0]->addDrawable(curGeom);
+  }
+
+  _dataUpdate.push_back(DataUpdate(curGeom, reg, geomIndex, cub._blend));
+}
+
 void World::RemoveCub(osg::Vec3d vec)
 {
   cube::Region* reg = GetRegion(Region::ToRegionIndex(vec.x()), Region::ToRegionIndex(vec.y()));
@@ -467,12 +520,10 @@ void World::RemoveCub(osg::Vec3d vec)
 
   int geomIndex = cvec.z() / GEOM_SIZE;
 
-  cub._type = cube::Cub::Air;
-  cub._rendered = false;
-  reg->_renderedCubCount[geomIndex]--;
-  int renderedCubCount = reg->_renderedCubCount[geomIndex];
+  del(cub, reg, geomIndex);
 
-  if((int)(cvec.z()) == reg->GetHeight(cvec.x(), cvec.y()))
+  // нахождение новой травки если её удалили
+  /*if((int)(cvec.z()) == reg->GetHeight(cvec.x(), cvec.y()))
   {
     for(int i = cvec.z(); i >= 0; i--)
     {
@@ -494,27 +545,7 @@ void World::RemoveCub(osg::Vec3d vec)
         break;
       }
     }
-  }
-
-  osg::Geometry* curGeom = reg->GetGeometry(geomIndex);
-
-  if(renderedCubCount > 0)
-  {
-    if(curGeom == NULL)
-    {
-      curGeom = NewOSGGeom();
-      reg->SetGeometry(geomIndex, curGeom);
-
-      _geode->addDrawable(curGeom);
-    }
-
-    _dataUpdate.push_back(DataUpdate(curGeom, reg, geomIndex));
-  }
-  else
-  {
-    _geode->removeDrawable(curGeom);
-    reg->SetGeometry(geomIndex, NULL);
-  }
+  }*/
 
 
   for(int i = CubInfo::FirstSide; i <= CubInfo::EndSide; i++)
@@ -528,25 +559,9 @@ void World::RemoveCub(osg::Vec3d vec)
 
     int geomSideIndex = cvec.z() / GEOM_SIZE;
 
-    if(scub._type != cube::Cub::Air && (!scub._rendered || reg != sideReg || geomIndex != geomSideIndex))
+    if(scub._type != cube::Cub::Air && (!scub._rendered || reg != sideReg || geomIndex != geomSideIndex || cub._blend != scub._blend))
     {
-      if(!scub._rendered)
-      {
-        scub._rendered = true;
-        sideReg->_renderedCubCount[geomSideIndex]++;
-      }
-
-      curGeom = sideReg->GetGeometry(geomSideIndex);
-
-      if(curGeom == NULL)
-      {
-        curGeom = NewOSGGeom();
-        sideReg->SetGeometry(geomSideIndex, curGeom);
-
-        _geode->addDrawable(curGeom);
-      }
-
-      _dataUpdate.push_back(DataUpdate(curGeom, sideReg, geomSideIndex));
+      add(scub, sideReg, geomSideIndex);
     }
   }
 }
@@ -569,21 +584,11 @@ void World::AddCub(osg::Vec3d vec)
     if(scub._type == cube::Cub::Air)
     {
       scub._type = cube::Cub::Ground;
-      scub._rendered = true;
-      reg->_renderedCubCount[(int)cvec.z() / GEOM_SIZE]++;
+      scub._blend = false;
 
       cvec /= GEOM_SIZE;
-      osg::Geometry* curGeom = reg->GetGeometry(cvec.z());
 
-      if(curGeom == NULL)
-      {
-        curGeom = NewOSGGeom();
-        reg->SetGeometry(cvec.z(), curGeom);
-
-        _geode->addDrawable(curGeom);
-      }
-
-      _dataUpdate.push_back(DataUpdate(curGeom, reg, cvec.z()));
+      add(scub, reg, cvec.z());
     }
   }
 }
@@ -597,24 +602,25 @@ void World::UpdateRegionGeoms(cube::Region* rg, bool addToScene)
 {
   if(!rg->_geometryCreated)
   {
+    for(int s = 0; s < 2; s++)
     for(int offset = 0; offset < GEOM_COUNT; offset++)
     {
-      if(rg->_renderedCubCount[offset] < 1)
+      if(rg->_renderedCubCount[s][offset] < 1)
         continue;
 
-      osg::Geometry* curGeom = rg->GetGeometry(offset);
+      osg::Geometry* curGeom = rg->GetGeometry(offset, s);
 
       if(curGeom == NULL)
       {
         curGeom = NewOSGGeom();
-        rg->SetGeometry(offset, curGeom);
+        rg->SetGeometry(offset, curGeom, s);
 
         if(addToScene)
-          _geode->addDrawable(curGeom);
+          _geode[s]->addDrawable(curGeom);
       }
 
       if(curGeom)
-        updateGeom(curGeom, rg, offset * GEOM_SIZE);
+        updateGeom(curGeom, rg, offset * GEOM_SIZE, s);
     }
 
     if(addToScene)
@@ -626,13 +632,17 @@ void World::UpdateRegionGeoms(cube::Region* rg, bool addToScene)
 
 osg::Geode* World::createGeometry()
 {
-  _geode = new osg::Geode;
+  _geode[0] = new osg::Geode;
+  osg::StateSet* ss0 = _geode[0]->getOrCreateStateSet();
+  _geode[1] = new osg::Geode;
+  osg::StateSet* ss1 = _geode[1]->getOrCreateStateSet();
 
-  osg::StateSet* ss = _geode->getOrCreateStateSet();
+  _texInfo = new TextureInfo("./res/mc16-7.png", 16);
 
-  _texInfo = new TextureInfo("./res/mc16.png", 16);
+  ss0->setTextureAttributeAndModes(0, _texInfo->GetTexture(), osg::StateAttribute::ON);
+  ss1->setTextureAttributeAndModes(0, _texInfo->GetTexture(), osg::StateAttribute::ON);
 
-  ss->setTextureAttributeAndModes(0, _texInfo->GetTexture(), osg::StateAttribute::ON);
+  ss1->setMode(GL_BLEND, osg::StateAttribute::ON);
 
   RegionsContainer::iterator xrg;
   YRegionsContainer::iterator yrg;
@@ -649,5 +659,5 @@ osg::Geode* World::createGeometry()
     UpdateRegionGeoms(yrg->second);
   }
 
-  return _geode;
+  return NULL;
 }
