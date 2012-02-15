@@ -56,8 +56,7 @@ namespace cube
           {
             cub._type = cube::Cub::LeavesWood;
             cub._rendered = true;
-            cub._blend = true;
-            rg->_renderedCubCount[1][(int)z / GEOM_SIZE]++;
+            rg->_renderedCubCount[0][(int)z / GEOM_SIZE]++;
           }
 
           if(cube::MathUtils::random() > 0.05f * r)

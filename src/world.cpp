@@ -123,6 +123,21 @@ osg::Group* World::GetGeometry()
   _geode[0]->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE | osg::StateAttribute::PROTECTED);
   _geode[1]->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE | osg::StateAttribute::PROTECTED);
 
+  {
+    osg::Shader *vs = new osg::Shader(osg::Shader::VERTEX);
+    vs->loadShaderSourceFromFile("./res/shaders/main.vert");
+    osg::Shader *fs = new osg::Shader(osg::Shader::FRAGMENT);
+    fs->loadShaderSourceFromFile("./res/shaders/main.frag");
+
+    osg::StateSet* ss = _group->getOrCreateStateSet();
+
+    osg::Program* program = new osg::Program();
+    program->addShader(vs);
+    program->addShader(fs);
+    ss->setAttributeAndModes(program, osg::StateAttribute::ON | osg::StateAttribute::PROTECTED);
+    ss->addUniform(new osg::Uniform("texture", 0));
+  }
+
   return _group;
 }
 
@@ -186,7 +201,7 @@ void World::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset, bool
       osg::Vec3d sidePos = pos + CubInfo::Instance().GetNormal(cside) + osg::Vec3d(0.1, 0.1, 0.1);
       cube::Cub* sideCub = GetCub(sidePos.x(), sidePos.y(), sidePos.z());
 
-      if(sideCub == NULL || sideCub->_type == cube::Cub::Air)
+      if(sideCub == NULL || sideCub->_type == cube::Cub::Air || cub._type == cube::Cub::LeavesWood)
       {
         CubInfo::Instance().FillVertCoord(cside, coords, pos);
 
@@ -633,16 +648,11 @@ void World::UpdateRegionGeoms(cube::Region* rg, bool addToScene)
 osg::Geode* World::createGeometry()
 {
   _geode[0] = new osg::Geode;
-  osg::StateSet* ss0 = _geode[0]->getOrCreateStateSet();
   _geode[1] = new osg::Geode;
-  osg::StateSet* ss1 = _geode[1]->getOrCreateStateSet();
 
   _texInfo = new TextureInfo("./res/mc16-7.png", 16);
 
-  ss0->setTextureAttributeAndModes(0, _texInfo->GetTexture(), osg::StateAttribute::ON);
-  ss1->setTextureAttributeAndModes(0, _texInfo->GetTexture(), osg::StateAttribute::ON);
-
-  ss1->setMode(GL_BLEND, osg::StateAttribute::ON);
+  _group->getOrCreateStateSet()->setTextureAttributeAndModes(0, _texInfo->GetTexture(), osg::StateAttribute::ON);
 
   RegionsContainer::iterator xrg;
   YRegionsContainer::iterator yrg;
