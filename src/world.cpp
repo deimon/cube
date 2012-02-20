@@ -1,6 +1,7 @@
 #include <world.h>
 #include <wood.h>
 #include <mathUtils.h>
+#include <light.h>
 
 #include <OpenThreads/Thread>
 
@@ -150,11 +151,11 @@ void World::clearRegionGeoms(cube::Region* rg)
       for(int s = 0; s < 2; s++)
       for(int i = 0; i < GEOM_COUNT; i++)
       {
-        osg::Geometry* geom = rg->GetGeometry(i, s);
+        osg::Geometry* geom = rg->GetGeometry(i, s == 1);
         if(geom)
         {
           _geode[s]->removeDrawable(geom);
-          rg->SetGeometry(i, NULL, s);
+          rg->SetGeometry(i, NULL, s == 1);
         }
       }
 
@@ -201,13 +202,15 @@ void World::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset, bool
       osg::Vec3d sidePos = pos + CubInfo::Instance().GetNormal(cside) + osg::Vec3d(0.1, 0.1, 0.1);
       cube::Cub* sideCub = GetCub(sidePos.x(), sidePos.y(), sidePos.z());
 
-      if(sideCub == NULL || sideCub->_type == cube::Cub::Air || cub._type == cube::Cub::LeavesWood)
+      if(sideCub == NULL || sideCub->_type == cube::Cub::Air || sideCub->_type == cube::Cub::LeavesWood || sideCub->_type == cube::Cub::TruncWood)
       {
         CubInfo::Instance().FillVertCoord(cside, coords, pos);
 
         _texInfo->FillTexCoord(cub._type, cside, tcoords);
 
         osg::Vec4d color = _texInfo->GetSideColor(cub._type, cside);
+        if(sideCub != NULL)
+          color *= sideCub->_light;
         colours->push_back(color);
         normals->push_back(CubInfo::Instance().GetNormal(cside));
       }
@@ -272,7 +275,7 @@ void World::update()
         for(int s = 0; s < 2; s++)
         for(int offset = 0; offset < GEOM_COUNT; offset++)
         {
-          osg::Geometry* curGeom = reg->GetGeometry(offset, s);
+          osg::Geometry* curGeom = reg->GetGeometry(offset, s == 1);
 
           if(curGeom != NULL)
             _geode[s]->addDrawable(curGeom);
@@ -478,8 +481,10 @@ osg::Geometry* NewOSGGeom()
   return curGeom;
 }
 
-void World::del(cube::Cub& cub, cube::Region* reg, int geomIndex)
+void World::del(cube::Cub& cub, cube::Region* reg, int geomIndex, osg::Vec3d wcpos)
 {
+  std::map<osg::Geometry*, DataUpdate> updateGeomMap;
+
   cub._type = cube::Cub::Air;
   cub._rendered = false;
 
@@ -497,17 +502,27 @@ void World::del(cube::Cub& cub, cube::Region* reg, int geomIndex)
       _geode[cub._blend?1:0]->addDrawable(curGeom);
     }
 
-    _dataUpdate.push_back(DataUpdate(curGeom, reg, geomIndex, cub._blend));
+    //_dataUpdate.push_back(DataUpdate(curGeom, reg, geomIndex, cub._blend));
+    updateGeomMap[curGeom] = DataUpdate(curGeom, reg, geomIndex, cub._blend);
   }
   else
   {
     _geode[cub._blend?1:0]->removeDrawable(curGeom);
     reg->SetGeometry(geomIndex, NULL, cub._blend);
   }
+
+  //*************************************
+  cube::Light::RecalcAndFillingLight(cub, wcpos, updateGeomMap);
+
+  std::map<osg::Geometry*, DataUpdate>::iterator i = updateGeomMap.begin();
+  for(; i != updateGeomMap.end(); i++)
+    _dataUpdate.push_back(i->second);
 }
 
-void World::add(cube::Cub& cub, cube::Region* reg, int geomIndex)
+void World::add(cube::Cub& cub, cube::Region* reg, int geomIndex, osg::Vec3d wcpos, bool recalcLight)
 {
+  std::map<osg::Geometry*, DataUpdate> updateGeomMap;
+
   if(!cub._rendered)
   {
     cub._rendered = true;
@@ -524,18 +539,33 @@ void World::add(cube::Cub& cub, cube::Region* reg, int geomIndex)
     _geode[cub._blend?1:0]->addDrawable(curGeom);
   }
 
-  _dataUpdate.push_back(DataUpdate(curGeom, reg, geomIndex, cub._blend));
+  //_dataUpdate.push_back(DataUpdate(curGeom, reg, geomIndex, cub._blend));
+  updateGeomMap[curGeom] = DataUpdate(curGeom, reg, geomIndex, cub._blend);
+
+  //*************************************
+  if(recalcLight)
+  {
+    cube::Light::FindLightSourceAndFillingLight(cub, wcpos, updateGeomMap);
+  }
+
+  std::map<osg::Geometry*, DataUpdate>::iterator i = updateGeomMap.begin();
+  for(; i != updateGeomMap.end(); i++)
+    _dataUpdate.push_back(i->second);
 }
+
 
 void World::RemoveCub(osg::Vec3d vec)
 {
+  int geomIndex = vec.z() / GEOM_SIZE;
+
+  if(geomIndex < 0 || geomIndex > GEOM_COUNT)
+    return;
+
   cube::Region* reg = GetRegion(Region::ToRegionIndex(vec.x()), Region::ToRegionIndex(vec.y()));
   osg::Vec3d cvec = vec - reg->GetPosition();
   cube::Cub& cub = reg->GetCub(cvec.x(), cvec.y(), cvec.z());
 
-  int geomIndex = cvec.z() / GEOM_SIZE;
-
-  del(cub, reg, geomIndex);
+  del(cub, reg, geomIndex, vec);
 
   // нахождение новой травки если её удалили
   /*if((int)(cvec.z()) == reg->GetHeight(cvec.x(), cvec.y()))
@@ -566,7 +596,8 @@ void World::RemoveCub(osg::Vec3d vec)
   for(int i = CubInfo::FirstSide; i <= CubInfo::EndSide; i++)
   {
     CubInfo::CubeSide side = (CubInfo::CubeSide)i;
-    cvec = vec + CubInfo::Instance().GetNormal(side);
+    osg::Vec3d wcvec = vec + CubInfo::Instance().GetNormal(side);
+    cvec = wcvec;
 
     cube::Region* sideReg = GetRegion(Region::ToRegionIndex(cvec.x()), Region::ToRegionIndex(cvec.y()));
     cvec -= sideReg->GetPosition();
@@ -576,7 +607,7 @@ void World::RemoveCub(osg::Vec3d vec)
 
     if(scub._type != cube::Cub::Air && (!scub._rendered || reg != sideReg || geomIndex != geomSideIndex || cub._blend != scub._blend))
     {
-      add(scub, sideReg, geomSideIndex);
+      add(scub, sideReg, geomSideIndex, wcvec);
     }
   }
 }
@@ -603,7 +634,7 @@ void World::AddCub(osg::Vec3d vec)
 
       cvec /= GEOM_SIZE;
 
-      add(scub, reg, cvec.z());
+      add(scub, reg, cvec.z(), vec + norm, true);
     }
   }
 }
@@ -623,19 +654,19 @@ void World::UpdateRegionGeoms(cube::Region* rg, bool addToScene)
       if(rg->_renderedCubCount[s][offset] < 1)
         continue;
 
-      osg::Geometry* curGeom = rg->GetGeometry(offset, s);
+      osg::Geometry* curGeom = rg->GetGeometry(offset, s == 1);
 
       if(curGeom == NULL)
       {
         curGeom = NewOSGGeom();
-        rg->SetGeometry(offset, curGeom, s);
+        rg->SetGeometry(offset, curGeom, s == 1);
 
         if(addToScene)
           _geode[s]->addDrawable(curGeom);
       }
 
       if(curGeom)
-        updateGeom(curGeom, rg, offset * GEOM_SIZE, s);
+        updateGeom(curGeom, rg, offset * GEOM_SIZE, s == 1);
     }
 
     if(addToScene)

@@ -10,7 +10,7 @@ void main(void)
     discard;
     
   vec3 L = normalize(vec3(0.5, 0.5, 0.5));
-  float nDotL = max(dot(normal, L), 0.3);
-
+  float nDotL = max(dot(normal, L), 0.4);
   gl_FragColor = vColor * texColor * nDotL;
+  //gl_FragColor = vColor * texColor;
 }

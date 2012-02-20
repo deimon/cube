@@ -33,28 +33,16 @@ namespace cube
     typedef std::map<int, cube::Region*> YRegionsContainer;
     typedef std::map<int, YRegionsContainer> RegionsContainer;
 
-    World();
-    ~World(){}
-
-    osg::Group* GetGeometry();
-    void update();
-
-    cube::Region* World::GetRegion(int i, int j) { return _regions[i][j]; }
-    cube::Region* ContainsRegion(int xreg, int yreg);
-    bool ContainsRegionSafe(int xreg, int yreg);
-    cube::Cub* GetCub(float x, float y, float z);
-
-    void del(cube::Cub& cub, cube::Region* reg, int geomIndex);
-    void add(cube::Cub& cub, cube::Region* reg, int geomIndex);
-
-    void RemoveCub(osg::Vec3d vec);
-    void AddCub(osg::Vec3d vec);
-    void UpdateRegionGeoms(cube::Region* rg, bool addToScene = true);
-
-    void ProcessAddRegions();
-
     struct DataUpdate
     {
+      DataUpdate()
+      {
+        _geom = NULL;
+        _reg = NULL;
+        _zCubOff = 0;
+        _blend = false;
+      }
+
       DataUpdate(osg::Geometry* geom, cube::Region* reg, int geomNumder, bool blend = false)
       {
         _geom = geom;
@@ -68,6 +56,26 @@ namespace cube
       int _zCubOff;
       bool _blend;
     };
+
+    World();
+    ~World(){}
+
+    osg::Group* GetGeometry();
+    void update();
+
+    cube::Region* World::GetRegion(int i, int j) { return _regions[i][j]; }
+    cube::Region* ContainsRegion(int xreg, int yreg);
+    bool ContainsRegionSafe(int xreg, int yreg);
+    cube::Cub* GetCub(float x, float y, float z);
+
+    void del(cube::Cub& cub, cube::Region* reg, int geomIndex, osg::Vec3d wcpos);
+    void add(cube::Cub& cub, cube::Region* reg, int geomIndex, osg::Vec3d wcpos, bool recalcLight = false);
+
+    void RemoveCub(osg::Vec3d vec);
+    void AddCub(osg::Vec3d vec);
+    void UpdateRegionGeoms(cube::Region* rg, bool addToScene = true);
+
+    void ProcessAddRegions();
 
     std::vector<DataUpdate> _dataUpdate;
 

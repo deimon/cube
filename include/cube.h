@@ -29,12 +29,14 @@ namespace cube
       : _rendered(false)
       , _type(Air)
       , _blend(false)
+      , _light(1.0f)
     {
     }
 
     CubeType _type;
     bool _rendered;
     bool _blend;
+    float _light;
   };
 
   class CubInfo: public utils::Singleton<CubInfo>

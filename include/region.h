@@ -8,7 +8,7 @@
 #define NUM_OCTAVES 1
 #define PERSON_HEIGHT 1.8
 
-#include "cube.h"
+#include <cube.h>
 #include <osg/Vec3d>
 #include <osg/Geometry>
 #include <stdio.h>
