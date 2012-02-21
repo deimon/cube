@@ -206,7 +206,7 @@ void Light::findLightSource(cube::Cub& cub, osg::Vec3d wcpos, MapCubPos& listCub
 
     if(scub._type == cube::Cub::Air && scub._light > 0.12)
     {
-      if((scub._light - cubLight) > 0.02f /*&& listCubPos.find(&scub) == listCubPos.end()*/)
+      if((scub._light - cubLight) > 0.02f || (scub._light > 0.98 && side != CubInfo::Z_BACK) /*&& listCubPos.find(&scub) == listCubPos.end()*/)
         listCubPos[&scub].set(wcsvec);
       else
         findLightSource(scub, wcsvec, listCubPos, updateGeomMap);
