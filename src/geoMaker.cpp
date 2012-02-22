@@ -1,4 +1,5 @@
 #include <geoMaker.h>
+#include "perlin.h"
 
 using namespace cube;
 
@@ -24,6 +25,54 @@ void GeoMaker::FillRegion(cube::Region* rg, float rnd)
         //cub->_type = cube::Cub::Ground;
         cub._rendered = true;
         rg->_renderedCubCount[0][k / GEOM_SIZE]++;
+      }
+    }
+  }
+
+  Perlin* perlin = new Perlin(1, 4, 1, 123);
+
+  for(int i = 0; i < REGION_WIDTH; i++)
+  {
+    for(int j = 0; j < REGION_WIDTH; j++)
+    {
+      for(int k = 0; k < REGION_HEIGHT; k++)
+      {
+        cube::Cub& cub = rg->GetCub(i, j, k);
+        if(cub._type != cube::Cub::Air && perlin->Get((float)(i + rg->GetX() * REGION_WIDTH)/100.0f, (float)(j + rg->GetY() * REGION_WIDTH)/100.0f, (float)k/100.0f) < -0.3f)
+        {
+          cub._type = cube::Cub::Air;
+
+          if(cub._rendered)
+          {
+            cub._rendered = false;
+            rg->_renderedCubCount[0][k / GEOM_SIZE]--;
+          }
+
+          for(int s = CubInfo::FirstSide; s <= CubInfo::EndSide; s++)
+          {
+            CubInfo::CubeSide side = (CubInfo::CubeSide)s;
+            //osg::Vec3d csvec = rg->GetPosition() + osg::Vec3d(i, j, k) + CubInfo::Instance().GetNormal(side);
+
+            //if(csvec.x() < 0.0f || csvec.x() > 7.0f || csvec.y() < 0.0f || csvec.y() > 7.0f || csvec.z() < 0.0f || csvec.x() > 127.0f)
+
+            osg::Vec3d vec = CubInfo::Instance().GetNormal(side);
+
+            int x = i + vec.x();
+            int y = j + vec.y();
+            int z = k + vec.z();
+
+            if(x < 0 || x > 7 || y < 0 || y > 7 || z < 0 || z > 127)
+              continue;
+
+            cube::Cub& scub = rg->GetCub(x, y, z);
+
+            if(!scub._rendered && scub._type != cube::Cub::Air)
+            {
+              scub._rendered = true;
+              rg->_renderedCubCount[0][z / GEOM_SIZE]++;
+            }
+          }
+        }
       }
     }
   }
