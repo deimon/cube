@@ -92,7 +92,7 @@ World::World()
   _you.set(5.0, 5.0, 0.0);
 
   srand(time(NULL));
-  _rnd = osg::PI*2*10 + ((float)rand() / RAND_MAX)* (osg::PI*3*10 - osg::PI*2*10);
+  _rnd = 7.0f; // osg::PI*2*10 + ((float)rand() / RAND_MAX)* (osg::PI*3*10 - osg::PI*2*10);
 
   int radius = 16;
 
@@ -164,8 +164,63 @@ void World::clearRegionGeoms(cube::Region* rg)
   }
 }
 
-void World::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset, bool blend)
+osg::Geometry* NewOSGGeom()
 {
+  osg::Geometry* curGeom = new osg::Geometry;
+  curGeom->setUseVertexBufferObjects(true);
+
+  osg::Vec3Array* coords;
+  osg::Vec4Array* colours;
+  osg::Vec3Array* normals;
+  osg::Vec2Array* tcoords;
+  osg::DrawArrays* drawArr;
+
+  coords = new osg::Vec3Array();
+  colours = new osg::Vec4Array();
+  normals = new osg::Vec3Array();
+  drawArr = new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0, 4);
+  tcoords = new osg::Vec2Array();
+
+  curGeom->setVertexArray(coords);
+  curGeom->setColorArray(colours);
+  curGeom->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE);
+  curGeom->setNormalArray(normals);
+  curGeom->setNormalBinding(osg::Geometry::BIND_PER_PRIMITIVE);
+
+  curGeom->addPrimitiveSet(drawArr);
+
+  curGeom->setTexCoordArray(0,tcoords);
+
+  return curGeom;
+}
+
+void World::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset, bool blend, bool updateScene)
+{
+  int geomIndex = zOffset / GEOM_SIZE;
+
+  geom = reg->GetGeometry(geomIndex, blend);
+
+  if(reg->_renderedCubCount[blend?1:0][geomIndex] > 0)
+  {
+    if(geom == NULL)
+    {
+      geom = NewOSGGeom();
+      reg->SetGeometry(geomIndex, geom, blend);
+
+      if(updateScene)
+        _geode[blend?1:0]->addDrawable(geom);
+    }
+  }
+  else
+  {
+    if(updateScene)
+      _geode[blend?1:0]->removeDrawable(geom);
+    reg->SetGeometry(geomIndex, NULL, blend);
+    return;
+  }
+
+  //*****************************************************************************
+
   osg::Vec3Array* coords;
   osg::Vec4Array* colours;
   osg::Vec3Array* normals;
@@ -250,8 +305,8 @@ void World::update()
 
   for(int i = 0; i < _dataUpdate.size(); i++)
   {
-    if(_dataUpdate[i]._geom)
-      updateGeom(_dataUpdate[i]._geom, _dataUpdate[i]._reg, _dataUpdate[i]._zCubOff, _dataUpdate[i]._blend);
+    //if(_dataUpdate[i]._geom)
+    updateGeom(_dataUpdate[i]._geom, _dataUpdate[i]._reg, _dataUpdate[i]._zCubOff, _dataUpdate[i]._blend, true);
   }
   _dataUpdate.clear();
 
@@ -331,8 +386,11 @@ void World::update()
       delOff.x += curRegX - 1;
       delOff.y += curRegY;
       reg = ContainsRegion(delOff.x, delOff.y);
-      reg->SetVisibleZone(false);
-      _delRegions.push_back(std::make_pair(reg, delOff));
+      if(reg)
+      {
+        reg->SetVisibleZone(false);
+        _delRegions.push_back(std::make_pair(reg, delOff));
+      }
     }
   }
 
@@ -357,8 +415,11 @@ void World::update()
       delOff.x += curRegX + 1;
       delOff.y += curRegY;
       reg = ContainsRegion(delOff.x, delOff.y);
-      reg->SetVisibleZone(false);
-      _delRegions.push_back(std::make_pair(reg, delOff));
+      if(reg)
+      {
+        reg->SetVisibleZone(false);
+        _delRegions.push_back(std::make_pair(reg, delOff));
+      }
     }
   }
 
@@ -383,8 +444,11 @@ void World::update()
       delOff.x += curRegX;
       delOff.y += curRegY - 1;
       reg = ContainsRegion(delOff.x, delOff.y);
-      reg->SetVisibleZone(false);
-      _delRegions.push_back(std::make_pair(reg, delOff));
+      if(reg)
+      {
+        reg->SetVisibleZone(false);
+        _delRegions.push_back(std::make_pair(reg, delOff));
+      }
     }
   }
 
@@ -409,8 +473,11 @@ void World::update()
       delOff.x += curRegX;
       delOff.y += curRegY + 1;
       reg = ContainsRegion(delOff.x, delOff.y);
-      reg->SetVisibleZone(false);
-      _delRegions.push_back(std::make_pair(reg, delOff));
+      if(reg)
+      {
+        reg->SetVisibleZone(false);
+        _delRegions.push_back(std::make_pair(reg, delOff));
+      }
     }
   }
 }
@@ -451,36 +518,6 @@ cube::Cub* World::GetCub(float x, float y, float z)
   return NULL;
 }
 
-osg::Geometry* NewOSGGeom()
-{
-  osg::Geometry* curGeom = new osg::Geometry;
-  curGeom->setUseVertexBufferObjects(true);
-
-  osg::Vec3Array* coords;
-  osg::Vec4Array* colours;
-  osg::Vec3Array* normals;
-  osg::Vec2Array* tcoords;
-  osg::DrawArrays* drawArr;
-
-  coords = new osg::Vec3Array();
-  colours = new osg::Vec4Array();
-  normals = new osg::Vec3Array();
-  drawArr = new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0, 4);
-  tcoords = new osg::Vec2Array();
-
-  curGeom->setVertexArray(coords);
-  curGeom->setColorArray(colours);
-  curGeom->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE);
-  curGeom->setNormalArray(normals);
-  curGeom->setNormalBinding(osg::Geometry::BIND_PER_PRIMITIVE);
-
-  curGeom->addPrimitiveSet(drawArr);
-
-  curGeom->setTexCoordArray(0,tcoords);
-
-  return curGeom;
-}
-
 void World::del(cube::Cub& cub, cube::Region* reg, int geomIndex, osg::Vec3d wcpos)
 {
   std::map<osg::Geometry*, DataUpdate> updateGeomMap;
@@ -492,27 +529,10 @@ void World::del(cube::Cub& cub, cube::Region* reg, int geomIndex, osg::Vec3d wcp
 
   osg::Geometry* curGeom = reg->GetGeometry(geomIndex, cub._blend);
 
-  if(renderedCubCount > 0)
-  {
-    if(curGeom == NULL)
-    {
-      curGeom = NewOSGGeom();
-      reg->SetGeometry(geomIndex, curGeom, cub._blend);
-
-      _geode[cub._blend?1:0]->addDrawable(curGeom);
-    }
-
-    //_dataUpdate.push_back(DataUpdate(curGeom, reg, geomIndex, cub._blend));
-    updateGeomMap[curGeom] = DataUpdate(curGeom, reg, geomIndex, cub._blend);
-  }
-  else
-  {
-    _geode[cub._blend?1:0]->removeDrawable(curGeom);
-    reg->SetGeometry(geomIndex, NULL, cub._blend);
-  }
+  updateGeomMap[curGeom] = DataUpdate(curGeom, reg, geomIndex, cub._blend);
 
   //*************************************
-  cube::Light::RecalcAndFillingLight(cub, wcpos, updateGeomMap);
+  //cube::Light::RecalcAndFillingLight(cub, wcpos, updateGeomMap);
 
   std::map<osg::Geometry*, DataUpdate>::iterator i = updateGeomMap.begin();
   for(; i != updateGeomMap.end(); i++)
@@ -531,21 +551,12 @@ void World::add(cube::Cub& cub, cube::Region* reg, int geomIndex, osg::Vec3d wcp
 
   osg::Geometry* curGeom = reg->GetGeometry(geomIndex, cub._blend);
 
-  if(curGeom == NULL)
-  {
-    curGeom = NewOSGGeom();
-    reg->SetGeometry(geomIndex, curGeom, cub._blend);
-
-    _geode[cub._blend?1:0]->addDrawable(curGeom);
-  }
-
-  //_dataUpdate.push_back(DataUpdate(curGeom, reg, geomIndex, cub._blend));
   updateGeomMap[curGeom] = DataUpdate(curGeom, reg, geomIndex, cub._blend);
 
   //*************************************
   if(recalcLight)
   {
-    cube::Light::FindLightSourceAndFillingLight(cub, wcpos, updateGeomMap);
+    //cube::Light::FindLightSourceAndFillingLight(cub, wcpos, updateGeomMap);
   }
 
   std::map<osg::Geometry*, DataUpdate>::iterator i = updateGeomMap.begin();
@@ -656,17 +667,7 @@ void World::UpdateRegionGeoms(cube::Region* rg, bool addToScene)
 
       osg::Geometry* curGeom = rg->GetGeometry(offset, s == 1);
 
-      if(curGeom == NULL)
-      {
-        curGeom = NewOSGGeom();
-        rg->SetGeometry(offset, curGeom, s == 1);
-
-        if(addToScene)
-          _geode[s]->addDrawable(curGeom);
-      }
-
-      if(curGeom)
-        updateGeom(curGeom, rg, offset * GEOM_SIZE, s == 1);
+      updateGeom(curGeom, rg, offset * GEOM_SIZE, s == 1, addToScene);
     }
 
     if(addToScene)

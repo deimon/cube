@@ -38,7 +38,8 @@ void GeoMaker::FillRegion(cube::Region* rg, float rnd)
       for(int k = 0; k < REGION_HEIGHT; k++)
       {
         cube::Cub& cub = rg->GetCub(i, j, k);
-        if(cub._type != cube::Cub::Air && perlin->Get((float)(i + rg->GetX() * REGION_WIDTH)/100.0f, (float)(j + rg->GetY() * REGION_WIDTH)/100.0f, (float)k/100.0f) < -0.3f)
+        if(cub._type != cube::Cub::Air && 
+          perlin->Get((float)(i + rg->GetX() * REGION_WIDTH)/100.0f, (float)(j + rg->GetY() * REGION_WIDTH)/100.0f, (float)k/30.0f) < -0.3f)
         {
           cub._type = cube::Cub::Air;
 
@@ -156,7 +157,7 @@ void GeoMaker::GenNoise(cube::Region* rg, float rnd)
       //проходим по всем элементам массива и заполняем их значениями
       //pNoise[i*size+j]=PerlinNoise_2D(float(i),float(j),fac);
 
-      int height = REGION_HEIGHT / 2 + ((PerlinNoise_2D(float(i + xOffset),float(j + yOffset),rnd) * (REGION_HEIGHT / 10)) / 255);
+      int height = REGION_HEIGHT / 2 + ((PerlinNoise_2D(float(i + xOffset) / 5.0f, float(j + yOffset) / 5.0f, rnd) * (REGION_HEIGHT / 3)) / 255);
       rg->SetHeight(i, j, height);
 
       if(i < 0 || i >= REGION_WIDTH || j < 0 || j >= REGION_WIDTH)

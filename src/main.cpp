@@ -23,6 +23,9 @@ int main( void )
   cube::World& world = cube::World::Instance();
 
   osgViewer::Viewer viewer;
+  viewer.setThreadingModel(osgViewer::Viewer::SingleThreaded);
+  viewer.setThreadSafeReferenceCounting(true);
+
   osgViewer::StatsHandler* sh = new osgViewer::StatsHandler;
   sh ->setKeyEventTogglesOnScreenStats(osgGA::GUIEventAdapter::KEY_F1);
   viewer.addEventHandler(sh);
