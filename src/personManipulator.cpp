@@ -1,5 +1,6 @@
 #include <personManipulator.h>
 #include <world.h>
+#include <regionManager.h>
 
 using namespace cube;
 
@@ -234,10 +235,10 @@ void PersonManipulator::calcStep(osg::Vec3d vDir, osgGA::GUIActionAdapter& us)
   cube::World& world = cube::World::Instance();
   osg::Vec3d newEye = _eye;
 
-  if(world.GetCub(_eye.x() + vDir.x(), _eye.y(), _eye.z() - (PERSON_HEIGHT-1))->_type == cube::Cub::Air)
+  if(RegionManager::Instance().GetCub(_eye.x() + vDir.x(), _eye.y(), _eye.z() - (PERSON_HEIGHT-1))->_type == cube::Cub::Air)
     newEye.x() += vDir.x() - dx;
 
-  if(world.GetCub(_eye.x(), _eye.y() + vDir.y(), _eye.z() - (PERSON_HEIGHT-1))->_type == cube::Cub::Air)
+  if(RegionManager::Instance().GetCub(_eye.x(), _eye.y() + vDir.y(), _eye.z() - (PERSON_HEIGHT-1))->_type == cube::Cub::Air)
     newEye.y() += vDir.y() - dy;
 
   _eye = newEye;
@@ -284,7 +285,7 @@ bool PersonManipulator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
       for(float k = 0.1; k < 3.0; k = k + 0.1)
       {
         newEye = _eye + vDir * k;
-        cube::Cub* cub = world.GetCub(newEye.x(), newEye.y(), newEye.z());
+        cube::Cub* cub = RegionManager::Instance().GetCub(newEye.x(), newEye.y(), newEye.z());
         if(cub->_type != cube::Cub::Air)
         {
           found = true;
@@ -375,13 +376,13 @@ bool PersonManipulator::handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GU
   else
   {
     osg::Vec3d prevEye = _eye;
-    const cube::Cub* cub = world.GetCub(prevEye.x(), prevEye.y(), prevEye.z() - PERSON_HEIGHT);
+    const cube::Cub* cub = RegionManager::Instance().GetCub(prevEye.x(), prevEye.y(), prevEye.z() - PERSON_HEIGHT);
 
     if(cub->_type == cube::Cub::Air)
     {
       prevEye += osg::Vec3d(0.0, 0.0, -5.0) * _delta_frame_time;
 
-      const cube::Cub* newCub = world.GetCub(prevEye.x(), prevEye.y(), prevEye.z() - PERSON_HEIGHT);
+      const cube::Cub* newCub = RegionManager::Instance().GetCub(prevEye.x(), prevEye.y(), prevEye.z() - PERSON_HEIGHT);
 
       if(cub->_type == cube::Cub::Air)
         setTransformation(prevEye, _rotation);

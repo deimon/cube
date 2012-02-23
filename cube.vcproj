@@ -343,10 +343,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\region.h"
-				>
-			</File>
-			<File
 				RelativePath=".\include\singleton.h"
 				>
 			</File>
@@ -398,7 +394,7 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="gridUtils"
+			Name="grid"
 			>
 			<File
 				RelativePath=".\src\gridUtils.cpp"
@@ -406,6 +402,22 @@
 			</File>
 			<File
 				RelativePath=".\include\gridUtils.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\region.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\include\region.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\regionManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\include\regionManager.h"
 				>
 			</File>
 		</Filter>
@@ -436,10 +448,6 @@
 			</File>
 			<File
 				RelativePath=".\src\personManipulator.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\src\region.cpp"
 				>
 			</File>
 			<File

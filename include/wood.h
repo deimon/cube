@@ -4,13 +4,14 @@
 #include <iostream>
 #include <world.h>
 #include <mathUtils.h>
+#include <regionManager.h>
 
 namespace cube
 {
   class Wood
   {
   public:
-    static void Generate(cube::World* world, cube::Region* rg, int rgx, int rgy)
+    static void Generate(cube::RegionManager& regMgr, cube::Region* rg, int rgx, int rgy)
     {
       int rgz = rg->GetHeight(rgx, rgy);
 
@@ -34,15 +35,15 @@ namespace cube
       }
 
       osg::Vec3d pos = rg->GetPosition() + osg::Vec3d(rgx + 0.5f, rgy + 0.5f, rgz + height - 2);
-      GenLeafRecursive(world, pos.x(), pos.y(), pos.z(), 2);
+      GenLeafRecursive(regMgr, pos.x(), pos.y(), pos.z(), 2);
     }
   protected:
-    static void GenLeafRecursive(cube::World* world, float x, float y, float z, int r)
+    static void GenLeafRecursive(cube::RegionManager& regMgr, float x, float y, float z, int r)
     {
       if(r == 6)
         return;
 
-      cube::Region* rg = world->ContainsRegion(Region::ToRegionIndex(x), Region::ToRegionIndex(y));
+      cube::Region* rg = regMgr.ContainsRegion(Region::ToRegionIndex(x), Region::ToRegionIndex(y));
 
       if(rg)
       {
@@ -60,18 +61,18 @@ namespace cube
           }
 
           if(cube::MathUtils::random() > 0.05f * r)
-            GenLeafRecursive(world, x, y, z + 1, r + 1);
+            GenLeafRecursive(regMgr, x, y, z + 1, r + 1);
 
           float k = 0.1f * r;
 
           if(cube::MathUtils::random() > k)
-            GenLeafRecursive(world, x + 1, y, z, r + 1);
+            GenLeafRecursive(regMgr, x + 1, y, z, r + 1);
           if(cube::MathUtils::random() > k)
-            GenLeafRecursive(world, x - 1, y, z, r + 1);
+            GenLeafRecursive(regMgr, x - 1, y, z, r + 1);
           if(cube::MathUtils::random() > k)
-            GenLeafRecursive(world, x, y + 1, z, r + 1);
+            GenLeafRecursive(regMgr, x, y + 1, z, r + 1);
           if(cube::MathUtils::random() > k)
-            GenLeafRecursive(world, x, y - 1, z, r + 1);
+            GenLeafRecursive(regMgr, x, y - 1, z, r + 1);
         }
       }
     }

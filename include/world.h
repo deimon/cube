@@ -30,8 +30,6 @@ namespace cube
   class World : public utils::Singleton<World>
   {
   public:
-    typedef std::map<int, cube::Region*> YRegionsContainer;
-    typedef std::map<int, YRegionsContainer> RegionsContainer;
 
     struct DataUpdate
     {
@@ -63,19 +61,12 @@ namespace cube
     osg::Group* GetGeometry();
     void update();
 
-    cube::Region* World::GetRegion(int i, int j) { return _regions[i][j]; }
-    cube::Region* ContainsRegion(int xreg, int yreg);
-    bool ContainsRegionSafe(int xreg, int yreg);
-    cube::Cub* GetCub(float x, float y, float z);
-
     void del(cube::Cub& cub, cube::Region* reg, int geomIndex, osg::Vec3d wcpos);
     void add(cube::Cub& cub, cube::Region* reg, int geomIndex, osg::Vec3d wcpos, bool recalcLight = false);
 
     void RemoveCub(osg::Vec3d vec);
     void AddCub(osg::Vec3d vec);
     void UpdateRegionGeoms(cube::Region* rg, bool addToScene = true);
-
-    void ProcessAddRegions();
 
     std::vector<DataUpdate> _dataUpdate;
 
@@ -106,9 +97,6 @@ namespace cube
     int _frame;
 
   public:
-    RegionsContainer _regions;
-    std::map<int, std::map<int, bool>> _regionsCreated;
-
     friend CreateGeomThread;
   };
 }

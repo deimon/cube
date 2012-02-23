@@ -2,6 +2,7 @@
 #include <wood.h>
 #include <mathUtils.h>
 #include <light.h>
+#include <regionManager.h>
 
 #include <OpenThreads/Thread>
 
@@ -43,7 +44,6 @@ private:
     while (!_done)
     {
       microSleep(100);
-      //_world->ProcessAddRegions();
       if(!_completed)
       {
         if(!_addRegions.empty())
@@ -102,44 +102,12 @@ World::World()
   for(int j = 0; j < Areas::Instance().GetSize(); j++)
     if(Areas::Instance()._circle[i][j] == 1)
     {
-      cube::Region* region = cube::Region::Generation(this, i - radius, j - radius);
+      cube::Region* region = cube::Region::Generation(i - radius, j - radius);
       region->FillRegion(_rnd);
       region->SetVisibleZone(true);
     }
 
   _cgThread = new CreateGeomThread(this);
-}
-
-osg::Group* World::GetGeometry()
-{
-  _group = new osg::Group;
-
-  _group->setUpdateCallback(new WorldCallback(this));
-  _group->removeChildren(0, _group->getNumChildren());
-
-  createGeometry();
-  _group->addChild(_geode[0]);
-  _group->addChild(_geode[1]);
-
-  _geode[0]->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE | osg::StateAttribute::PROTECTED);
-  _geode[1]->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE | osg::StateAttribute::PROTECTED);
-
-  {
-    osg::Shader *vs = new osg::Shader(osg::Shader::VERTEX);
-    vs->loadShaderSourceFromFile("./res/shaders/main.vert");
-    osg::Shader *fs = new osg::Shader(osg::Shader::FRAGMENT);
-    fs->loadShaderSourceFromFile("./res/shaders/main.frag");
-
-    osg::StateSet* ss = _group->getOrCreateStateSet();
-
-    osg::Program* program = new osg::Program();
-    program->addShader(vs);
-    program->addShader(fs);
-    ss->setAttributeAndModes(program, osg::StateAttribute::ON | osg::StateAttribute::PROTECTED);
-    ss->addUniform(new osg::Uniform("texture", 0));
-  }
-
-  return _group;
 }
 
 void World::clearRegionGeoms(cube::Region* rg)
@@ -255,7 +223,7 @@ void World::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset, bool
       CubInfo::CubeSide cside = (CubInfo::CubeSide)side;
 
       osg::Vec3d sidePos = pos + CubInfo::Instance().GetNormal(cside) + osg::Vec3d(0.1, 0.1, 0.1);
-      cube::Cub* sideCub = GetCub(sidePos.x(), sidePos.y(), sidePos.z());
+      cube::Cub* sideCub = RegionManager::Instance().GetCub(sidePos.x(), sidePos.y(), sidePos.z());
 
       if(sideCub == NULL || sideCub->_type == cube::Cub::Air || sideCub->_type == cube::Cub::LeavesWood || sideCub->_type == cube::Cub::TruncWood)
       {
@@ -280,6 +248,7 @@ void World::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset, bool
 
 void World::update()
 {
+  // отправка в поток регионов на обработку и получение обработаных регионов
   if(_cgThread->IsCompleted() /*&& !_addRegions.empty()*/)
   {
     if(_cgThread->_addRegions.empty())
@@ -303,6 +272,7 @@ void World::update()
     _cgThread->Calculate();
   }
 
+  // пересоздание измененных геометрий (удаление/добавление кубика, распространение света и т.д.)
   for(int i = 0; i < _dataUpdate.size(); i++)
   {
     //if(_dataUpdate[i]._geom)
@@ -310,8 +280,7 @@ void World::update()
   }
   _dataUpdate.clear();
 
-  //ProcessAddRegions();
-
+  // добавление и удаление из очереди в сцену по 1 региону за фрейм
   if(!_addToSceneRegions.empty() && _frame == 0)
   {
     bool add = false;
@@ -345,7 +314,7 @@ void World::update()
       do 
       {
         Areas::v2 regPos = _delRegions.front().second;
-        cube::Region* reg = ContainsRegion(regPos.x, regPos.y);
+        cube::Region* reg = RegionManager::Instance().ContainsRegion(regPos.x, regPos.y);
         _delRegions.pop_front();
 
         if(reg != NULL && !reg->InVisibleZone() && reg->InScene())
@@ -361,7 +330,7 @@ void World::update()
   _frame++;
   _frame %= 5;
 
-  //***************
+  // добавление в очередь на обработку регионов появляющихся или исчезающих на горизонте
   int curRegX = Region::ToRegionIndex(_you.x());
   int curRegY = Region::ToRegionIndex(_you.y());
 
@@ -375,9 +344,9 @@ void World::update()
       Areas::v2 addOffs = Areas::Instance()._xp[i];
       addOffs.x += curRegX;
       addOffs.y += curRegY;
-      cube::Region* reg = ContainsRegion(addOffs.x, addOffs.y);
+      cube::Region* reg = RegionManager::Instance().ContainsRegion(addOffs.x, addOffs.y);
       if(reg == NULL)
-        reg = cube::Region::Generation(this, addOffs.x, addOffs.y);
+        reg = cube::Region::Generation(addOffs.x, addOffs.y);
       reg->SetVisibleZone(true);
       _addRegions.push_back(reg);
 
@@ -385,7 +354,7 @@ void World::update()
       Areas::v2 delOff = Areas::Instance()._xn[i];
       delOff.x += curRegX - 1;
       delOff.y += curRegY;
-      reg = ContainsRegion(delOff.x, delOff.y);
+      reg = RegionManager::Instance().ContainsRegion(delOff.x, delOff.y);
       if(reg)
       {
         reg->SetVisibleZone(false);
@@ -404,9 +373,9 @@ void World::update()
       Areas::v2 addOffs = Areas::Instance()._xn[i];
       addOffs.x += curRegX;
       addOffs.y += curRegY;
-      cube::Region* reg = ContainsRegion(addOffs.x, addOffs.y);
+      cube::Region* reg = RegionManager::Instance().ContainsRegion(addOffs.x, addOffs.y);
       if(reg == NULL)
-        reg = cube::Region::Generation(this, addOffs.x, addOffs.y);
+        reg = cube::Region::Generation(addOffs.x, addOffs.y);
       reg->SetVisibleZone(true);
       _addRegions.push_back(reg);
 
@@ -414,7 +383,7 @@ void World::update()
       Areas::v2 delOff = Areas::Instance()._xp[i];
       delOff.x += curRegX + 1;
       delOff.y += curRegY;
-      reg = ContainsRegion(delOff.x, delOff.y);
+      reg = RegionManager::Instance().ContainsRegion(delOff.x, delOff.y);
       if(reg)
       {
         reg->SetVisibleZone(false);
@@ -433,9 +402,9 @@ void World::update()
       Areas::v2 addOffs = Areas::Instance()._yp[i];
       addOffs.x += curRegX;
       addOffs.y += curRegY;
-      cube::Region* reg = ContainsRegion(addOffs.x, addOffs.y);
+      cube::Region* reg = RegionManager::Instance().ContainsRegion(addOffs.x, addOffs.y);
       if(reg == NULL)
-        reg = cube::Region::Generation(this, addOffs.x, addOffs.y);
+        reg = cube::Region::Generation(addOffs.x, addOffs.y);
       reg->SetVisibleZone(true);
       _addRegions.push_back(reg);
 
@@ -443,7 +412,7 @@ void World::update()
       Areas::v2 delOff = Areas::Instance()._yn[i];
       delOff.x += curRegX;
       delOff.y += curRegY - 1;
-      reg = ContainsRegion(delOff.x, delOff.y);
+      reg = RegionManager::Instance().ContainsRegion(delOff.x, delOff.y);
       if(reg)
       {
         reg->SetVisibleZone(false);
@@ -462,9 +431,9 @@ void World::update()
       Areas::v2 addOffs = Areas::Instance()._yn[i];
       addOffs.x += curRegX;
       addOffs.y += curRegY;
-      cube::Region* reg = ContainsRegion(addOffs.x, addOffs.y);
+      cube::Region* reg = RegionManager::Instance().ContainsRegion(addOffs.x, addOffs.y);
       if(reg == NULL)
-        reg = cube::Region::Generation(this, addOffs.x, addOffs.y);
+        reg = cube::Region::Generation(addOffs.x, addOffs.y);
       reg->SetVisibleZone(true);
       _addRegions.push_back(reg);
 
@@ -472,7 +441,7 @@ void World::update()
       Areas::v2 delOff = Areas::Instance()._yp[i];
       delOff.x += curRegX;
       delOff.y += curRegY + 1;
-      reg = ContainsRegion(delOff.x, delOff.y);
+      reg = RegionManager::Instance().ContainsRegion(delOff.x, delOff.y);
       if(reg)
       {
         reg->SetVisibleZone(false);
@@ -480,42 +449,6 @@ void World::update()
       }
     }
   }
-}
-
-cube::Region* World::ContainsRegion(int xreg, int yreg)
-{
-  if(_regions.find(xreg) != _regions.end())
-  {
-    if(_regions[xreg].find(yreg) != _regions[xreg].end())
-      return _regions[xreg][yreg];
-  }
-
-  return NULL;
-}
-
-bool World::ContainsRegionSafe(int xreg, int yreg)
-{
-  //if(_regionsCreated.find(xreg) != std::map::end())
-  //{
-  //  if(_regionsCreated[xreg].find(yreg) != std::map::end())
-  //    return _regionsCreated[xreg][yreg];
-  //}
-
-  return false;
-}
-
-cube::Cub* World::GetCub(float x, float y, float z)
-{
-  cube::Region* rg = ContainsRegion(Region::ToRegionIndex(x), Region::ToRegionIndex(y));
-
-  if(rg)
-  {
-    x -= rg->GetPosition().x();
-    y -= rg->GetPosition().y();
-    return &(rg->GetCub(x, y, z));
-  }
-
-  return NULL;
 }
 
 void World::del(cube::Cub& cub, cube::Region* reg, int geomIndex, osg::Vec3d wcpos)
@@ -572,7 +505,7 @@ void World::RemoveCub(osg::Vec3d vec)
   if(geomIndex < 0 || geomIndex > GEOM_COUNT)
     return;
 
-  cube::Region* reg = GetRegion(Region::ToRegionIndex(vec.x()), Region::ToRegionIndex(vec.y()));
+  cube::Region* reg = RegionManager::Instance().GetRegion(Region::ToRegionIndex(vec.x()), Region::ToRegionIndex(vec.y()));
   osg::Vec3d cvec = vec - reg->GetPosition();
   cube::Cub& cub = reg->GetCub(cvec.x(), cvec.y(), cvec.z());
 
@@ -610,7 +543,7 @@ void World::RemoveCub(osg::Vec3d vec)
     osg::Vec3d wcvec = vec + CubInfo::Instance().GetNormal(side);
     cvec = wcvec;
 
-    cube::Region* sideReg = GetRegion(Region::ToRegionIndex(cvec.x()), Region::ToRegionIndex(cvec.y()));
+    cube::Region* sideReg = RegionManager::Instance().GetRegion(Region::ToRegionIndex(cvec.x()), Region::ToRegionIndex(cvec.y()));
     cvec -= sideReg->GetPosition();
     cube::Cub& scub = sideReg->GetCub(cvec.x(), cvec.y(), cvec.z());
 
@@ -625,7 +558,7 @@ void World::RemoveCub(osg::Vec3d vec)
 
 void World::AddCub(osg::Vec3d vec)
 {
-  cube::Region* reg = GetRegion(Region::ToRegionIndex(vec.x()), Region::ToRegionIndex(vec.y()));
+  cube::Region* reg = RegionManager::Instance().GetRegion(Region::ToRegionIndex(vec.x()), Region::ToRegionIndex(vec.y()));
   osg::Vec3d cvec = vec - reg->GetPosition();
 
   CubInfo::CubeSide side = cube::MathUtils::CubIntersection(reg, cvec.x(), cvec.y(), cvec.z(), _you, vec);
@@ -634,7 +567,7 @@ void World::AddCub(osg::Vec3d vec)
   {
     cvec = vec + norm;
 
-    reg = GetRegion(Region::ToRegionIndex(cvec.x()), Region::ToRegionIndex(cvec.y()));
+    reg = RegionManager::Instance().GetRegion(Region::ToRegionIndex(cvec.x()), Region::ToRegionIndex(cvec.y()));
     cvec -= reg->GetPosition();
     cube::Cub& scub = reg->GetCub(cvec.x(), cvec.y(), cvec.z());
 
@@ -648,11 +581,6 @@ void World::AddCub(osg::Vec3d vec)
       add(scub, reg, cvec.z(), vec + norm, true);
     }
   }
-}
-
-void World::ProcessAddRegions()
-{
-  
 }
 
 void World::UpdateRegionGeoms(cube::Region* rg, bool addToScene)
@@ -686,20 +614,61 @@ osg::Geode* World::createGeometry()
 
   _group->getOrCreateStateSet()->setTextureAttributeAndModes(0, _texInfo->GetTexture(), osg::StateAttribute::ON);
 
-  RegionsContainer::iterator xrg;
-  YRegionsContainer::iterator yrg;
-
-  for(xrg = _regions.begin(); xrg != _regions.end(); xrg++)
-    for(yrg = xrg->second.begin(); yrg != xrg->second.end(); yrg++)
-    {
-      cube::Wood::Generate(this, yrg->second, cube::MathUtils::random(0, REGION_WIDTH), cube::MathUtils::random(0, REGION_WIDTH));
-    }
-
-  for(xrg = _regions.begin(); xrg != _regions.end(); xrg++)
-    for(yrg = xrg->second.begin(); yrg != xrg->second.end(); yrg++)
+  struct WoodGenerateCallback: RegionManager::Callback
   {
-    UpdateRegionGeoms(yrg->second);
-  }
+    virtual void operator()(cube::Region* reg)
+    {
+      cube::Wood::Generate(RegionManager::Instance(), reg, 
+                           cube::MathUtils::random(0, REGION_WIDTH),
+                           cube::MathUtils::random(0, REGION_WIDTH));
+    }
+  };
+
+  WoodGenerateCallback wgc;
+  RegionManager::Instance().ForacheRegion(wgc);
+
+  struct UpdateRegionGeomsCallback: RegionManager::Callback
+  {
+    virtual void operator()(cube::Region* reg)
+    {
+      World::Instance().UpdateRegionGeoms(reg);
+    }
+  };
+
+  UpdateRegionGeomsCallback urgc;
+  RegionManager::Instance().ForacheRegion(urgc);
 
   return NULL;
+}
+
+osg::Group* World::GetGeometry()
+{
+  _group = new osg::Group;
+
+  _group->setUpdateCallback(new WorldCallback(this));
+  _group->removeChildren(0, _group->getNumChildren());
+
+  createGeometry();
+  _group->addChild(_geode[0]);
+  _group->addChild(_geode[1]);
+
+  _geode[0]->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE | osg::StateAttribute::PROTECTED);
+  _geode[1]->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE | osg::StateAttribute::PROTECTED);
+
+  {
+    osg::Shader *vs = new osg::Shader(osg::Shader::VERTEX);
+    vs->loadShaderSourceFromFile("./res/shaders/main.vert");
+    osg::Shader *fs = new osg::Shader(osg::Shader::FRAGMENT);
+    fs->loadShaderSourceFromFile("./res/shaders/main.frag");
+
+    osg::StateSet* ss = _group->getOrCreateStateSet();
+
+    osg::Program* program = new osg::Program();
+    program->addShader(vs);
+    program->addShader(fs);
+    ss->setAttributeAndModes(program, osg::StateAttribute::ON | osg::StateAttribute::PROTECTED);
+    ss->addUniform(new osg::Uniform("texture", 0));
+  }
+
+  return _group;
 }

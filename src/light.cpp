@@ -1,11 +1,12 @@
 #include <light.h>
 #include <world.h>
+#include <regionManager.h>
 
 using namespace cube;
 
 void AddModifiedGeom(cube::Cub& cub, osg::Vec3d wcpos, std::map<osg::Geometry*, World::DataUpdate>& updateGeomMap)
 {
-  cube::Region* reg = cube::World::Instance().GetRegion(Region::ToRegionIndex(wcpos.x()), Region::ToRegionIndex(wcpos.y()));
+  cube::Region* reg = RegionManager::Instance().GetRegion(Region::ToRegionIndex(wcpos.x()), Region::ToRegionIndex(wcpos.y()));
   wcpos -= reg->GetPosition();
   int geomIndex = wcpos.z() / GEOM_SIZE;
   osg::Geometry* geom = reg->GetGeometry(geomIndex);
@@ -19,7 +20,7 @@ void AddModifiedGeom(cube::Cub& cub, osg::Vec3d wcpos, std::map<osg::Geometry*, 
 
   if(posX == 0)
   {
-    cube::Region* sreg = cube::World::Instance().ContainsRegion(reg->GetX() - 1, reg->GetY());
+    cube::Region* sreg = RegionManager::Instance().ContainsRegion(reg->GetX() - 1, reg->GetY());
     geom = sreg->GetGeometry(geomIndex);
 
     if(updateGeomMap.find(geom) == updateGeomMap.end())
@@ -28,7 +29,7 @@ void AddModifiedGeom(cube::Cub& cub, osg::Vec3d wcpos, std::map<osg::Geometry*, 
 
   if(posX == REGION_WIDTH - 1)
   {
-    cube::Region* sreg = cube::World::Instance().ContainsRegion(reg->GetX() + 1, reg->GetY());
+    cube::Region* sreg = RegionManager::Instance().ContainsRegion(reg->GetX() + 1, reg->GetY());
     geom = sreg->GetGeometry(geomIndex);
 
     if(updateGeomMap.find(geom) == updateGeomMap.end())
@@ -37,7 +38,7 @@ void AddModifiedGeom(cube::Cub& cub, osg::Vec3d wcpos, std::map<osg::Geometry*, 
 
   if(posY == 0)
   {
-    cube::Region* sreg = cube::World::Instance().ContainsRegion(reg->GetX(), reg->GetY() - 1);
+    cube::Region* sreg = RegionManager::Instance().ContainsRegion(reg->GetX(), reg->GetY() - 1);
     geom = sreg->GetGeometry(geomIndex);
 
     if(updateGeomMap.find(geom) == updateGeomMap.end())
@@ -46,7 +47,7 @@ void AddModifiedGeom(cube::Cub& cub, osg::Vec3d wcpos, std::map<osg::Geometry*, 
 
   if(posY == REGION_WIDTH - 1)
   {
-    cube::Region* sreg = cube::World::Instance().ContainsRegion(reg->GetX(), reg->GetY() + 1);
+    cube::Region* sreg = RegionManager::Instance().ContainsRegion(reg->GetX(), reg->GetY() + 1);
     geom = sreg->GetGeometry(geomIndex);
 
     if(updateGeomMap.find(geom) == updateGeomMap.end())
@@ -85,7 +86,7 @@ void Light::RecalcAndFillingLight(cube::Cub& cub, osg::Vec3d wcpos, std::map<osg
     CubInfo::CubeSide side = (CubInfo::CubeSide)i;
     osg::Vec3d csvec = wcpos + CubInfo::Instance().GetNormal(side);
 
-    cube::Region* sideReg = cube::World::Instance().GetRegion(Region::ToRegionIndex(csvec.x()), Region::ToRegionIndex(csvec.y()));
+    cube::Region* sideReg = RegionManager::Instance().GetRegion(Region::ToRegionIndex(csvec.x()), Region::ToRegionIndex(csvec.y()));
     csvec -= sideReg->GetPosition();
     cube::Cub& scub = sideReg->GetCub(csvec.x(), csvec.y(), csvec.z());
 
@@ -105,7 +106,7 @@ void Light::RecalcAndFillingLight(cube::Cub& cub, osg::Vec3d wcpos, std::map<osg
   {
     CubInfo::CubeSide side = (CubInfo::CubeSide)i;
     osg::Vec3d csvec = wcpos + CubInfo::Instance().GetNormal(side);
-    cube::Cub* scub = cube::World::Instance().GetCub(csvec.x(), csvec.y(), csvec.z());
+    cube::Cub* scub = RegionManager::Instance().GetCub(csvec.x(), csvec.y(), csvec.z());
 
     fillingLight(scub, csvec, side, cub._light, updateGeomMap);
   }
@@ -136,7 +137,7 @@ void Light::fillingLight(cube::Cub* cub, osg::Vec3d wcpos, CubInfo::CubeSide sid
       {
         CubInfo::CubeSide lside = (CubInfo::CubeSide)i;
         osg::Vec3d csvec = wcpos + CubInfo::Instance().GetNormal(lside);
-        cube::Cub* scub = cube::World::Instance().GetCub(csvec.x(), csvec.y(), csvec.z());
+        cube::Cub* scub = RegionManager::Instance().GetCub(csvec.x(), csvec.y(), csvec.z());
 
         fillingLight(scub, csvec, lside, cub->_light, updateGeomMap);
       }
@@ -155,7 +156,7 @@ void Light::FindLightSourceAndFillingLight(cube::Cub& cub, osg::Vec3d wcpos, std
     osg::Vec3d wcsvec = wcpos + CubInfo::Instance().GetNormal(side);
     osg::Vec3d csvec = wcsvec;
 
-    cube::Region* sideReg = cube::World::Instance().GetRegion(Region::ToRegionIndex(csvec.x()), Region::ToRegionIndex(csvec.y()));
+    cube::Region* sideReg = RegionManager::Instance().GetRegion(Region::ToRegionIndex(csvec.x()), Region::ToRegionIndex(csvec.y()));
     csvec -= sideReg->GetPosition();
     cube::Cub& scub = sideReg->GetCub(csvec.x(), csvec.y(), csvec.z());
 
@@ -179,7 +180,7 @@ void Light::FindLightSourceAndFillingLight(cube::Cub& cub, osg::Vec3d wcpos, std
     {
       CubInfo::CubeSide side = (CubInfo::CubeSide)s;
       osg::Vec3d csvec = i->second + CubInfo::Instance().GetNormal(side);
-      cube::Cub* scub = cube::World::Instance().GetCub(csvec.x(), csvec.y(), csvec.z());
+      cube::Cub* scub = RegionManager::Instance().GetCub(csvec.x(), csvec.y(), csvec.z());
 
       cube::Light::fillingLight(scub, csvec, side, i->first->_light, updateGeomMap);
     }
@@ -200,7 +201,7 @@ void Light::findLightSource(cube::Cub& cub, osg::Vec3d wcpos, MapCubPos& listCub
     osg::Vec3d wcsvec = wcpos + CubInfo::Instance().GetNormal(side);
     osg::Vec3d csvec = wcsvec;
 
-    cube::Region* sideReg = cube::World::Instance().GetRegion(Region::ToRegionIndex(csvec.x()), Region::ToRegionIndex(csvec.y()));
+    cube::Region* sideReg = RegionManager::Instance().GetRegion(Region::ToRegionIndex(csvec.x()), Region::ToRegionIndex(csvec.y()));
     csvec -= sideReg->GetPosition();
     cube::Cub& scub = sideReg->GetCub(csvec.x(), csvec.y(), csvec.z());
 

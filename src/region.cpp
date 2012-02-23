@@ -1,19 +1,20 @@
 #include <region.h>
 #include <geoMaker.h>
 #include <world.h>
+#include <regionManager.h>
 
 using namespace cube;
 
 int Region::countRegion = 0;
 
-cube::Region* Region::Generation(cube::World* world, int xreg, int yreg)
+cube::Region* Region::Generation(int xreg, int yreg)
 {
   cube::Region* region = new Region();
   region->_xReg = xreg;
   region->_yReg = yreg;
   region->_position.set(REGION_WIDTH * xreg, REGION_WIDTH * yreg, 0.0);
 
-  world->_regions[xreg][yreg] = region;
+  RegionManager::Instance().SetRegion(xreg, yreg, region);
 
   return region;
 }
