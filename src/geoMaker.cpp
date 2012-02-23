@@ -1,5 +1,6 @@
 #include <geoMaker.h>
 #include "perlin.h"
+#include <regionManager.h>
 
 using namespace cube;
 
@@ -29,7 +30,7 @@ void GeoMaker::FillRegion(cube::Region* rg, float rnd)
     }
   }
 
-  Perlin* perlin = new Perlin(1, 4, 1, 123);
+  Perlin* perlin = new Perlin(4, 1, 1.0f, 123);
 
   for(int i = 0; i < REGION_WIDTH; i++)
   {
@@ -39,7 +40,7 @@ void GeoMaker::FillRegion(cube::Region* rg, float rnd)
       {
         cube::Cub& cub = rg->GetCub(i, j, k);
         if(cub._type != cube::Cub::Air && 
-          perlin->Get((float)(i + rg->GetX() * REGION_WIDTH)/100.0f, (float)(j + rg->GetY() * REGION_WIDTH)/100.0f, (float)k/30.0f) < -0.3f)
+          perlin->Get((float)(i + rg->GetX() * REGION_WIDTH)/30.0f, (float)(j + rg->GetY() * REGION_WIDTH)/30.0f, (float)k/20.0f) < -0.33f)
         {
           cub._type = cube::Cub::Air;
 
@@ -48,13 +49,10 @@ void GeoMaker::FillRegion(cube::Region* rg, float rnd)
             cub._rendered = false;
             rg->_renderedCubCount[0][k / GEOM_SIZE]--;
           }
-
+/*
           for(int s = CubInfo::FirstSide; s <= CubInfo::EndSide; s++)
           {
             CubInfo::CubeSide side = (CubInfo::CubeSide)s;
-            //osg::Vec3d csvec = rg->GetPosition() + osg::Vec3d(i, j, k) + CubInfo::Instance().GetNormal(side);
-
-            //if(csvec.x() < 0.0f || csvec.x() > 7.0f || csvec.y() < 0.0f || csvec.y() > 7.0f || csvec.z() < 0.0f || csvec.x() > 127.0f)
 
             osg::Vec3d vec = CubInfo::Instance().GetNormal(side);
 
@@ -71,6 +69,53 @@ void GeoMaker::FillRegion(cube::Region* rg, float rnd)
             {
               scub._rendered = true;
               rg->_renderedCubCount[0][z / GEOM_SIZE]++;
+            }
+          }
+/**/
+        }
+      }
+    }
+  }
+}
+
+void GeoMaker::FillRegion2(cube::Region* rg)
+{
+  for(int i = 0; i < REGION_WIDTH; i++)
+  {
+    for(int j = 0; j < REGION_WIDTH; j++)
+    {
+      for(int k = 0; k < REGION_HEIGHT; k++)
+      {
+        cube::Cub& cub = rg->GetCub(i, j, k);
+        if(cub._type == cube::Cub::Air)
+        {
+          for(int s = CubInfo::FirstSide; s <= CubInfo::EndSide; s++)
+          {
+            CubInfo::CubeSide side = (CubInfo::CubeSide)s;
+
+            osg::Vec3d vec = rg->GetPosition() + osg::Vec3d(i + 0.1f, j + 0.1f, k + 0.1f) + CubInfo::Instance().GetNormal(side);
+
+            if(vec.z() < 0 || vec.z() > 127)
+              continue;
+
+            int rx = Region::ToRegionIndex(vec.x());
+            int ry = Region::ToRegionIndex(vec.y());
+
+            cube::Region* srg = RegionManager::Instance().ContainsRegion(rx, ry);
+
+            if(srg == NULL)
+            {
+              srg = RegionManager::Instance().CreateRegion(rx, ry);
+            }
+
+            vec -= srg->GetPosition();
+
+            cube::Cub& scub = srg->GetCub(vec.x(), vec.y(), vec.z());
+
+            if(!scub._rendered && scub._type != cube::Cub::Air)
+            {
+              scub._rendered = true;
+              srg->_renderedCubCount[0][(int)vec.z() / GEOM_SIZE]++;
             }
           }
         }
@@ -157,7 +202,7 @@ void GeoMaker::GenNoise(cube::Region* rg, float rnd)
       //проходим по всем элементам массива и заполняем их значениями
       //pNoise[i*size+j]=PerlinNoise_2D(float(i),float(j),fac);
 
-      int height = REGION_HEIGHT / 2 + ((PerlinNoise_2D(float(i + xOffset) / 5.0f, float(j + yOffset) / 5.0f, rnd) * (REGION_HEIGHT / 3)) / 255);
+      int height = REGION_HEIGHT / 2 + ((PerlinNoise_2D(float(i + xOffset) / 3.0f, float(j + yOffset) / 3.0f, rnd) * (REGION_HEIGHT / 3)) / 255);
       rg->SetHeight(i, j, height);
 
       if(i < 0 || i >= REGION_WIDTH || j < 0 || j >= REGION_WIDTH)

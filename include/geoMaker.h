@@ -9,6 +9,7 @@ namespace cube
   {
   public:
     static void FillRegion(cube::Region* rg, float rnd);
+    static void FillRegion2(cube::Region* rg);
 
   protected:
     static inline float Noise2D(int x, int y)

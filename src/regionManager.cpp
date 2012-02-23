@@ -1,4 +1,5 @@
 #include <regionManager.h>
+#include <world.h>
 
 using namespace cube;
 
@@ -25,6 +26,14 @@ cube::Cub* RegionManager::GetCub(float x, float y, float z)
   }
 
   return NULL;
+}
+
+cube::Region* RegionManager::CreateRegion(int xreg, int yreg)
+{
+  cube::Region* region = cube::Region::Generation(xreg, yreg);
+  region->FillRegion(World::Instance()._rnd);
+
+  return region;
 }
 
 void RegionManager::ForacheRegion(Callback& cb)

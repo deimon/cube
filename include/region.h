@@ -27,6 +27,7 @@ namespace cube
 
     static cube::Region* Generation(int xreg, int yreg);
     void FillRegion(float rnd);
+    void FillRegion2();
 
     static int ToRegionIndex(float worldPos);
 
@@ -47,6 +48,7 @@ namespace cube
     bool _geometryCreated;
 
     bool IsAreaGenerated() { return _areaGenerated; }
+    bool IsAreaGenerated2() { return _areaGenerated2; }
 
     bool InVisibleZone() { return _inVisibleZone; }
     void SetVisibleZone(bool inVisibleZone) { _inVisibleZone = inVisibleZone; }
@@ -63,11 +65,13 @@ namespace cube
 
       _geometryCreated = false;
       _areaGenerated = false;
+      _areaGenerated2 = false;
       _inVisibleZone = false;
       _inScene = false;
     }
 
     bool _areaGenerated;
+    bool _areaGenerated2;
     bool _inVisibleZone;
     bool _inScene;
 

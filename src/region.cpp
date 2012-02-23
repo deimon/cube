@@ -34,6 +34,12 @@ void Region::FillRegion(float rnd)
   _areaGenerated = true;
 }
 
+void Region::FillRegion2()
+{
+  cube::GeoMaker::FillRegion2(this);
+  _areaGenerated2 = true;
+}
+
 int Region::ToRegionIndex(float worldPos)
 {
   if(worldPos > 0)

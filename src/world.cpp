@@ -57,6 +57,10 @@ private:
             {
               reg->FillRegion(_world->_rnd);
             }
+            if(!reg->IsAreaGenerated2())
+            {
+              reg->FillRegion2();
+            }
             _world->UpdateRegionGeoms(reg, false);
 
             _addToSceneRegions.push_back(reg);
@@ -94,7 +98,7 @@ World::World()
   srand(time(NULL));
   _rnd = 7.0f; // osg::PI*2*10 + ((float)rand() / RAND_MAX)* (osg::PI*3*10 - osg::PI*2*10);
 
-  int radius = 16;
+  int radius = 8;
 
   cube::Areas::Instance().SetRadius(radius);
 
@@ -106,6 +110,13 @@ World::World()
       region->FillRegion(_rnd);
       region->SetVisibleZone(true);
     }
+
+    for(int i = 0; i < Areas::Instance().GetSize(); i++)
+    for(int j = 0; j < Areas::Instance().GetSize(); j++)
+      if(Areas::Instance()._circle[i][j] == 1)
+      {
+        RegionManager::Instance().GetRegion(i - radius, j - radius)->FillRegion2();
+      }
 
   _cgThread = new CreateGeomThread(this);
 }

@@ -74,11 +74,12 @@ namespace cube
 
     mutable OpenThreads::Mutex  _mutex;
 
+    float _rnd;
+
   protected:
     void updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset, bool blend = false, bool updateScene = false);
     void clearRegionGeoms(cube::Region* rg);
 
-    float _rnd;
     int _prevRegX, _prevRegY;
 
     std::list<cube::Region*> _addRegions;
