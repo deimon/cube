@@ -8,7 +8,6 @@
 #include <osg/Geode>
 #include <osg/Texture2D>
 #include "singleton.h"
-#include <generator.h>
 
 class CreateGeomThread;
 
@@ -30,6 +29,8 @@ namespace cube
   class World : public utils::Singleton<World>
   {
   public:
+
+    typedef std::list<cube::Region*> RegionsList;
 
     struct DataUpdate
     {
@@ -82,9 +83,10 @@ namespace cube
 
     int _prevRegX, _prevRegY;
 
-    std::list<cube::Region*> _addRegions;
-    std::list<std::pair<cube::Region*, Areas::v2>> _delRegions;
-    std::list<cube::Region*> _addToSceneRegions;
+    std::list<RegionsList*> _addRegionsForVisual;
+    std::list<RegionsList*> _addRegionsForCalc;
+    RegionsList _delRegionsForVisual;
+    RegionsList _addToSceneRegions;
 
     osg::Geode* createGeometry();
 
@@ -96,6 +98,7 @@ namespace cube
     CreateGeomThread* _cgThread;
 
     int _frame;
+    int _radius;
 
   public:
     friend CreateGeomThread;

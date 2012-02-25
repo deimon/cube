@@ -327,10 +327,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\generator.h"
-				>
-			</File>
-			<File
 				RelativePath=".\include\geoMaker.h"
 				>
 			</File>
@@ -424,10 +420,6 @@
 			>
 			<File
 				RelativePath=".\src\cube.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\src\generator.cpp"
 				>
 			</File>
 			<File

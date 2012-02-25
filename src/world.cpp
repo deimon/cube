@@ -29,7 +29,8 @@ public:
   bool IsCompleted() { return _completed; }
   void Calculate() { _completed = false; }
 
-  std::list<cube::Region*> _addRegions;
+  std::list<World::RegionsList*> _addRegionsForVisual;
+  std::list<World::RegionsList*> _addRegionsForCalc;
 
   std::list<cube::Region*> _addToSceneRegions;
 
@@ -46,25 +47,45 @@ private:
       microSleep(100);
       if(!_completed)
       {
-        if(!_addRegions.empty())
+        if(!_addRegionsForCalc.empty())
         {
-          for(int i = 0; i < 100 && !_addRegions.empty(); i++)
-          {
-            cube::Region* reg = _addRegions.front();
-            _addRegions.pop_front();
+          World::RegionsList* curList = _addRegionsForCalc.front();
+          _addRegionsForCalc.pop_front();
 
+          while(!curList->empty())
+          {
+            cube::Region* reg = curList->front();
+            curList->pop_front();
             if(!reg->IsAreaGenerated())
             {
               reg->FillRegion(_world->_rnd);
             }
+          }
+
+          delete curList;
+        }
+
+        if(!_addRegionsForVisual.empty())
+        {
+          World::RegionsList* curList = _addRegionsForVisual.front();
+          _addRegionsForVisual.pop_front();
+
+          while(!curList->empty())
+          {
+            cube::Region* reg = curList->front();
+            curList->pop_front();
+
             if(!reg->IsAreaGenerated2())
             {
               reg->FillRegion2();
             }
+
             _world->UpdateRegionGeoms(reg, false);
 
             _addToSceneRegions.push_back(reg);
           }
+
+          delete curList;
         }
 
         _completed = true;
@@ -88,6 +109,9 @@ void WorldCallback::operator()(osg::Node* node, osg::NodeVisitor* nv)
 
 World::World()
 {
+  _addRegionsForVisual.push_back(new RegionsList);
+  _addRegionsForCalc.push_back(new RegionsList);
+
   _frame = 0;
   // эти параметры надо будет устанавливать
   // в соответствии с местом появления персонажа
@@ -98,25 +122,22 @@ World::World()
   srand(time(NULL));
   _rnd = 7.0f; // osg::PI*2*10 + ((float)rand() / RAND_MAX)* (osg::PI*3*10 - osg::PI*2*10);
 
-  int radius = 8;
+  _radius = 8;
 
-  cube::Areas::Instance().SetRadius(radius);
+  for(int i = -_radius - 1; i <= _radius + 1; i++)
+  for(int j = -_radius - 1; j <= _radius + 1; j++)
+  {
+    cube::Region* region = cube::Region::Generation(i, j);
+    region->FillRegion(_rnd);
+  }
 
-  for(int i = 0; i < Areas::Instance().GetSize(); i++)
-  for(int j = 0; j < Areas::Instance().GetSize(); j++)
-    if(Areas::Instance()._circle[i][j] == 1)
-    {
-      cube::Region* region = cube::Region::Generation(i - radius, j - radius);
-      region->FillRegion(_rnd);
-      region->SetVisibleZone(true);
-    }
-
-    for(int i = 0; i < Areas::Instance().GetSize(); i++)
-    for(int j = 0; j < Areas::Instance().GetSize(); j++)
-      if(Areas::Instance()._circle[i][j] == 1)
-      {
-        RegionManager::Instance().GetRegion(i - radius, j - radius)->FillRegion2();
-      }
+  for(int i = -_radius; i <= _radius; i++)
+  for(int j = -_radius; j <= _radius; j++)
+  {
+    cube::Region* region = RegionManager::Instance().GetRegion(i, j);
+    region->SetVisibleZone(true);
+    region->FillRegion2();
+  }
 
   _cgThread = new CreateGeomThread(this);
 }
@@ -262,13 +283,26 @@ void World::update()
   // отправка в поток регионов на обработку и получение обработаных регионов
   if(_cgThread->IsCompleted() /*&& !_addRegions.empty()*/)
   {
-    if(_cgThread->_addRegions.empty())
-      _cgThread->_addRegions.swap(_addRegions);
-    else
+    while(!_addRegionsForCalc.empty())
     {
-      std::list<cube::Region*>::iterator it = _cgThread->_addRegions.end();
-      --it;
-      _cgThread->_addRegions.splice(it, _addRegions);
+      RegionsList* rl = _addRegionsForCalc.front();
+      
+      if(rl->empty())
+        break;
+
+      _cgThread->_addRegionsForCalc.push_back(rl);
+      _addRegionsForCalc.pop_front();
+    }
+
+    while(!_addRegionsForVisual.empty())
+    {
+      RegionsList* rl = _addRegionsForVisual.front();
+
+      if(rl->empty())
+        break;
+
+      _cgThread->_addRegionsForVisual.push_back(rl);
+      _addRegionsForVisual.pop_front();
     }
 
     if(_addToSceneRegions.empty())
@@ -304,8 +338,6 @@ void World::update()
       {
         add = true;
         reg->SetInScene(true);
-        //_regions[reg->GetX()][reg->GetY()] = reg;
-        //_regionsCreated[regPos.x][regPos.y] = true;
 
         for(int s = 0; s < 2; s++)
         for(int offset = 0; offset < GEOM_COUNT; offset++)
@@ -319,14 +351,13 @@ void World::update()
     } while(!add && !_addToSceneRegions.empty());
 
     //del
-    if(!_delRegions.empty())
+    if(!_delRegionsForVisual.empty())
     {
       bool del = false;
       do 
       {
-        Areas::v2 regPos = _delRegions.front().second;
-        cube::Region* reg = RegionManager::Instance().ContainsRegion(regPos.x, regPos.y);
-        _delRegions.pop_front();
+        cube::Region* reg = _delRegionsForVisual.front();
+        _delRegionsForVisual.pop_front();
 
         if(reg != NULL && !reg->InVisibleZone() && reg->InScene())
         {
@@ -334,7 +365,7 @@ void World::update()
           reg->SetInScene(false);
           clearRegionGeoms(reg);
         }
-      } while(!del && !_delRegions.empty());
+      } while(!del && !_delRegionsForVisual.empty());
     }
   }
 
@@ -345,120 +376,176 @@ void World::update()
   int curRegX = Region::ToRegionIndex(_you.x());
   int curRegY = Region::ToRegionIndex(_you.y());
 
+  bool newRegionList = false;
+
   if(curRegX > _prevRegX)
   {
+    newRegionList = true;
     _prevRegX = curRegX;
 
-    for(int i = 0; i < Areas::Instance().GetSize(); i++)
+    for(int j = -_radius - 1; j <= _radius + 1; j++)
+    {
+      int i = _radius + 1;
+      int x = i + curRegX;
+      int y = j + curRegY;
+      cube::Region* reg = RegionManager::Instance().ContainsRegion(x, y);
+      if(reg == NULL)
+        reg = cube::Region::Generation(x, y);
+      _addRegionsForCalc.back()->push_back(reg);
+    }
+
+    for(int j = -_radius; j <= _radius; j++)
     {
       //add
-      Areas::v2 addOffs = Areas::Instance()._xp[i];
-      addOffs.x += curRegX;
-      addOffs.y += curRegY;
-      cube::Region* reg = RegionManager::Instance().ContainsRegion(addOffs.x, addOffs.y);
+      int i = _radius;
+      int x = i + curRegX;
+      int y = j + curRegY;
+      cube::Region* reg = RegionManager::Instance().ContainsRegion(x, y);
       if(reg == NULL)
-        reg = cube::Region::Generation(addOffs.x, addOffs.y);
+        reg = cube::Region::Generation(x, y);
       reg->SetVisibleZone(true);
-      _addRegions.push_back(reg);
+      _addRegionsForVisual.back()->push_back(reg);
 
       //del
-      Areas::v2 delOff = Areas::Instance()._xn[i];
-      delOff.x += curRegX - 1;
-      delOff.y += curRegY;
-      reg = RegionManager::Instance().ContainsRegion(delOff.x, delOff.y);
+      i = -_radius;
+      x = i + curRegX - 1;
+      y = j + curRegY;
+      reg = RegionManager::Instance().ContainsRegion(x, y);
       if(reg)
       {
         reg->SetVisibleZone(false);
-        _delRegions.push_back(std::make_pair(reg, delOff));
+        _delRegionsForVisual.push_back(reg);
       }
     }
   }
 
   if(curRegX < _prevRegX)
   {
+    newRegionList = true;
     _prevRegX = curRegX;
 
-    for(int i = 0; i < Areas::Instance().GetSize(); i++)
+    for(int j = -_radius - 1; j <= _radius + 1; j++)
+    {
+      int i = -_radius - 1;
+      int x = i + curRegX;
+      int y = j + curRegY;
+      cube::Region* reg = RegionManager::Instance().ContainsRegion(x, y);
+      if(reg == NULL)
+        reg = cube::Region::Generation(x, y);
+      _addRegionsForCalc.back()->push_back(reg);
+    }
+
+    for(int j = -_radius; j <= _radius; j++)
     {
       //add
-      Areas::v2 addOffs = Areas::Instance()._xn[i];
-      addOffs.x += curRegX;
-      addOffs.y += curRegY;
-      cube::Region* reg = RegionManager::Instance().ContainsRegion(addOffs.x, addOffs.y);
+      int i = -_radius;
+      int x = i + curRegX;
+      int y = j + curRegY;
+      cube::Region* reg = RegionManager::Instance().ContainsRegion(x, y);
       if(reg == NULL)
-        reg = cube::Region::Generation(addOffs.x, addOffs.y);
+        reg = cube::Region::Generation(x, y);
       reg->SetVisibleZone(true);
-      _addRegions.push_back(reg);
+      _addRegionsForVisual.back()->push_back(reg);
 
       //del
-      Areas::v2 delOff = Areas::Instance()._xp[i];
-      delOff.x += curRegX + 1;
-      delOff.y += curRegY;
-      reg = RegionManager::Instance().ContainsRegion(delOff.x, delOff.y);
+      i = _radius;
+      x = i + curRegX + 1;
+      y = j + curRegY;
+      reg = RegionManager::Instance().ContainsRegion(x, y);
       if(reg)
       {
         reg->SetVisibleZone(false);
-        _delRegions.push_back(std::make_pair(reg, delOff));
+        _delRegionsForVisual.push_back(reg);
       }
     }
   }
 
   if(curRegY > _prevRegY)
   {
+    newRegionList = true;
     _prevRegY = curRegY;
 
-    for(int i = 0; i < Areas::Instance().GetSize(); i++)
+    for(int j = -_radius - 1; j <= _radius + 1; j++)
+    {
+      int i = _radius + 1;
+      int x = j + curRegX;
+      int y = i + curRegY;
+      cube::Region* reg = RegionManager::Instance().ContainsRegion(x, y);
+      if(reg == NULL)
+        reg = cube::Region::Generation(x, y);
+      _addRegionsForCalc.back()->push_back(reg);
+    }
+
+    for(int j = -_radius; j <= _radius; j++)
     {
       //add
-      Areas::v2 addOffs = Areas::Instance()._yp[i];
-      addOffs.x += curRegX;
-      addOffs.y += curRegY;
-      cube::Region* reg = RegionManager::Instance().ContainsRegion(addOffs.x, addOffs.y);
+      int i = _radius;
+      int x = j + curRegX;
+      int y = i + curRegY;
+      cube::Region* reg = RegionManager::Instance().ContainsRegion(x, y);
       if(reg == NULL)
-        reg = cube::Region::Generation(addOffs.x, addOffs.y);
+        reg = cube::Region::Generation(x, y);
       reg->SetVisibleZone(true);
-      _addRegions.push_back(reg);
+      _addRegionsForVisual.back()->push_back(reg);
 
       //del
-      Areas::v2 delOff = Areas::Instance()._yn[i];
-      delOff.x += curRegX;
-      delOff.y += curRegY - 1;
-      reg = RegionManager::Instance().ContainsRegion(delOff.x, delOff.y);
+      i = -_radius;
+      x = j + curRegX;
+      y = i + curRegY - 1;
+      reg = RegionManager::Instance().ContainsRegion(x, y);
       if(reg)
       {
         reg->SetVisibleZone(false);
-        _delRegions.push_back(std::make_pair(reg, delOff));
+        _delRegionsForVisual.push_back(reg);
       }
     }
   }
 
   if(curRegY < _prevRegY)
   {
+    newRegionList = true;
     _prevRegY = curRegY;
 
-    for(int i = 0; i < Areas::Instance().GetSize(); i++)
+    for(int j = -_radius - 1; j <= _radius + 1; j++)
+    {
+      int i = -_radius - 1;
+      int x = j + curRegX;
+      int y = i + curRegY;
+      cube::Region* reg = RegionManager::Instance().ContainsRegion(x, y);
+      if(reg == NULL)
+        reg = cube::Region::Generation(x, y);
+      _addRegionsForCalc.back()->push_back(reg);
+    }
+
+    for(int j = -_radius; j <= _radius; j++)
     {
       //add
-      Areas::v2 addOffs = Areas::Instance()._yn[i];
-      addOffs.x += curRegX;
-      addOffs.y += curRegY;
-      cube::Region* reg = RegionManager::Instance().ContainsRegion(addOffs.x, addOffs.y);
+      int i = -_radius;
+      int x = j + curRegX;
+      int y = i + curRegY;
+      cube::Region* reg = RegionManager::Instance().ContainsRegion(x, y);
       if(reg == NULL)
-        reg = cube::Region::Generation(addOffs.x, addOffs.y);
+        reg = cube::Region::Generation(x, y);
       reg->SetVisibleZone(true);
-      _addRegions.push_back(reg);
+      _addRegionsForVisual.back()->push_back(reg);
 
       //del
-      Areas::v2 delOff = Areas::Instance()._yp[i];
-      delOff.x += curRegX;
-      delOff.y += curRegY + 1;
-      reg = RegionManager::Instance().ContainsRegion(delOff.x, delOff.y);
+      i = _radius;
+      x = j + curRegX;
+      y = i + curRegY + 1;
+      reg = RegionManager::Instance().ContainsRegion(x, y);
       if(reg)
       {
         reg->SetVisibleZone(false);
-        _delRegions.push_back(std::make_pair(reg, delOff));
+        _delRegionsForVisual.push_back(reg);
       }
     }
+  }
+
+  if(newRegionList)
+  {
+    _addRegionsForVisual.push_back(new RegionsList);
+    _addRegionsForCalc.push_back(new RegionsList);
   }
 }
 
@@ -625,29 +712,23 @@ osg::Geode* World::createGeometry()
 
   _group->getOrCreateStateSet()->setTextureAttributeAndModes(0, _texInfo->GetTexture(), osg::StateAttribute::ON);
 
-  struct WoodGenerateCallback: RegionManager::Callback
+  for(int i = -_radius; i <= _radius; i++)
+  for(int j = -_radius; j <= _radius; j++)
   {
-    virtual void operator()(cube::Region* reg)
-    {
-      cube::Wood::Generate(RegionManager::Instance(), reg, 
-                           cube::MathUtils::random(0, REGION_WIDTH),
-                           cube::MathUtils::random(0, REGION_WIDTH));
-    }
-  };
+    cube::Region* region = RegionManager::Instance().GetRegion(i, j);
+    
+    cube::Wood::Generate(RegionManager::Instance(), region, 
+      cube::MathUtils::random(0, REGION_WIDTH),
+      cube::MathUtils::random(0, REGION_WIDTH));
+  }
 
-  WoodGenerateCallback wgc;
-  RegionManager::Instance().ForacheRegion(wgc);
-
-  struct UpdateRegionGeomsCallback: RegionManager::Callback
+  for(int i = -_radius; i <= _radius; i++)
+  for(int j = -_radius; j <= _radius; j++)
   {
-    virtual void operator()(cube::Region* reg)
-    {
-      World::Instance().UpdateRegionGeoms(reg);
-    }
-  };
+    cube::Region* region = RegionManager::Instance().GetRegion(i, j);
 
-  UpdateRegionGeomsCallback urgc;
-  RegionManager::Instance().ForacheRegion(urgc);
+    World::Instance().UpdateRegionGeoms(region);
+  }
 
   return NULL;
 }
