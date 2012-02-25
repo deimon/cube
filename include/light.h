@@ -10,17 +10,17 @@ namespace cube
   {
   public:
 
-    typedef std::map<cube::Cub*, osg::Vec3d> MapCubPos;
+    typedef std::map<const cube::Cub*, std::pair<osg::Vec3d, float>> MapCubPos;
 
-    static void RecalcAndFillingLight(cube::Cub& cub, osg::Vec3d wcpos, std::map<osg::Geometry*, World::DataUpdate>& updateGeomMap);
+    static void RecalcAndFillingLight(cube::CubRegion& cubReg, osg::Vec3d wcpos, std::map<osg::Geometry*, World::DataUpdate>& updateGeomMap);
 
-    static void fillingLight(cube::Cub* cub, osg::Vec3d wcpos, CubInfo::CubeSide side, float prevLight,
+    static void fillingLight(cube::CubRegion& cubReg, osg::Vec3d wcpos, CubInfo::CubeSide side, float prevLight,
                              std::map<osg::Geometry*, World::DataUpdate>& updateGeomMap);
 
-    static void FindLightSourceAndFillingLight(cube::Cub& cub, osg::Vec3d wcpos, std::map<osg::Geometry*,
+    static void FindLightSourceAndFillingLight(cube::CubRegion& cubReg, osg::Vec3d wcpos, std::map<osg::Geometry*,
                                                World::DataUpdate>& updateGeomMap);
 
-    static void findLightSource(cube::Cub& cub, osg::Vec3d wcpos, MapCubPos& listCubPos,
+    static void findLightSource(cube::CubRegion& cubReg, osg::Vec3d wcpos, MapCubPos& listCubPos,
                                 std::map<osg::Geometry*, World::DataUpdate>& updateGeomMap);
 
   };

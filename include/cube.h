@@ -10,6 +10,8 @@
 
 namespace cube
 {
+  class CubRegion;
+
   class Cub
   {
   public:
@@ -33,10 +35,13 @@ namespace cube
     {
     }
 
+  protected:
     CubeType _type;
     bool _rendered;
     bool _blend;
     float _light;
+
+    friend CubRegion;
   };
 
   class CubInfo: public utils::Singleton<CubInfo>

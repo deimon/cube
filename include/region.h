@@ -18,6 +18,7 @@
 namespace cube
 {
   class World;
+  class CubRegion;
 
   class Region
   {
@@ -31,7 +32,7 @@ namespace cube
 
     static int ToRegionIndex(float worldPos);
 
-    cube::Cub& GetCub(int x, int y, int z){ return _m[x][y][z];}
+    cube::CubRegion GetCub(int x, int y, int z);
     const osg::Vec3d& GetPosition(){ return _position;}
 
     osg::Geometry* GetGeometry(int k, bool blend = false){ if(blend) return _geom[1][k]; else return _geom[0][k]; }
@@ -85,6 +86,31 @@ namespace cube
     osg::Vec3d _position;
 
     osg::Geometry* _geom[2][GEOM_COUNT];
+  };
+
+  class CubRegion
+  {
+  public:
+    CubRegion(Region* region, Cub& cub, int geomIndex) : _cub(cub) { _region = region; _geomIndex = geomIndex; }
+
+    const Cub* GetCub() { return &_cub; }
+
+    Region* GetRegion() { return _region; }
+    int GetGeomIndex() { return _geomIndex; }
+    float& GetCubLight() { return _cub._light; }
+
+    const Cub::CubeType& GetCubType() { return _cub._type; }
+    void SetCubType(Cub::CubeType type);
+
+    void SetCubRendered(bool rendered);
+    bool GetCubRendered() { return _cub._rendered; }
+
+    bool GetCubBlend() { return _cub._blend; }
+
+  protected:
+    Region* _region;
+    Cub& _cub;
+    int _geomIndex;
   };
 }
 

@@ -243,9 +243,9 @@ void World::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset, bool
   for(int y = 0; y < GEOM_SIZE; y++)
   for(int z = 0; z < GEOM_SIZE; z++)
   {
-    const cube::Cub &cub = reg->GetCub(x, y, z + zOffset);
+    cube::CubRegion cubReg = reg->GetCub(x, y, z + zOffset);
 
-    if(cub._type == cube::Cub::Air || !cub._rendered || cub._blend != blend) //!!!!!!!
+    if(cubReg.GetCubType() == cube::Cub::Air || !cubReg.GetCubRendered() || cubReg.GetCubBlend() != blend) //!!!!!!!
       continue;
 
     osg::Vec3d pos = reg->GetPosition() + osg::Vec3d( x, y, z + zOffset);
@@ -255,17 +255,18 @@ void World::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset, bool
       CubInfo::CubeSide cside = (CubInfo::CubeSide)side;
 
       osg::Vec3d sidePos = pos + CubInfo::Instance().GetNormal(cside) + osg::Vec3d(0.1, 0.1, 0.1);
-      cube::Cub* sideCub = RegionManager::Instance().GetCub(sidePos.x(), sidePos.y(), sidePos.z());
+      cube::CubRegion scubReg = RegionManager::Instance().GetCub(sidePos.x(), sidePos.y(), sidePos.z());
 
-      if(sideCub == NULL || sideCub->_type == cube::Cub::Air || sideCub->_type == cube::Cub::LeavesWood || sideCub->_type == cube::Cub::TruncWood)
+      if(  scubReg.GetCubType() == cube::Cub::Air 
+        || scubReg.GetCubType() == cube::Cub::LeavesWood 
+        || scubReg.GetCubType() == cube::Cub::TruncWood)
       {
         CubInfo::Instance().FillVertCoord(cside, coords, pos);
 
-        _texInfo->FillTexCoord(cub._type, cside, tcoords);
+        _texInfo->FillTexCoord(cubReg.GetCubType(), cside, tcoords);
 
-        osg::Vec4d color = _texInfo->GetSideColor(cub._type, cside);
-        if(sideCub != NULL)
-          color *= sideCub->_light;
+        osg::Vec4d color = _texInfo->GetSideColor(cubReg.GetCubType(), cside);
+        color *= scubReg.GetCubLight();
         colours->push_back(color);
         normals->push_back(CubInfo::Instance().GetNormal(cside));
       }
@@ -549,40 +550,37 @@ void World::update()
   }
 }
 
-void World::del(cube::Cub& cub, cube::Region* reg, int geomIndex, osg::Vec3d wcpos)
+void World::del(cube::CubRegion& cubReg, osg::Vec3d wcpos)
 {
   std::map<osg::Geometry*, DataUpdate> updateGeomMap;
 
-  cub._type = cube::Cub::Air;
-  cub._rendered = false;
+  cubReg.SetCubType(cube::Cub::Air);
+  cubReg.SetCubRendered(false);
 
-  int renderedCubCount = --reg->_renderedCubCount[cub._blend?1:0][geomIndex];
+  osg::Geometry* curGeom = cubReg.GetRegion()->GetGeometry(cubReg.GetGeomIndex(), cubReg.GetCubBlend());
 
-  osg::Geometry* curGeom = reg->GetGeometry(geomIndex, cub._blend);
-
-  updateGeomMap[curGeom] = DataUpdate(curGeom, reg, geomIndex, cub._blend);
+  updateGeomMap[curGeom] = DataUpdate(curGeom, cubReg.GetRegion(), cubReg.GetGeomIndex(), cubReg.GetCubBlend());
 
   //*************************************
-  //cube::Light::RecalcAndFillingLight(cub, wcpos, updateGeomMap);
+  //cube::Light::RecalcAndFillingLight(cubReg, wcpos, updateGeomMap);
 
   std::map<osg::Geometry*, DataUpdate>::iterator i = updateGeomMap.begin();
   for(; i != updateGeomMap.end(); i++)
     _dataUpdate.push_back(i->second);
 }
 
-void World::add(cube::Cub& cub, cube::Region* reg, int geomIndex, osg::Vec3d wcpos, bool recalcLight)
+void World::add(cube::CubRegion& cubReg, osg::Vec3d wcpos, bool recalcLight)
 {
   std::map<osg::Geometry*, DataUpdate> updateGeomMap;
 
-  if(!cub._rendered)
+  if(!cubReg.GetCubRendered())
   {
-    cub._rendered = true;
-    reg->_renderedCubCount[cub._blend?1:0][geomIndex]++;
+    cubReg.SetCubRendered(true);
   }
 
-  osg::Geometry* curGeom = reg->GetGeometry(geomIndex, cub._blend);
+  osg::Geometry* curGeom = cubReg.GetRegion()->GetGeometry(cubReg.GetGeomIndex(), cubReg.GetCubBlend());
 
-  updateGeomMap[curGeom] = DataUpdate(curGeom, reg, geomIndex, cub._blend);
+  updateGeomMap[curGeom] = DataUpdate(curGeom, cubReg.GetRegion(), cubReg.GetGeomIndex(), cubReg.GetCubBlend());
 
   //*************************************
   if(recalcLight)
@@ -605,9 +603,9 @@ void World::RemoveCub(osg::Vec3d vec)
 
   cube::Region* reg = RegionManager::Instance().GetRegion(Region::ToRegionIndex(vec.x()), Region::ToRegionIndex(vec.y()));
   osg::Vec3d cvec = vec - reg->GetPosition();
-  cube::Cub& cub = reg->GetCub(cvec.x(), cvec.y(), cvec.z());
+  cube::CubRegion cubReg = reg->GetCub(cvec.x(), cvec.y(), cvec.z());
 
-  del(cub, reg, geomIndex, vec);
+  del(cubReg, vec);
 
   // нахождение новой травки если её удалили
   /*if((int)(cvec.z()) == reg->GetHeight(cvec.x(), cvec.y()))
@@ -643,13 +641,14 @@ void World::RemoveCub(osg::Vec3d vec)
 
     cube::Region* sideReg = RegionManager::Instance().GetRegion(Region::ToRegionIndex(cvec.x()), Region::ToRegionIndex(cvec.y()));
     cvec -= sideReg->GetPosition();
-    cube::Cub& scub = sideReg->GetCub(cvec.x(), cvec.y(), cvec.z());
+    cube::CubRegion scubReg = sideReg->GetCub(cvec.x(), cvec.y(), cvec.z());
 
     int geomSideIndex = cvec.z() / GEOM_SIZE;
 
-    if(scub._type != cube::Cub::Air && (!scub._rendered || reg != sideReg || geomIndex != geomSideIndex || cub._blend != scub._blend))
+    if(scubReg.GetCubType() != cube::Cub::Air && 
+      (!scubReg.GetCubRendered() || reg != sideReg || geomIndex != geomSideIndex || cubReg.GetCubBlend() != scubReg.GetCubBlend()))
     {
-      add(scub, sideReg, geomSideIndex, wcvec);
+      add(scubReg, wcvec);
     }
   }
 }
@@ -667,16 +666,13 @@ void World::AddCub(osg::Vec3d vec)
 
     reg = RegionManager::Instance().GetRegion(Region::ToRegionIndex(cvec.x()), Region::ToRegionIndex(cvec.y()));
     cvec -= reg->GetPosition();
-    cube::Cub& scub = reg->GetCub(cvec.x(), cvec.y(), cvec.z());
+    cube::CubRegion scubReg = reg->GetCub(cvec.x(), cvec.y(), cvec.z());
 
-    if(scub._type == cube::Cub::Air)
+    if(scubReg.GetCubType() == cube::Cub::Air)
     {
-      scub._type = cube::Cub::Ground;
-      scub._blend = false;
+      scubReg.SetCubType(cube::Cub::Ground);
 
-      cvec /= GEOM_SIZE;
-
-      add(scub, reg, cvec.z(), vec + norm, true);
+      add(scubReg, vec + norm, true);
     }
   }
 }

@@ -14,7 +14,7 @@ cube::Region* RegionManager::ContainsRegion(int xreg, int yreg)
   return NULL;
 }
 
-cube::Cub* RegionManager::GetCub(float x, float y, float z)
+cube::CubRegion RegionManager::GetCub(float x, float y, float z)
 {
   cube::Region* rg = ContainsRegion(Region::ToRegionIndex(x), Region::ToRegionIndex(y));
 
@@ -22,10 +22,11 @@ cube::Cub* RegionManager::GetCub(float x, float y, float z)
   {
     x -= rg->GetPosition().x();
     y -= rg->GetPosition().y();
-    return &(rg->GetCub(x, y, z));
+    return rg->GetCub(x, y, z);
   }
 
-  return NULL;
+  static cube::Cub nullCub;
+  return CubRegion(NULL, nullCub, 0);
 }
 
 cube::Region* RegionManager::CreateRegion(int xreg, int yreg)

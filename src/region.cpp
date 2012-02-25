@@ -47,3 +47,26 @@ int Region::ToRegionIndex(float worldPos)
   else
     return (int)worldPos / REGION_WIDTH - 1;
 }
+
+cube::CubRegion Region::GetCub(int x, int y, int z)
+{
+  return CubRegion(this, _m[x][y][z], z / GEOM_SIZE);
+}
+
+//*******************************************************
+//**class CubRegion
+
+void CubRegion::SetCubType(Cub::CubeType type)
+{
+  _cub._type = type;
+}
+
+void CubRegion::SetCubRendered(bool rendered)
+{
+  _cub._rendered = rendered;
+
+  if(rendered)
+    _region->_renderedCubCount[_cub._blend?1:0][_geomIndex]++;
+  else
+    _region->_renderedCubCount[_cub._blend?1:0][_geomIndex]--;
+}

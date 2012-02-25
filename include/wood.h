@@ -20,13 +20,12 @@ namespace cube
 
       while(cube::MathUtils::random() > limit)
       {
-        cube::Cub& cub = rg->GetCub(rgx, rgy, rgz + height);
+        cube::CubRegion cubReg = rg->GetCub(rgx, rgy, rgz + height);
 
-        if(cub._type == cube::Cub::Air)
+        if(cubReg.GetCubType() == cube::Cub::Air)
         {
-          cub._type = cube::Cub::TruncWood;
-          cub._rendered = true;
-          rg->_renderedCubCount[0][(rgz + height) / GEOM_SIZE]++;
+          cubReg.SetCubType(cube::Cub::TruncWood);
+          cubReg.SetCubRendered(true);
         }
 
         height++;
@@ -49,15 +48,16 @@ namespace cube
       {
         float cx = x - rg->GetPosition().x();
         float cy = y - rg->GetPosition().y();
-        cube::Cub& cub = rg->GetCub(cx, cy, z);
+        cube::CubRegion cubReg = rg->GetCub(cx, cy, z);
 
-        if(cub._type == cube::Cub::Air || cub._type == cube::Cub::TruncWood || cub._type == cube::Cub::LeavesWood)
+        if(  cubReg.GetCubType() == cube::Cub::Air 
+          || cubReg.GetCubType() == cube::Cub::TruncWood 
+          || cubReg.GetCubType() == cube::Cub::LeavesWood)
         {
-          if(cub._type == cube::Cub::Air)
+          if(cubReg.GetCubType() == cube::Cub::Air)
           {
-            cub._type = cube::Cub::LeavesWood;
-            cub._rendered = true;
-            rg->_renderedCubCount[0][(int)z / GEOM_SIZE]++;
+            cubReg.SetCubType(cube::Cub::LeavesWood);
+            cubReg.SetCubRendered(true);
           }
 
           if(cube::MathUtils::random() > 0.05f * r)

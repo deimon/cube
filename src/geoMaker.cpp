@@ -22,10 +22,8 @@ void GeoMaker::FillRegion(cube::Region* rg, float rnd)
 
       for(int k = min+1; k < rg->GetHeight(i, j); k++)
       {
-        cube::Cub& cub = rg->GetCub(i, j, k);
-        //cub->_type = cube::Cub::Ground;
-        cub._rendered = true;
-        rg->_renderedCubCount[0][k / GEOM_SIZE]++;
+        cube::CubRegion cubReg = rg->GetCub(i, j, k);
+        cubReg.SetCubRendered(true);
       }
     }
   }
@@ -38,40 +36,16 @@ void GeoMaker::FillRegion(cube::Region* rg, float rnd)
     {
       for(int k = 0; k < REGION_HEIGHT; k++)
       {
-        cube::Cub& cub = rg->GetCub(i, j, k);
-        if(cub._type != cube::Cub::Air && 
+        cube::CubRegion cubReg = rg->GetCub(i, j, k);
+        if(cubReg.GetCubType() != cube::Cub::Air && 
           perlin->Get((float)(i + rg->GetX() * REGION_WIDTH)/30.0f, (float)(j + rg->GetY() * REGION_WIDTH)/30.0f, (float)k/20.0f) < -0.4f)
         {
-          cub._type = cube::Cub::Air;
+          cubReg.SetCubType(cube::Cub::Air);
 
-          if(cub._rendered)
+          if(cubReg.GetCubRendered())
           {
-            cub._rendered = false;
-            rg->_renderedCubCount[0][k / GEOM_SIZE]--;
+            cubReg.SetCubRendered(false);
           }
-/*
-          for(int s = CubInfo::FirstSide; s <= CubInfo::EndSide; s++)
-          {
-            CubInfo::CubeSide side = (CubInfo::CubeSide)s;
-
-            osg::Vec3d vec = CubInfo::Instance().GetNormal(side);
-
-            int x = i + vec.x();
-            int y = j + vec.y();
-            int z = k + vec.z();
-
-            if(x < 0 || x > 7 || y < 0 || y > 7 || z < 0 || z > 127)
-              continue;
-
-            cube::Cub& scub = rg->GetCub(x, y, z);
-
-            if(!scub._rendered && scub._type != cube::Cub::Air)
-            {
-              scub._rendered = true;
-              rg->_renderedCubCount[0][z / GEOM_SIZE]++;
-            }
-          }
-/**/
         }
       }
     }
@@ -87,8 +61,8 @@ void GeoMaker::FillRegion2(cube::Region* rg)
       for(int k = 0; k < REGION_HEIGHT; k++)
       {
         osg::Vec3d cpos = rg->GetPosition() + osg::Vec3d(i + 0.1f, j + 0.1f, k + 0.1f);
-        cube::Cub* cub = RegionManager::Instance().GetCub(cpos.x(), cpos.y(), cpos.z());
-        if(cub->_type == cube::Cub::Air)
+        cube::CubRegion cubReg = RegionManager::Instance().GetCub(cpos.x(), cpos.y(), cpos.z());
+        if(cubReg.GetCubType() == cube::Cub::Air)
         {
           for(int s = CubInfo::FirstSide; s <= CubInfo::EndSide; s++)
           {
@@ -111,12 +85,11 @@ void GeoMaker::FillRegion2(cube::Region* rg)
 
             vec -= srg->GetPosition();
 
-            cube::Cub& scub = srg->GetCub(vec.x(), vec.y(), vec.z());
+            cube::CubRegion scubReg = srg->GetCub(vec.x(), vec.y(), vec.z());
 
-            if(!scub._rendered && scub._type != cube::Cub::Air)
+            if(!scubReg.GetCubRendered() && scubReg.GetCubType() != cube::Cub::Air)
             {
-              scub._rendered = true;
-              srg->_renderedCubCount[0][(int)vec.z() / GEOM_SIZE]++;
+              scubReg.SetCubRendered(true);
             }
           }
         }
@@ -209,19 +182,18 @@ void GeoMaker::GenNoise(cube::Region* rg, float rnd)
       if(i < 0 || i >= REGION_WIDTH || j < 0 || j >= REGION_WIDTH)
         continue;
       
-      cube::Cub& cub = rg->GetCub(i, j, height);
-      cub._type = cube::Cub::Grass;
-      cub._rendered = true;
-      rg->_renderedCubCount[0][height / GEOM_SIZE]++;
+      cube::CubRegion cubReg = rg->GetCub(i, j, height);
+      cubReg.SetCubType(cube::Cub::Grass);
+      cubReg.SetCubRendered(true);
 
       for(int z = 0; z < height && height < REGION_HEIGHT; z++)
       {
-        cube::Cub& cub = rg->GetCub(i, j, z);
+        cube::CubRegion cubReg = rg->GetCub(i, j, z);
 
         if(z / 85.0 < ((float)rand() / RAND_MAX))
-          cub._type = cube::Cub::Stone;
+          cubReg.SetCubType(cube::Cub::Stone);
         else
-          cub._type = cube::Cub::Ground;
+          cubReg.SetCubType(cube::Cub::Ground);
       }
 
       //float light = 1.0f;

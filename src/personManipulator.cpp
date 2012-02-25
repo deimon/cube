@@ -235,10 +235,10 @@ void PersonManipulator::calcStep(osg::Vec3d vDir, osgGA::GUIActionAdapter& us)
   cube::World& world = cube::World::Instance();
   osg::Vec3d newEye = _eye;
 
-  if(RegionManager::Instance().GetCub(_eye.x() + vDir.x(), _eye.y(), _eye.z() - (PERSON_HEIGHT-1))->_type == cube::Cub::Air)
+  if(RegionManager::Instance().GetCub(_eye.x() + vDir.x(), _eye.y(), _eye.z() - (PERSON_HEIGHT-1)).GetCubType() == cube::Cub::Air)
     newEye.x() += vDir.x() - dx;
 
-  if(RegionManager::Instance().GetCub(_eye.x(), _eye.y() + vDir.y(), _eye.z() - (PERSON_HEIGHT-1))->_type == cube::Cub::Air)
+  if(RegionManager::Instance().GetCub(_eye.x(), _eye.y() + vDir.y(), _eye.z() - (PERSON_HEIGHT-1)).GetCubType() == cube::Cub::Air)
     newEye.y() += vDir.y() - dy;
 
   _eye = newEye;
@@ -285,8 +285,8 @@ bool PersonManipulator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
       for(float k = 0.1; k < 3.0; k = k + 0.1)
       {
         newEye = _eye + vDir * k;
-        cube::Cub* cub = RegionManager::Instance().GetCub(newEye.x(), newEye.y(), newEye.z());
-        if(cub->_type != cube::Cub::Air)
+        cube::CubRegion cubReg = RegionManager::Instance().GetCub(newEye.x(), newEye.y(), newEye.z());
+        if(cubReg.GetCubType() != cube::Cub::Air)
         {
           found = true;
           break;
@@ -376,15 +376,15 @@ bool PersonManipulator::handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GU
   else
   {
     osg::Vec3d prevEye = _eye;
-    const cube::Cub* cub = RegionManager::Instance().GetCub(prevEye.x(), prevEye.y(), prevEye.z() - PERSON_HEIGHT);
+    cube::CubRegion cubReg = RegionManager::Instance().GetCub(prevEye.x(), prevEye.y(), prevEye.z() - PERSON_HEIGHT);
 
-    if(cub->_type == cube::Cub::Air)
+    if(cubReg.GetCubType() == cube::Cub::Air)
     {
       prevEye += osg::Vec3d(0.0, 0.0, -5.0) * _delta_frame_time;
 
-      const cube::Cub* newCub = RegionManager::Instance().GetCub(prevEye.x(), prevEye.y(), prevEye.z() - PERSON_HEIGHT);
+      cube::CubRegion newcubReg = RegionManager::Instance().GetCub(prevEye.x(), prevEye.y(), prevEye.z() - PERSON_HEIGHT);
 
-      if(cub->_type == cube::Cub::Air)
+      if(cubReg.GetCubType() == cube::Cub::Air)
         setTransformation(prevEye, _rotation);
       else
       {

@@ -62,8 +62,8 @@ namespace cube
     osg::Group* GetGeometry();
     void update();
 
-    void del(cube::Cub& cub, cube::Region* reg, int geomIndex, osg::Vec3d wcpos);
-    void add(cube::Cub& cub, cube::Region* reg, int geomIndex, osg::Vec3d wcpos, bool recalcLight = false);
+    void del(cube::CubRegion& cubReg, osg::Vec3d wcpos);
+    void add(cube::CubRegion& cubReg, osg::Vec3d wcpos, bool recalcLight = false);
 
     void RemoveCub(osg::Vec3d vec);
     void AddCub(osg::Vec3d vec);

@@ -23,7 +23,7 @@ namespace cube
     cube::Region* GetRegion(int i, int j) { return _regions[i][j]; }
     void SetRegion(int i, int j, cube::Region* reg) { _regions[i][j] = reg; }
     cube::Region* ContainsRegion(int xreg, int yreg);
-    cube::Cub* GetCub(float x, float y, float z);
+    cube::CubRegion GetCub(float x, float y, float z);
     cube::Region* CreateRegion(int xreg, int yreg);
 
     void ForacheRegion(Callback& cb);
