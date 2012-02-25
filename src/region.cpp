@@ -27,6 +27,8 @@ void Region::FillRegion(float rnd)
     _geom[1][z] = NULL;
     _renderedCubCount[0][z] = 0;
     _renderedCubCount[1][z] = 0;
+    _airCubCount[0][z] = CUBS_IN_GEOM;
+    _airCubCount[1][z] = CUBS_IN_GEOM;
   }
 
   cube::GeoMaker::FillRegion(this, rnd);
@@ -58,7 +60,15 @@ cube::CubRegion Region::GetCub(int x, int y, int z)
 
 void CubRegion::SetCubType(Cub::CubeType type)
 {
-  _cub._type = type;
+  if(_cub._type != type)
+  {
+    if(type == cube::Cub::Air)
+      _region->_airCubCount[_cub._blend?1:0][_geomIndex]++;
+    else
+      _region->_airCubCount[_cub._blend?1:0][_geomIndex]--;
+
+    _cub._type = type;
+  }
 }
 
 void CubRegion::SetCubRendered(bool rendered)

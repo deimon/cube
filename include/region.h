@@ -4,9 +4,10 @@
 #define REGION_WIDTH 8
 #define REGION_HEIGHT 128
 #define GEOM_SIZE REGION_WIDTH
-#define GEOM_COUNT 16
+#define GEOM_COUNT REGION_HEIGHT / GEOM_SIZE
 #define NUM_OCTAVES 1
 #define PERSON_HEIGHT 1.8
+#define CUBS_IN_GEOM REGION_WIDTH * REGION_WIDTH * REGION_WIDTH
 
 #include <cube.h>
 #include <osg/Vec3d>
@@ -45,6 +46,8 @@ namespace cube
     int GetY() { return _yReg; }
 
     int _renderedCubCount[2][GEOM_COUNT];
+
+    int _airCubCount[2][GEOM_COUNT];
 
     bool _geometryCreated;
 

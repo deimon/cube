@@ -58,38 +58,44 @@ void GeoMaker::FillRegion2(cube::Region* rg)
   {
     for(int j = -1; j <= REGION_WIDTH; j++)
     {
-      for(int k = 0; k < REGION_HEIGHT; k++)
+      for(int gIndex = 0; gIndex < GEOM_COUNT; gIndex++)
       {
-        osg::Vec3d cpos = rg->GetPosition() + osg::Vec3d(i + 0.1f, j + 0.1f, k + 0.1f);
-        cube::CubRegion cubReg = RegionManager::Instance().GetCub(cpos.x(), cpos.y(), cpos.z());
-        if(cubReg.GetCubType() == cube::Cub::Air)
+        if(rg->_airCubCount[0][gIndex] < CUBS_IN_GEOM)
         {
-          for(int s = CubInfo::FirstSide; s <= CubInfo::EndSide; s++)
+          for(int k = 0; k < REGION_WIDTH; k++)
           {
-            CubInfo::CubeSide side = (CubInfo::CubeSide)s;
-
-            osg::Vec3d vec = rg->GetPosition() + osg::Vec3d(i + 0.1f, j + 0.1f, k + 0.1f) + CubInfo::Instance().GetNormal(side);
-
-            if(vec.z() < 0 || vec.z() > 128)
-              continue;
-
-            int rx = Region::ToRegionIndex(vec.x());
-            int ry = Region::ToRegionIndex(vec.y());
-
-            cube::Region* srg = RegionManager::Instance().ContainsRegion(rx, ry);
-
-            if(srg == NULL)
+            osg::Vec3d cpos = rg->GetPosition() + osg::Vec3d(i + 0.1f, j + 0.1f, gIndex * REGION_WIDTH + k + 0.1f);
+            cube::CubRegion cubReg = RegionManager::Instance().GetCub(cpos.x(), cpos.y(), cpos.z());
+            if(cubReg.GetCubType() == cube::Cub::Air)
             {
-              srg = RegionManager::Instance().CreateRegion(rx, ry);
-            }
+              for(int s = CubInfo::FirstSide; s <= CubInfo::EndSide; s++)
+              {
+                CubInfo::CubeSide side = (CubInfo::CubeSide)s;
 
-            vec -= srg->GetPosition();
+                osg::Vec3d vec = rg->GetPosition() + osg::Vec3d(i + 0.1f, j + 0.1f, gIndex * REGION_WIDTH + k + 0.1f) + CubInfo::Instance().GetNormal(side);
 
-            cube::CubRegion scubReg = srg->GetCub(vec.x(), vec.y(), vec.z());
+                if(vec.z() < 0 || vec.z() > 128)
+                  continue;
 
-            if(!scubReg.GetCubRendered() && scubReg.GetCubType() != cube::Cub::Air)
-            {
-              scubReg.SetCubRendered(true);
+                int rx = Region::ToRegionIndex(vec.x());
+                int ry = Region::ToRegionIndex(vec.y());
+
+                cube::Region* srg = RegionManager::Instance().ContainsRegion(rx, ry);
+
+                if(srg == NULL)
+                {
+                  srg = RegionManager::Instance().CreateRegion(rx, ry);
+                }
+
+                vec -= srg->GetPosition();
+
+                cube::CubRegion scubReg = srg->GetCub(vec.x(), vec.y(), vec.z());
+
+                if(!scubReg.GetCubRendered() && scubReg.GetCubType() != cube::Cub::Air)
+                {
+                  scubReg.SetCubRendered(true);
+                }
+              }
             }
           }
         }
