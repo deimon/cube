@@ -170,7 +170,7 @@ void Light::FindLightSourceAndFillingLight(cube::CubRegion& cubReg, osg::Vec3d w
   Light::MapCubPos listLightSource;
   Light::MapCubPos::iterator i = listCubPos.begin();
   for(; i != listCubPos.end(); i++)
-    if(i->second.second > 0.12f)  // i->second.second = cubLight
+    if(*(i->second.second) > 0.12f)  // i->second.second = cubLight
       listLightSource[i->first] = i->second;
 
   i = listLightSource.begin();
@@ -182,7 +182,7 @@ void Light::FindLightSourceAndFillingLight(cube::CubRegion& cubReg, osg::Vec3d w
       osg::Vec3d csvec = i->second.first + CubInfo::Instance().GetNormal(side);
       cube::CubRegion scubReg = RegionManager::Instance().GetCub(csvec.x(), csvec.y(), csvec.z());
 
-      cube::Light::fillingLight(scubReg, csvec, side, i->second.second, updateGeomMap); // i->second.second = cubLight
+      cube::Light::fillingLight(scubReg, csvec, side, *(i->second.second), updateGeomMap); // i->second.second = cubLight
     }
   }
 }
@@ -208,7 +208,7 @@ void Light::findLightSource(cube::CubRegion& cubReg, osg::Vec3d wcpos, MapCubPos
     if(scubReg.GetCubType() == cube::Cub::Air && scubReg.GetCubLight() > 0.12)
     {
       if((scubReg.GetCubLight() - cubLight) > 0.02f || (scubReg.GetCubLight() > 0.98 && side != CubInfo::Z_BACK) /*&& listCubPos.find(&scub) == listCubPos.end()*/)
-        listCubPos[scubReg.GetCub()] = std::make_pair(wcsvec, scubReg.GetCubLight());
+        listCubPos[scubReg.GetCub()] = std::make_pair(wcsvec, &scubReg.GetCubLight());
       else
         findLightSource(scubReg, wcsvec, listCubPos, updateGeomMap);
     }
