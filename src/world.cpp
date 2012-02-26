@@ -562,7 +562,7 @@ void World::del(cube::CubRegion& cubReg, osg::Vec3d wcpos)
   updateGeomMap[curGeom] = DataUpdate(curGeom, cubReg.GetRegion(), cubReg.GetGeomIndex(), cubReg.GetCubBlend());
 
   //*************************************
-  cube::Light::RecalcAndFillingLight(cubReg, wcpos, updateGeomMap);
+  cube::Light::RecalcAndFillingLight(cubReg, wcpos, &updateGeomMap);
 
   std::map<osg::Geometry*, DataUpdate>::iterator i = updateGeomMap.begin();
   for(; i != updateGeomMap.end(); i++)
@@ -585,7 +585,7 @@ void World::add(cube::CubRegion& cubReg, osg::Vec3d wcpos, bool recalcLight)
   //*************************************
   if(recalcLight)
   {
-    cube::Light::FindLightSourceAndFillingLight(cubReg, wcpos, updateGeomMap);
+    cube::Light::FindLightSourceAndFillingLight(cubReg, wcpos, &updateGeomMap);
   }
 
   std::map<osg::Geometry*, DataUpdate>::iterator i = updateGeomMap.begin();
