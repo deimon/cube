@@ -31,7 +31,7 @@ namespace cube
       : _rendered(false)
       , _type(Air)
       , _blend(false)
-      , _light(1.0f)
+      , _light(0.1f)
     {
     }
 

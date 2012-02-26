@@ -1,6 +1,7 @@
 #include <geoMaker.h>
 #include "perlin.h"
 #include <regionManager.h>
+#include <light.h>
 
 using namespace cube;
 
@@ -8,33 +9,13 @@ void GeoMaker::FillRegion(cube::Region* rg, float rnd)
 {
   GenNoise(rg, rnd);
 
-  for(int i = 0; i < REGION_WIDTH; i++)
-  {
-    for(int j = 0; j < REGION_WIDTH; j++)
-    {
-      int left = rg->GetHeight(i-1, j);
-      int right = rg->GetHeight(i+1, j);
-      int bottom = rg->GetHeight(i, j-1);
-      int top = rg->GetHeight(i, j+1);
-
-      int min = std::min<int>(std::min<int>(left, right),
-                              std::min<int>(bottom, top));
-
-      for(int k = min+1; k < rg->GetHeight(i, j); k++)
-      {
-        cube::CubRegion cubReg = rg->GetCub(i, j, k);
-        cubReg.SetCubRendered(true);
-      }
-    }
-  }
-
   Perlin* perlin = new Perlin(2, 1, 1.0f, 123);
 
-  for(int i = 0; i < REGION_WIDTH; i++)
+  for(int k = REGION_HEIGHT - 1; k >= 0; k--)
   {
-    for(int j = 0; j < REGION_WIDTH; j++)
+    for(int i = 0; i < REGION_WIDTH; i++)
     {
-      for(int k = 0; k < REGION_HEIGHT; k++)
+      for(int j = 0; j < REGION_WIDTH; j++)
       {
         cube::CubRegion cubReg = rg->GetCub(i, j, k);
         if(cubReg.GetCubType() != cube::Cub::Air && 
@@ -46,7 +27,13 @@ void GeoMaker::FillRegion(cube::Region* rg, float rnd)
           {
             cubReg.SetCubRendered(false);
           }
+
+          if(k == rg->GetHeight(i, j))
+            rg->SetHeight(i,j, k - 1);
         }
+        else
+          if(k == rg->GetHeight(i, j) && cubReg.GetCubType() == cube::Cub::Ground)
+            cubReg.SetCubType(cube::Cub::Grass);
       }
     }
   }
@@ -54,20 +41,37 @@ void GeoMaker::FillRegion(cube::Region* rg, float rnd)
 
 void GeoMaker::FillRegion2(cube::Region* rg)
 {
-  for(int i = -1; i <= REGION_WIDTH; i++)
+  for(int gIndex = GEOM_COUNT - 1; gIndex >= 0; gIndex--)
   {
-    for(int j = -1; j <= REGION_WIDTH; j++)
+    if(rg->_airCubCount[0][gIndex] == CUBS_IN_GEOM)
     {
-      for(int gIndex = 0; gIndex < GEOM_COUNT; gIndex++)
+      for(int i = 0; i < REGION_WIDTH; i++)
+      for(int j = 0; j < REGION_WIDTH; j++)
+      for(int k = 0; k < REGION_WIDTH; k++)
       {
-        if(rg->_airCubCount[0][gIndex] < CUBS_IN_GEOM)
+        cube::CubRegion cubReg = rg->GetCub(i, j, gIndex * REGION_WIDTH + k);
+        cubReg.GetCubLight() = 1.0f;
+      }
+    }
+    else
+    {
+      for(int i = -1; i <= REGION_WIDTH; i++)
+      {
+        for(int j = -1; j <= REGION_WIDTH; j++)
         {
-          for(int k = 0; k < REGION_WIDTH; k++)
+          for(int k = REGION_WIDTH - 1; k >= 0; k--)
           {
             osg::Vec3d cpos = rg->GetPosition() + osg::Vec3d(i + 0.1f, j + 0.1f, gIndex * REGION_WIDTH + k + 0.1f);
             cube::CubRegion cubReg = RegionManager::Instance().GetCub(cpos.x(), cpos.y(), cpos.z());
             if(cubReg.GetCubType() == cube::Cub::Air)
             {
+              {
+                if(gIndex * REGION_WIDTH + k > rg->GetHeight(i, j))
+                  cubReg.GetCubLight() = 1.0f;
+                else
+                  cube::Light::RecalcAndFillingLight(cubReg, cpos, NULL);
+              }
+
               for(int s = CubInfo::FirstSide; s <= CubInfo::EndSide; s++)
               {
                 CubInfo::CubeSide side = (CubInfo::CubeSide)s;
