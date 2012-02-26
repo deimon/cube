@@ -65,7 +65,8 @@ void CubRegion::SetCubType(Cub::CubeType type)
     if(type == cube::Cub::Air)
       _region->_airCubCount[_cub._blend?1:0][_geomIndex]++;
     else
-      _region->_airCubCount[_cub._blend?1:0][_geomIndex]--;
+      if(_cub._type == cube::Cub::Air)
+        _region->_airCubCount[_cub._blend?1:0][_geomIndex]--;
 
     _cub._type = type;
   }
