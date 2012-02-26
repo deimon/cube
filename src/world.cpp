@@ -266,7 +266,12 @@ void World::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset, bool
         _texInfo->FillTexCoord(cubReg.GetCubType(), cside, tcoords);
 
         osg::Vec4d color = _texInfo->GetSideColor(cubReg.GetCubType(), cside);
-        color *= scubReg.GetCubLight();
+
+        float light = scubReg.GetCubLight() + scubReg.GetCubLocLight();
+        if(light > 1.0f)
+          light = 1.0f;
+        color *= light;
+
         colours->push_back(color);
         normals->push_back(CubInfo::Instance().GetNormal(cside));
       }
@@ -670,7 +675,17 @@ void World::AddCub(osg::Vec3d vec)
 
     if(scubReg.GetCubType() == cube::Cub::Air)
     {
-      scubReg.SetCubType(cube::Cub::Ground);
+      scubReg.SetCubType(cube::Cub::Pumpkin);
+      {
+        // временный блок
+        std::map<osg::Geometry*, DataUpdate> updateGeomMap;
+
+        cube::Light::fillingLocLight(scubReg, vec + norm, 1.0f, &updateGeomMap);
+
+        std::map<osg::Geometry*, DataUpdate>::iterator i = updateGeomMap.begin();
+        for(; i != updateGeomMap.end(); i++)
+          _dataUpdate.push_back(i->second);
+      }
 
       add(scubReg, vec + norm, true);
     }

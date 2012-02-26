@@ -23,7 +23,8 @@ namespace cube
       Grass = 2,
       Stone = 3,
       TruncWood = 4,
-      LeavesWood = 5
+      LeavesWood = 5,
+      Pumpkin = 6
     };
   public:
 
@@ -32,6 +33,7 @@ namespace cube
       , _type(Air)
       , _blend(false)
       , _light(0.1f)
+      , _locLight(0.0f)
     {
     }
 
@@ -40,6 +42,7 @@ namespace cube
     bool _rendered;
     bool _blend;
     float _light;
+    float _locLight;
 
     friend CubRegion;
   };

@@ -147,6 +147,30 @@ void Light::fillingLight(cube::CubRegion& cubReg, osg::Vec3d wcpos, CubInfo::Cub
   }
 }
 
+void Light::fillingLocLight(cube::CubRegion& cubReg, osg::Vec3d wcpos, float prevLight,
+                            std::map<osg::Geometry*, World::DataUpdate>* updateGeomMap)
+{
+  if(cubReg.GetCubLocLight() < prevLight)
+  {
+    cubReg.GetCubLocLight() = prevLight;
+
+    if(updateGeomMap)
+      AddModifiedGeom(cubReg, wcpos, updateGeomMap);
+
+    if(prevLight > 0.12f)
+    {
+      for(int i = CubInfo::FirstSide; i <= CubInfo::EndSide; i++)
+      {
+        CubInfo::CubeSide lside = (CubInfo::CubeSide)i;
+        osg::Vec3d csvec = wcpos + CubInfo::Instance().GetNormal(lside);
+        cube::CubRegion scubReg = RegionManager::Instance().GetCub(csvec.x(), csvec.y(), csvec.z());
+
+        fillingLocLight(scubReg, csvec, prevLight - 0.1f, updateGeomMap);
+      }
+    }
+  }
+}
+
 void Light::FindLightSourceAndFillingLight(cube::CubRegion& cubReg, osg::Vec3d wcpos, std::map<osg::Geometry*,
                                            World::DataUpdate>* updateGeomMap)
 {

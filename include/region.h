@@ -100,7 +100,9 @@ namespace cube
 
     Region* GetRegion() { return _region; }
     int GetGeomIndex() { return _geomIndex; }
+
     float& GetCubLight() { return _cub._light; }
+    float& GetCubLocLight() { return _cub._locLight; }
 
     const Cub::CubeType& GetCubType() { return _cub._type; }
     void SetCubType(Cub::CubeType type);

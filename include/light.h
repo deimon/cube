@@ -24,6 +24,8 @@ namespace cube
     static void findLightSource(cube::CubRegion& cubReg, osg::Vec3d wcpos, MapCubPos& listCubPos,
                                 std::map<osg::Geometry*, World::DataUpdate>* updateGeomMap = NULL);
 
+    static void fillingLocLight(cube::CubRegion& cubReg, osg::Vec3d wcpos, float prevLight,
+      std::map<osg::Geometry*, World::DataUpdate>* updateGeomMap = NULL);
   };
 }
 
