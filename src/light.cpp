@@ -79,8 +79,9 @@ void AddModifiedGeom(cube::CubRegion& cubReg, osg::Vec3d wcpos, std::map<osg::Ge
 
 void Light::RecalcAndFillingLight(cube::CubRegion& cubReg, osg::Vec3d wcpos, std::map<osg::Geometry*, World::DataUpdate>* updateGeomMap)
 {
+  float ZFaceLight = 0.0f;
+  float oldCubLight = cubReg.GetCubLight();
   cubReg.GetCubLight() = 0.0f;
-  CubInfo::CubeSide maxLightSide = CubInfo::FirstSide;
   for(int i = CubInfo::FirstSide; i <= CubInfo::EndSide; i++)
   {
     CubInfo::CubeSide side = (CubInfo::CubeSide)i;
@@ -90,15 +91,21 @@ void Light::RecalcAndFillingLight(cube::CubRegion& cubReg, osg::Vec3d wcpos, std
     csvec -= sideReg->GetPosition();
     cube::CubRegion scubReg = sideReg->GetCub(csvec.x(), csvec.y(), csvec.z());
 
-    if(scubReg.GetCubType() == cube::Cub::Air && scubReg.GetCubLight() > cubReg.GetCubLight())
+    if(scubReg.GetCubType() == cube::Cub::Air)
     {
-      cubReg.GetCubLight() = scubReg.GetCubLight();
-      maxLightSide = side;
+      if(scubReg.GetCubLight() > cubReg.GetCubLight())
+        cubReg.GetCubLight() = scubReg.GetCubLight();
+
+      if(side == CubInfo::Z_FACE)
+        ZFaceLight = scubReg.GetCubLight();
     }
   }
 
-  if(maxLightSide != CubInfo::Z_FACE && cubReg.GetCubLight() > 0.12f)
+  if(fabs(ZFaceLight - cubReg.GetCubLight()) > 0.02f && cubReg.GetCubLight() > 0.12f)
     cubReg.GetCubLight() -= 0.1f;
+
+  if(fabs(oldCubLight - cubReg.GetCubLight()) < 0.02f)
+    return;
 
   if(updateGeomMap)
     AddModifiedGeom(cubReg, wcpos, updateGeomMap);

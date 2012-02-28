@@ -1,7 +1,7 @@
 #ifndef __REGION_H__
 #define __REGION_H__
 
-#define REGION_WIDTH 8
+#define REGION_WIDTH 16
 #define REGION_HEIGHT 128
 #define GEOM_SIZE REGION_WIDTH
 #define GEOM_COUNT REGION_HEIGHT / GEOM_SIZE

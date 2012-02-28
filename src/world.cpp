@@ -122,7 +122,7 @@ World::World()
   srand(time(NULL));
   _rnd = 7.0f; // osg::PI*2*10 + ((float)rand() / RAND_MAX)* (osg::PI*3*10 - osg::PI*2*10);
 
-  _radius = 8;
+  _radius = 4;
 
   for(int i = -_radius - 1; i <= _radius + 1; i++)
   for(int j = -_radius - 1; j <= _radius + 1; j++)

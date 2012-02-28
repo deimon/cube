@@ -66,10 +66,7 @@ void GeoMaker::FillRegion2(cube::Region* rg)
             if(cubReg.GetCubType() == cube::Cub::Air)
             {
               {
-                if(gIndex * REGION_WIDTH + k > rg->GetHeight(i, j))
-                  cubReg.GetCubLight() = 1.0f;
-                else
-                  cube::Light::RecalcAndFillingLight(cubReg, cpos, NULL);
+                cube::Light::RecalcAndFillingLight(cubReg, cpos, NULL);
               }
 
               for(int s = CubInfo::FirstSide; s <= CubInfo::EndSide; s++)
