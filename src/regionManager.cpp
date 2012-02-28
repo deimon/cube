@@ -32,7 +32,7 @@ cube::CubRegion RegionManager::GetCub(float x, float y, float z)
 cube::Region* RegionManager::CreateRegion(int xreg, int yreg)
 {
   cube::Region* region = cube::Region::Generation(xreg, yreg);
-  region->FillRegion(World::Instance()._rnd);
+  region->CubFilling(World::Instance()._rnd);
 
   return region;
 }

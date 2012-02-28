@@ -19,7 +19,7 @@ cube::Region* Region::Generation(int xreg, int yreg)
   return region;
 }
 
-void Region::FillRegion(float rnd)
+void Region::CubFilling(float rnd)
 {
   for(int z = 0; z < GEOM_COUNT; z++)
   {
@@ -31,15 +31,21 @@ void Region::FillRegion(float rnd)
     _airCubCount[1][z] = CUBS_IN_GEOM;
   }
 
-  cube::GeoMaker::FillRegion(this, rnd);
+  cube::GeoMaker::CubFilling(this, rnd);
 
-  _areaGenerated = true;
+  _cubFilled = true;
 }
 
-void Region::FillRegion2()
+void Region::LightFilling()
 {
-  cube::GeoMaker::FillRegion2(this);
-  _areaGenerated2 = true;
+  cube::GeoMaker::LightFilling(this);
+  _lightFilled = true;
+}
+
+void Region::RenderFilling()
+{
+  cube::GeoMaker::RenderFilling(this);
+  _renderFilled = true;
 }
 
 int Region::ToRegionIndex(float worldPos)

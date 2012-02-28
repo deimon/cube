@@ -83,8 +83,9 @@ namespace cube
 
     int _prevRegX, _prevRegY;
 
-    std::list<RegionsList*> _addRegionsForVisual;
-    std::list<RegionsList*> _addRegionsForCalc;
+    std::list<RegionsList*> _addRegionsForCubFilling;
+    std::list<RegionsList*> _addRegionsForLightFilling;
+    std::list<RegionsList*> _addRegionsForRenderFilling;
     RegionsList _delRegionsForVisual;
     RegionsList _addToSceneRegions;
 

@@ -28,8 +28,9 @@ namespace cube
     long GetId() { return id; }
 
     static cube::Region* Generation(int xreg, int yreg);
-    void FillRegion(float rnd);
-    void FillRegion2();
+    void CubFilling(float rnd);
+    void LightFilling();
+    void RenderFilling();
 
     static int ToRegionIndex(float worldPos);
 
@@ -51,8 +52,9 @@ namespace cube
 
     bool _geometryCreated;
 
-    bool IsAreaGenerated() { return _areaGenerated; }
-    bool IsAreaGenerated2() { return _areaGenerated2; }
+    bool IsCubFilled() { return _cubFilled; }
+    bool IsLightFilled() { return _lightFilled; }
+    bool IsRenderFilled() { return _renderFilled; }
 
     bool InVisibleZone() { return _inVisibleZone; }
     void SetVisibleZone(bool inVisibleZone) { _inVisibleZone = inVisibleZone; }
@@ -68,14 +70,16 @@ namespace cube
       countRegion++;
 
       _geometryCreated = false;
-      _areaGenerated = false;
-      _areaGenerated2 = false;
+      _cubFilled = false;
+      _lightFilled = false;
+      _renderFilled = false;
       _inVisibleZone = false;
       _inScene = false;
     }
 
-    bool _areaGenerated;
-    bool _areaGenerated2;
+    bool _cubFilled;
+    bool _lightFilled;
+    bool _renderFilled;
     bool _inVisibleZone;
     bool _inScene;
 

@@ -5,7 +5,7 @@
 
 using namespace cube;
 
-void GeoMaker::FillRegion(cube::Region* rg, float rnd)
+void GeoMaker::CubFilling(cube::Region* rg, float rnd)
 {
   GenNoise(rg, rnd);
 
@@ -39,19 +39,19 @@ void GeoMaker::FillRegion(cube::Region* rg, float rnd)
   }
 }
 
-void GeoMaker::FillRegion2(cube::Region* rg)
+void GeoMaker::LightFilling(cube::Region* rg)
 {
   for(int gIndex = GEOM_COUNT - 1; gIndex >= 0; gIndex--)
   {
     if(rg->_airCubCount[0][gIndex] == CUBS_IN_GEOM)
     {
       for(int i = 0; i < REGION_WIDTH; i++)
-      for(int j = 0; j < REGION_WIDTH; j++)
-      for(int k = 0; k < REGION_WIDTH; k++)
-      {
-        cube::CubRegion cubReg = rg->GetCub(i, j, gIndex * REGION_WIDTH + k);
-        cubReg.GetCubLight() = 1.0f;
-      }
+        for(int j = 0; j < REGION_WIDTH; j++)
+          for(int k = 0; k < REGION_WIDTH; k++)
+          {
+            cube::CubRegion cubReg = rg->GetCub(i, j, gIndex * REGION_WIDTH + k);
+            cubReg.GetCubLight() = 1.0f;
+          }
     }
     else
     {
@@ -65,37 +65,57 @@ void GeoMaker::FillRegion2(cube::Region* rg)
             cube::CubRegion cubReg = RegionManager::Instance().GetCub(cpos.x(), cpos.y(), cpos.z());
             if(cubReg.GetCubType() == cube::Cub::Air)
             {
+              //cube::CubRegion tcr = RegionManager::Instance().GetCub(cpos.x(), cpos.y(), cpos.z() + 1.0f);
+              //if(fabs(tcr.GetCubLight() - cubReg.GetCubLight()) > 0.2f)
+              cube::Light::RecalcAndFillingLight(cubReg, cpos, NULL);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+void GeoMaker::RenderFilling(cube::Region* rg)
+{
+  for(int gIndex = GEOM_COUNT - 1; gIndex >= 0; gIndex--)
+  {
+    for(int i = -1; i <= REGION_WIDTH; i++)
+    {
+      for(int j = -1; j <= REGION_WIDTH; j++)
+      {
+        for(int k = REGION_WIDTH - 1; k >= 0; k--)
+        {
+          osg::Vec3d cpos = rg->GetPosition() + osg::Vec3d(i + 0.1f, j + 0.1f, gIndex * REGION_WIDTH + k + 0.1f);
+          cube::CubRegion cubReg = RegionManager::Instance().GetCub(cpos.x(), cpos.y(), cpos.z());
+          if(cubReg.GetCubType() == cube::Cub::Air)
+          {
+            for(int s = CubInfo::FirstSide; s <= CubInfo::EndSide; s++)
+            {
+              CubInfo::CubeSide side = (CubInfo::CubeSide)s;
+
+              osg::Vec3d vec = rg->GetPosition() + osg::Vec3d(i + 0.1f, j + 0.1f, gIndex * REGION_WIDTH + k + 0.1f) + CubInfo::Instance().GetNormal(side);
+
+              if(vec.z() < 0 || vec.z() > 128)
+                continue;
+
+              int rx = Region::ToRegionIndex(vec.x());
+              int ry = Region::ToRegionIndex(vec.y());
+
+              cube::Region* srg = RegionManager::Instance().ContainsRegion(rx, ry);
+
+              if(srg == NULL)
               {
-                cube::Light::RecalcAndFillingLight(cubReg, cpos, NULL);
+                srg = RegionManager::Instance().CreateRegion(rx, ry);
               }
 
-              for(int s = CubInfo::FirstSide; s <= CubInfo::EndSide; s++)
+              vec -= srg->GetPosition();
+
+              cube::CubRegion scubReg = srg->GetCub(vec.x(), vec.y(), vec.z());
+
+              if(!scubReg.GetCubRendered() && scubReg.GetCubType() != cube::Cub::Air)
               {
-                CubInfo::CubeSide side = (CubInfo::CubeSide)s;
-
-                osg::Vec3d vec = rg->GetPosition() + osg::Vec3d(i + 0.1f, j + 0.1f, gIndex * REGION_WIDTH + k + 0.1f) + CubInfo::Instance().GetNormal(side);
-
-                if(vec.z() < 0 || vec.z() > 128)
-                  continue;
-
-                int rx = Region::ToRegionIndex(vec.x());
-                int ry = Region::ToRegionIndex(vec.y());
-
-                cube::Region* srg = RegionManager::Instance().ContainsRegion(rx, ry);
-
-                if(srg == NULL)
-                {
-                  srg = RegionManager::Instance().CreateRegion(rx, ry);
-                }
-
-                vec -= srg->GetPosition();
-
-                cube::CubRegion scubReg = srg->GetCub(vec.x(), vec.y(), vec.z());
-
-                if(!scubReg.GetCubRendered() && scubReg.GetCubType() != cube::Cub::Air)
-                {
-                  scubReg.SetCubRendered(true);
-                }
+                scubReg.SetCubRendered(true);
               }
             }
           }

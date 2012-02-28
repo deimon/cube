@@ -29,8 +29,9 @@ public:
   bool IsCompleted() { return _completed; }
   void Calculate() { _completed = false; }
 
-  std::list<World::RegionsList*> _addRegionsForVisual;
-  std::list<World::RegionsList*> _addRegionsForCalc;
+  std::list<World::RegionsList*> _addRegionsForRenderFilling;
+  std::list<World::RegionsList*> _addRegionsForLightFilling;
+  std::list<World::RegionsList*> _addRegionsForCubFilling;
 
   std::list<cube::Region*> _addToSceneRegions;
 
@@ -47,37 +48,55 @@ private:
       microSleep(100);
       if(!_completed)
       {
-        if(!_addRegionsForCalc.empty())
+        if(!_addRegionsForCubFilling.empty())
         {
-          World::RegionsList* curList = _addRegionsForCalc.front();
-          _addRegionsForCalc.pop_front();
+          World::RegionsList* curList = _addRegionsForCubFilling.front();
+          _addRegionsForCubFilling.pop_front();
 
           while(!curList->empty())
           {
             cube::Region* reg = curList->front();
             curList->pop_front();
-            if(!reg->IsAreaGenerated())
+            if(!reg->IsCubFilled())
             {
-              reg->FillRegion(_world->_rnd);
+              reg->CubFilling(_world->_rnd);
             }
           }
 
           delete curList;
         }
 
-        if(!_addRegionsForVisual.empty())
+        if(!_addRegionsForLightFilling.empty())
         {
-          World::RegionsList* curList = _addRegionsForVisual.front();
-          _addRegionsForVisual.pop_front();
+          World::RegionsList* curList = _addRegionsForLightFilling.front();
+          _addRegionsForLightFilling.pop_front();
+
+          while(!curList->empty())
+          {
+            cube::Region* reg = curList->front();
+            curList->pop_front();
+            if(!reg->IsLightFilled())
+            {
+              reg->LightFilling();
+            }
+          }
+
+          delete curList;
+        }
+
+        if(!_addRegionsForRenderFilling.empty())
+        {
+          World::RegionsList* curList = _addRegionsForRenderFilling.front();
+          _addRegionsForRenderFilling.pop_front();
 
           while(!curList->empty())
           {
             cube::Region* reg = curList->front();
             curList->pop_front();
 
-            if(!reg->IsAreaGenerated2())
+            if(!reg->IsRenderFilled())
             {
-              reg->FillRegion2();
+              reg->RenderFilling();
             }
 
             _world->UpdateRegionGeoms(reg, false);
@@ -109,8 +128,9 @@ void WorldCallback::operator()(osg::Node* node, osg::NodeVisitor* nv)
 
 World::World()
 {
-  _addRegionsForVisual.push_back(new RegionsList);
-  _addRegionsForCalc.push_back(new RegionsList);
+  _addRegionsForRenderFilling.push_back(new RegionsList);
+  _addRegionsForCubFilling.push_back(new RegionsList);
+  _addRegionsForLightFilling.push_back(new RegionsList);
 
   _frame = 0;
   // эти параметры надо будет устанавливать
@@ -124,19 +144,11 @@ World::World()
 
   _radius = 4;
 
-  for(int i = -_radius - 1; i <= _radius + 1; i++)
-  for(int j = -_radius - 1; j <= _radius + 1; j++)
+  for(int i = -_radius - 2; i <= _radius + 2; i++)
+  for(int j = -_radius - 2; j <= _radius + 2; j++)
   {
     cube::Region* region = cube::Region::Generation(i, j);
-    region->FillRegion(_rnd);
-  }
-
-  for(int i = -_radius; i <= _radius; i++)
-  for(int j = -_radius; j <= _radius; j++)
-  {
-    cube::Region* region = RegionManager::Instance().GetRegion(i, j);
-    region->SetVisibleZone(true);
-    region->FillRegion2();
+    region->CubFilling(_rnd);
   }
 
   _cgThread = new CreateGeomThread(this);
@@ -289,26 +301,37 @@ void World::update()
   // отправка в поток регионов на обработку и получение обработаных регионов
   if(_cgThread->IsCompleted() /*&& !_addRegions.empty()*/)
   {
-    while(!_addRegionsForCalc.empty())
+    while(!_addRegionsForCubFilling.empty())
     {
-      RegionsList* rl = _addRegionsForCalc.front();
+      RegionsList* rl = _addRegionsForCubFilling.front();
       
       if(rl->empty())
         break;
 
-      _cgThread->_addRegionsForCalc.push_back(rl);
-      _addRegionsForCalc.pop_front();
+      _cgThread->_addRegionsForCubFilling.push_back(rl);
+      _addRegionsForCubFilling.pop_front();
     }
 
-    while(!_addRegionsForVisual.empty())
+    while(!_addRegionsForLightFilling.empty())
     {
-      RegionsList* rl = _addRegionsForVisual.front();
+      RegionsList* rl = _addRegionsForLightFilling.front();
 
       if(rl->empty())
         break;
 
-      _cgThread->_addRegionsForVisual.push_back(rl);
-      _addRegionsForVisual.pop_front();
+      _cgThread->_addRegionsForLightFilling.push_back(rl);
+      _addRegionsForLightFilling.pop_front();
+    }
+
+    while(!_addRegionsForRenderFilling.empty())
+    {
+      RegionsList* rl = _addRegionsForRenderFilling.front();
+
+      if(rl->empty())
+        break;
+
+      _cgThread->_addRegionsForRenderFilling.push_back(rl);
+      _addRegionsForRenderFilling.pop_front();
     }
 
     if(_addToSceneRegions.empty())
@@ -389,6 +412,17 @@ void World::update()
     newRegionList = true;
     _prevRegX = curRegX;
 
+    for(int j = -_radius - 2; j <= _radius + 2; j++)
+    {
+      int i = _radius + 2;
+      int x = i + curRegX;
+      int y = j + curRegY;
+      cube::Region* reg = RegionManager::Instance().ContainsRegion(x, y);
+      if(reg == NULL)
+        reg = cube::Region::Generation(x, y);
+      _addRegionsForCubFilling.back()->push_back(reg);
+    }
+
     for(int j = -_radius - 1; j <= _radius + 1; j++)
     {
       int i = _radius + 1;
@@ -397,7 +431,7 @@ void World::update()
       cube::Region* reg = RegionManager::Instance().ContainsRegion(x, y);
       if(reg == NULL)
         reg = cube::Region::Generation(x, y);
-      _addRegionsForCalc.back()->push_back(reg);
+      _addRegionsForLightFilling.back()->push_back(reg);
     }
 
     for(int j = -_radius; j <= _radius; j++)
@@ -410,7 +444,7 @@ void World::update()
       if(reg == NULL)
         reg = cube::Region::Generation(x, y);
       reg->SetVisibleZone(true);
-      _addRegionsForVisual.back()->push_back(reg);
+      _addRegionsForRenderFilling.back()->push_back(reg);
 
       //del
       i = -_radius;
@@ -430,6 +464,17 @@ void World::update()
     newRegionList = true;
     _prevRegX = curRegX;
 
+    for(int j = -_radius - 2; j <= _radius + 2; j++)
+    {
+      int i = -_radius - 2;
+      int x = i + curRegX;
+      int y = j + curRegY;
+      cube::Region* reg = RegionManager::Instance().ContainsRegion(x, y);
+      if(reg == NULL)
+        reg = cube::Region::Generation(x, y);
+      _addRegionsForCubFilling.back()->push_back(reg);
+    }
+
     for(int j = -_radius - 1; j <= _radius + 1; j++)
     {
       int i = -_radius - 1;
@@ -438,7 +483,7 @@ void World::update()
       cube::Region* reg = RegionManager::Instance().ContainsRegion(x, y);
       if(reg == NULL)
         reg = cube::Region::Generation(x, y);
-      _addRegionsForCalc.back()->push_back(reg);
+      _addRegionsForLightFilling.back()->push_back(reg);
     }
 
     for(int j = -_radius; j <= _radius; j++)
@@ -451,7 +496,7 @@ void World::update()
       if(reg == NULL)
         reg = cube::Region::Generation(x, y);
       reg->SetVisibleZone(true);
-      _addRegionsForVisual.back()->push_back(reg);
+      _addRegionsForRenderFilling.back()->push_back(reg);
 
       //del
       i = _radius;
@@ -471,6 +516,17 @@ void World::update()
     newRegionList = true;
     _prevRegY = curRegY;
 
+    for(int j = -_radius - 2; j <= _radius + 2; j++)
+    {
+      int i = _radius + 2;
+      int x = j + curRegX;
+      int y = i + curRegY;
+      cube::Region* reg = RegionManager::Instance().ContainsRegion(x, y);
+      if(reg == NULL)
+        reg = cube::Region::Generation(x, y);
+      _addRegionsForCubFilling.back()->push_back(reg);
+    }
+
     for(int j = -_radius - 1; j <= _radius + 1; j++)
     {
       int i = _radius + 1;
@@ -479,7 +535,7 @@ void World::update()
       cube::Region* reg = RegionManager::Instance().ContainsRegion(x, y);
       if(reg == NULL)
         reg = cube::Region::Generation(x, y);
-      _addRegionsForCalc.back()->push_back(reg);
+      _addRegionsForLightFilling.back()->push_back(reg);
     }
 
     for(int j = -_radius; j <= _radius; j++)
@@ -492,7 +548,7 @@ void World::update()
       if(reg == NULL)
         reg = cube::Region::Generation(x, y);
       reg->SetVisibleZone(true);
-      _addRegionsForVisual.back()->push_back(reg);
+      _addRegionsForRenderFilling.back()->push_back(reg);
 
       //del
       i = -_radius;
@@ -512,6 +568,17 @@ void World::update()
     newRegionList = true;
     _prevRegY = curRegY;
 
+    for(int j = -_radius - 2; j <= _radius + 2; j++)
+    {
+      int i = -_radius - 2;
+      int x = j + curRegX;
+      int y = i + curRegY;
+      cube::Region* reg = RegionManager::Instance().ContainsRegion(x, y);
+      if(reg == NULL)
+        reg = cube::Region::Generation(x, y);
+      _addRegionsForCubFilling.back()->push_back(reg);
+    }
+
     for(int j = -_radius - 1; j <= _radius + 1; j++)
     {
       int i = -_radius - 1;
@@ -520,7 +587,7 @@ void World::update()
       cube::Region* reg = RegionManager::Instance().ContainsRegion(x, y);
       if(reg == NULL)
         reg = cube::Region::Generation(x, y);
-      _addRegionsForCalc.back()->push_back(reg);
+      _addRegionsForLightFilling.back()->push_back(reg);
     }
 
     for(int j = -_radius; j <= _radius; j++)
@@ -533,7 +600,7 @@ void World::update()
       if(reg == NULL)
         reg = cube::Region::Generation(x, y);
       reg->SetVisibleZone(true);
-      _addRegionsForVisual.back()->push_back(reg);
+      _addRegionsForRenderFilling.back()->push_back(reg);
 
       //del
       i = _radius;
@@ -550,8 +617,9 @@ void World::update()
 
   if(newRegionList)
   {
-    _addRegionsForVisual.push_back(new RegionsList);
-    _addRegionsForCalc.push_back(new RegionsList);
+    _addRegionsForRenderFilling.push_back(new RegionsList);
+    _addRegionsForCubFilling.push_back(new RegionsList);
+    _addRegionsForLightFilling.push_back(new RegionsList);
   }
 }
 
@@ -732,6 +800,20 @@ osg::Geode* World::createGeometry()
       cube::MathUtils::random(0, REGION_WIDTH),
       cube::MathUtils::random(0, REGION_WIDTH));
   }
+
+  for(int i = -_radius - 1; i <= _radius + 1; i++)
+  for(int j = -_radius - 1; j <= _radius + 1; j++)
+  {
+    RegionManager::Instance().GetRegion(i, j)->LightFilling();
+  }
+
+  for(int i = -_radius; i <= _radius; i++)
+    for(int j = -_radius; j <= _radius; j++)
+    {
+      cube::Region* region = RegionManager::Instance().GetRegion(i, j);
+      region->SetVisibleZone(true);
+      region->RenderFilling();
+    }
 
   for(int i = -_radius; i <= _radius; i++)
   for(int j = -_radius; j <= _radius; j++)

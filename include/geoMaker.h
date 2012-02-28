@@ -8,8 +8,9 @@ namespace cube
   class GeoMaker
   {
   public:
-    static void FillRegion(cube::Region* rg, float rnd);
-    static void FillRegion2(cube::Region* rg);
+    static void CubFilling(cube::Region* rg, float rnd);
+    static void LightFilling(cube::Region* rg);
+    static void RenderFilling(cube::Region* rg);
 
   protected:
     static inline float Noise2D(int x, int y)
