@@ -15,6 +15,8 @@ namespace cube
     static void RecalcAndFillingLight(cube::CubRegion& cubReg, osg::Vec3d wcpos, 
                                       std::map<osg::Geometry*, World::DataUpdate>* updateGeomMap = NULL);
 
+    static void StartFillingLight(cube::CubRegion& cubReg, osg::Vec3d wcpos, float prevLight, int iStartReg, int jStartReg);
+
     static void fillingLight(cube::CubRegion& cubReg, osg::Vec3d wcpos, CubInfo::CubeSide side, float prevLight,
                              std::map<osg::Geometry*, World::DataUpdate>* updateGeomMap = NULL);
 

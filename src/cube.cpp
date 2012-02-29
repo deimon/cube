@@ -5,6 +5,7 @@ using namespace cube;
 
 CubInfo::CubeSide CubInfo::FirstSide = CubInfo::Y_BACK;
 CubInfo::CubeSide CubInfo::EndSide = CubInfo::Z_BACK;
+CubInfo::CubeSide CubInfo::EndHorizSide = CubInfo::X_BACK;
 
 CubInfo::CubInfo()
 {

@@ -62,6 +62,7 @@ namespace cube
 
     static CubeSide FirstSide;
     static CubeSide EndSide;
+    static CubeSide EndHorizSide;
 
     CubInfo();
     const osg::Vec3& GetNormal(CubInfo::CubeSide cubeSide);

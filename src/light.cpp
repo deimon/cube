@@ -120,6 +120,53 @@ void Light::RecalcAndFillingLight(cube::CubRegion& cubReg, osg::Vec3d wcpos, std
   }
 }
 
+void Light::StartFillingLight(cube::CubRegion& cubReg, osg::Vec3d wcpos, float prevLight, int iStartReg, int jStartReg)
+{
+  {
+    osg::Vec3d csvec = wcpos;
+    csvec.z() += 1.0f;
+    cube::CubRegion scubReg = RegionManager::Instance().GetCub(csvec.x(), csvec.y(), csvec.z());
+
+    if(scubReg.GetCubType() == cube::Cub::Air && scubReg.GetCubLight() > prevLight)
+      prevLight = scubReg.GetCubLight();
+
+    cubReg.GetCubLight() = prevLight;
+  }
+
+  for(int i = CubInfo::FirstSide; i <= CubInfo::EndHorizSide; i++)
+  {
+    CubInfo::CubeSide side = (CubInfo::CubeSide)i;
+
+    osg::Vec3d csvec = wcpos + CubInfo::Instance().GetNormal(side);
+
+    int rx = Region::ToRegionIndex(csvec.x());
+    int ry = Region::ToRegionIndex(csvec.y());
+
+    if(abs(iStartReg - rx) <= 1 && abs(jStartReg - ry) <= 1)
+    {
+      cube::CubRegion scubReg = RegionManager::Instance().GetCub(csvec.x(), csvec.y(), csvec.z());
+
+      if(scubReg.GetCubType() == cube::Cub::Air && (cubReg.GetCubLight() - scubReg.GetCubLight()) > 0.12f)
+        StartFillingLight(scubReg, csvec, cubReg.GetCubLight() - 0.1f, iStartReg, jStartReg);
+    }
+  }
+
+  //{
+  //  osg::Vec3d csvec = wcpos + CubInfo::Instance().GetNormal(CubInfo::Z_BACK);
+
+  //  int rx = Region::ToRegionIndex(csvec.x());
+  //  int ry = Region::ToRegionIndex(csvec.y());
+
+  //  if(abs(iStartReg - rx) <= 1 && abs(jStartReg - ry) <= 1)
+  //  {
+  //    cube::CubRegion scubReg = RegionManager::Instance().GetCub(csvec.x(), csvec.y(), csvec.z());
+
+  //    if(scubReg.GetCubType() == cube::Cub::Air && (cubReg.GetCubLight() - scubReg.GetCubLight()) > 0.02f)
+  //      StartFillingLight(scubReg, csvec, cubReg.GetCubLight(), iStartReg, jStartReg);
+  //  }
+  //}
+}
+
 void Light::fillingLight(cube::CubRegion& cubReg, osg::Vec3d wcpos, CubInfo::CubeSide side, float prevLight,
                          std::map<osg::Geometry*, World::DataUpdate>* updateGeomMap)
 {

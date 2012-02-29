@@ -55,22 +55,33 @@ void GeoMaker::LightFilling(cube::Region* rg)
     }
     else
     {
-      for(int i = -1; i <= REGION_WIDTH; i++)
+      for(int k = REGION_WIDTH; k >= 0; k--)
       {
-        for(int j = -1; j <= REGION_WIDTH; j++)
+        bool found = false;
+
+        for(int i = 0; i < REGION_WIDTH; i++)
         {
-          for(int k = REGION_WIDTH - 1; k >= 0; k--)
+          for(int j = 0; j < REGION_WIDTH; j++)
           {
             osg::Vec3d cpos = rg->GetPosition() + osg::Vec3d(i + 0.1f, j + 0.1f, gIndex * REGION_WIDTH + k + 0.1f);
             cube::CubRegion cubReg = RegionManager::Instance().GetCub(cpos.x(), cpos.y(), cpos.z());
-            if(cubReg.GetCubType() == cube::Cub::Air)
+
+            if(cubReg.GetCubType() == cube::Cub::Air && cubReg.GetCubLight() > 0.12f)
             {
-              //cube::CubRegion tcr = RegionManager::Instance().GetCub(cpos.x(), cpos.y(), cpos.z() + 1.0f);
-              //if(fabs(tcr.GetCubLight() - cubReg.GetCubLight()) > 0.2f)
-              cube::Light::RecalcAndFillingLight(cubReg, cpos, NULL);
+              cpos.z() -= 1.0f;
+              cube::CubRegion downCubReg = RegionManager::Instance().GetCub(cpos.x(), cpos.y(), cpos.z());
+
+              if(downCubReg.GetCubType() == cube::Cub::Air)
+              {
+                cube::Light::StartFillingLight(downCubReg, cpos, cubReg.GetCubLight(), rg->GetX(), rg->GetY());
+                found = true;
+              }
             }
           }
         }
+
+        if(!found)
+          return;
       }
     }
   }
