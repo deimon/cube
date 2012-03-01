@@ -69,6 +69,7 @@ namespace cube
     const osg::Vec3& GetVertex(CubInfo::CubeSide cubeSide, int numVertex);
 
     void FillVertCoord(CubInfo::CubeSide cubeSide, osg::Vec3Array* coords, osg::Vec3d offset);
+    void FillColorBuffer(CubInfo::CubeSide cubeSide, osg::Vec4Array* colors, osg::Vec3d pos, osg::Vec4d color);
 
   protected:
 

@@ -195,7 +195,7 @@ osg::Geometry* NewOSGGeom()
 
   curGeom->setVertexArray(coords);
   curGeom->setColorArray(colours);
-  curGeom->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE);
+  curGeom->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
   curGeom->setNormalArray(normals);
   curGeom->setNormalBinding(osg::Geometry::BIND_PER_PRIMITIVE);
 
@@ -279,12 +279,18 @@ void World::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset, bool
 
         osg::Vec4d color = _texInfo->GetSideColor(cubReg.GetCubType(), cside);
 
-        float light = scubReg.GetCubLight() + scubReg.GetCubLocLight();
-        if(light > 1.0f)
-          light = 1.0f;
-        color *= light;
+        //float light = scubReg.GetCubLight() + scubReg.GetCubLocLight();
+        //if(light > 1.0f)
+        //  light = 1.0f;
+        //color *= light;
 
-        colours->push_back(color);
+        //colours->push_back(color);
+        //colours->push_back(color);
+        //colours->push_back(color);
+        //colours->push_back(color);
+
+        CubInfo::Instance().FillColorBuffer(cside, colours, pos, color);
+
         normals->push_back(CubInfo::Instance().GetNormal(cside));
       }
     }
@@ -744,6 +750,7 @@ void World::AddCub(osg::Vec3d vec)
     if(scubReg.GetCubType() == cube::Cub::Air)
     {
       scubReg.SetCubType(cube::Cub::Pumpkin);
+      //scubReg.GetCubLight() = 0.1f;
       {
         // временный блок
         std::map<osg::Geometry*, DataUpdate> updateGeomMap;
