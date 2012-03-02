@@ -77,6 +77,8 @@ namespace cube
 
     float _rnd;
 
+    osg::Uniform* _worldLight;
+
   protected:
     void updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset, bool blend = false, bool updateScene = false);
     void clearRegionGeoms(cube::Region* rg);

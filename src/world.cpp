@@ -860,6 +860,9 @@ osg::Group* World::GetGeometry()
     program->addShader(fs);
     ss->setAttributeAndModes(program, osg::StateAttribute::ON | osg::StateAttribute::PROTECTED);
     ss->addUniform(new osg::Uniform("texture", 0));
+
+    _worldLight = new osg::Uniform("sun", 0.6f);
+    ss->addUniform(_worldLight);
   }
 
   return _group;
