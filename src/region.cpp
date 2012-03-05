@@ -69,10 +69,10 @@ void CubRegion::SetCubType(Cub::CubeType type)
   if(_cub._type != type)
   {
     if(type == cube::Cub::Air)
-      _region->_airCubCount[_cub._blend?1:0][_geomIndex]++;
+      _region->_airCubCount[0][_geomIndex]++;
     else
       if(_cub._type == cube::Cub::Air)
-        _region->_airCubCount[_cub._blend?1:0][_geomIndex]--;
+        _region->_airCubCount[0][_geomIndex]--;
 
     _cub._type = type;
   }
@@ -86,4 +86,17 @@ void CubRegion::SetCubRendered(bool rendered)
     _region->_renderedCubCount[_cub._blend?1:0][_geomIndex]++;
   else
     _region->_renderedCubCount[_cub._blend?1:0][_geomIndex]--;
+}
+
+void CubRegion::SetCubBlend(bool blend)
+{
+  if(_cub._blend != blend)
+  {
+    if(blend)
+      _region->_airCubCount[0][_geomIndex]++;
+    else
+      _region->_airCubCount[0][_geomIndex]--;
+
+    _cub._blend = blend;
+  }
 }

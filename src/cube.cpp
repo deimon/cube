@@ -231,8 +231,8 @@ osg::Vec4d& TextureInfo::GetSideColor(Cub::CubeType cubeType, CubInfo::CubeSide 
 
 void TextureInfo::init()
 {
-  for(int ct = 0; ct < 7; ct++)
-    for(int cs = 0; cs < 7; cs++)
+  for(int ct = 0; ct < CUBE_TYPE; ct++)
+    for(int cs = 0; cs < CUBE_TYPE; cs++)
       _csColor[(Cub::CubeType)ct][(CubInfo::CubeSide)cs] = osg::Vec4d(1.0, 1.0, 1.0, 1.0);
 
   _csTextures[Cub::Ground][CubInfo::X_BACK] = 242;
@@ -283,4 +283,11 @@ void TextureInfo::init()
   _csTextures[Cub::Pumpkin][CubInfo::X_FACE] = 136;
   _csTextures[Cub::Pumpkin][CubInfo::Y_FACE] = 134;
   _csTextures[Cub::Pumpkin][CubInfo::Z_FACE] = 150;
+
+  _csTextures[Cub::Water][CubInfo::X_BACK] = 61;
+  _csTextures[Cub::Water][CubInfo::Y_BACK] = 61;
+  _csTextures[Cub::Water][CubInfo::Z_BACK] = 61;
+  _csTextures[Cub::Water][CubInfo::X_FACE] = 61;
+  _csTextures[Cub::Water][CubInfo::Y_FACE] = 61;
+  _csTextures[Cub::Water][CubInfo::Z_FACE] = 61;
 }

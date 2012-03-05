@@ -66,7 +66,7 @@ namespace cube
     void add(cube::CubRegion& cubReg, osg::Vec3d wcpos, bool recalcLight = false);
 
     void RemoveCub(osg::Vec3d vec);
-    void AddCub(osg::Vec3d vec);
+    void AddCub(osg::Vec3d vec, Cub::CubeType cubeType);
     void UpdateRegionGeoms(cube::Region* rg, bool addToScene = true);
 
     std::vector<DataUpdate> _dataUpdate;

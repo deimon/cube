@@ -66,12 +66,12 @@ void GeoMaker::LightFilling(cube::Region* rg)
             osg::Vec3d cpos = rg->GetPosition() + osg::Vec3d(i + 0.1f, j + 0.1f, gIndex * REGION_WIDTH + k + 0.1f);
             cube::CubRegion cubReg = RegionManager::Instance().GetCub(cpos.x(), cpos.y(), cpos.z());
 
-            if(cubReg.GetCubType() == cube::Cub::Air && cubReg.GetCubLight() > 0.12f)
+            if((cubReg.GetCubType() == cube::Cub::Air || cubReg.GetCubBlend()) && cubReg.GetCubLight() > 0.12f)
             {
               cpos.z() -= 1.0f;
               cube::CubRegion downCubReg = RegionManager::Instance().GetCub(cpos.x(), cpos.y(), cpos.z());
 
-              if(downCubReg.GetCubType() == cube::Cub::Air)
+              if(downCubReg.GetCubType() == cube::Cub::Air || downCubReg.GetCubBlend())
               {
                 cube::Light::StartFillingLight(downCubReg, cpos, cubReg.GetCubLight(), rg->GetX(), rg->GetY());
                 found = true;

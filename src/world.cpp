@@ -271,7 +271,8 @@ void World::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset, bool
 
       if(  scubReg.GetCubType() == cube::Cub::Air 
         || scubReg.GetCubType() == cube::Cub::LeavesWood 
-        || scubReg.GetCubType() == cube::Cub::TruncWood)
+        || scubReg.GetCubType() == cube::Cub::TruncWood
+        || (scubReg.GetCubType() == cube::Cub::Water && cubReg.GetCubType() != cube::Cub::Water))
       {
         CubInfo::Instance().FillVertCoord(cside, coords, pos);
 
@@ -636,9 +637,12 @@ void World::del(cube::CubRegion& cubReg, osg::Vec3d wcpos)
   cubReg.SetCubType(cube::Cub::Air);
   cubReg.SetCubRendered(false);
 
-  osg::Geometry* curGeom = cubReg.GetRegion()->GetGeometry(cubReg.GetGeomIndex(), cubReg.GetCubBlend());
+  bool blend = cubReg.GetCubBlend();
+  cubReg.SetCubBlend(false);
 
-  updateGeomMap[curGeom] = DataUpdate(curGeom, cubReg.GetRegion(), cubReg.GetGeomIndex(), cubReg.GetCubBlend());
+  osg::Geometry* curGeom = cubReg.GetRegion()->GetGeometry(cubReg.GetGeomIndex(), blend);
+
+  updateGeomMap[curGeom] = DataUpdate(curGeom, cubReg.GetRegion(), cubReg.GetGeomIndex(), blend);
 
   //*************************************
   cube::Light::RecalcAndFillingLight(cubReg, wcpos, &updateGeomMap);
@@ -732,7 +736,7 @@ void World::RemoveCub(osg::Vec3d vec)
   }
 }
 
-void World::AddCub(osg::Vec3d vec)
+void World::AddCub(osg::Vec3d vec, Cub::CubeType cubeType)
 {
   cube::Region* reg = RegionManager::Instance().GetRegion(Region::ToRegionIndex(vec.x()), Region::ToRegionIndex(vec.y()));
   osg::Vec3d cvec = vec - reg->GetPosition();
@@ -749,18 +753,26 @@ void World::AddCub(osg::Vec3d vec)
 
     if(scubReg.GetCubType() == cube::Cub::Air)
     {
-      scubReg.SetCubType(cube::Cub::Pumpkin);
-      //scubReg.GetCubLight() = 0.1f;
+      scubReg.SetCubType(cubeType);
+      if(cubeType == cube::Cub::Water)
       {
-        // временный блок
-        std::map<osg::Geometry*, DataUpdate> updateGeomMap;
-
-        cube::Light::fillingLocLight(scubReg, vec + norm, 1.0f, &updateGeomMap);
-
-        std::map<osg::Geometry*, DataUpdate>::iterator i = updateGeomMap.begin();
-        for(; i != updateGeomMap.end(); i++)
-          _dataUpdate.push_back(i->second);
+        scubReg.SetCubBlend(true);
       }
+      else
+      {
+        scubReg.GetCubLight() = 0.1f;
+      }
+      //scubReg.SetCubType(cube::Cub::Pumpkin);
+      //{
+      //  // временный блок
+      //  std::map<osg::Geometry*, DataUpdate> updateGeomMap;
+
+      //  cube::Light::fillingLocLight(scubReg, vec + norm, 1.0f, &updateGeomMap);
+
+      //  std::map<osg::Geometry*, DataUpdate>::iterator i = updateGeomMap.begin();
+      //  for(; i != updateGeomMap.end(); i++)
+      //    _dataUpdate.push_back(i->second);
+      //}
 
       add(scubReg, vec + norm, true);
     }
@@ -845,7 +857,8 @@ osg::Group* World::GetGeometry()
   _group->addChild(_geode[1]);
 
   _geode[0]->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE | osg::StateAttribute::PROTECTED);
-  _geode[1]->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE | osg::StateAttribute::PROTECTED);
+  _geode[1]->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE | osg::StateAttribute::PROTECTED);
+  _geode[1]->getOrCreateStateSet()->setMode(GL_BLEND, osg::StateAttribute::ON);
 
   {
     osg::Shader *vs = new osg::Shader(osg::Shader::VERTEX);

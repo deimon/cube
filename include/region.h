@@ -114,6 +114,7 @@ namespace cube
     void SetCubRendered(bool rendered);
     bool GetCubRendered() { return _cub._rendered; }
 
+    void SetCubBlend(bool blend);
     bool GetCubBlend() { return _cub._blend; }
 
   protected:

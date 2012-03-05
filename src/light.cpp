@@ -91,7 +91,7 @@ void Light::RecalcAndFillingLight(cube::CubRegion& cubReg, osg::Vec3d wcpos, std
     csvec -= sideReg->GetPosition();
     cube::CubRegion scubReg = sideReg->GetCub(csvec.x(), csvec.y(), csvec.z());
 
-    if(scubReg.GetCubType() == cube::Cub::Air)
+    if(scubReg.GetCubType() == cube::Cub::Air || scubReg.GetCubBlend())
     {
       if(scubReg.GetCubLight() > cubReg.GetCubLight())
         cubReg.GetCubLight() = scubReg.GetCubLight();
@@ -127,7 +127,7 @@ void Light::StartFillingLight(cube::CubRegion& cubReg, osg::Vec3d wcpos, float p
     csvec.z() += 1.0f;
     cube::CubRegion scubReg = RegionManager::Instance().GetCub(csvec.x(), csvec.y(), csvec.z());
 
-    if(scubReg.GetCubType() == cube::Cub::Air && scubReg.GetCubLight() > prevLight)
+    if((scubReg.GetCubType() == cube::Cub::Air || scubReg.GetCubBlend()) && scubReg.GetCubLight() > prevLight)
       prevLight = scubReg.GetCubLight();
 
     cubReg.GetCubLight() = prevLight;
@@ -146,7 +146,7 @@ void Light::StartFillingLight(cube::CubRegion& cubReg, osg::Vec3d wcpos, float p
     {
       cube::CubRegion scubReg = RegionManager::Instance().GetCub(csvec.x(), csvec.y(), csvec.z());
 
-      if(scubReg.GetCubType() == cube::Cub::Air && (cubReg.GetCubLight() - scubReg.GetCubLight()) > 0.12f)
+      if((scubReg.GetCubType() == cube::Cub::Air || scubReg.GetCubBlend()) && (cubReg.GetCubLight() - scubReg.GetCubLight()) > 0.12f)
         StartFillingLight(scubReg, csvec, cubReg.GetCubLight() - 0.1f, iStartReg, jStartReg);
     }
   }
@@ -170,7 +170,7 @@ void Light::StartFillingLight(cube::CubRegion& cubReg, osg::Vec3d wcpos, float p
 void Light::fillingLight(cube::CubRegion& cubReg, osg::Vec3d wcpos, CubInfo::CubeSide side, float prevLight,
                          std::map<osg::Geometry*, World::DataUpdate>* updateGeomMap)
 {
-  if(cubReg.GetCubType() == cube::Cub::Air)
+  if(cubReg.GetCubType() == cube::Cub::Air || cubReg.GetCubBlend())
   {
     bool next = false;
     if(side == CubInfo::Z_BACK && (prevLight - cubReg.GetCubLight()) > 0.02f)
@@ -240,7 +240,7 @@ void Light::FindLightSourceAndFillingLight(cube::CubRegion& cubReg, osg::Vec3d w
     csvec -= sideReg->GetPosition();
     cube::CubRegion scubReg = sideReg->GetCub(csvec.x(), csvec.y(), csvec.z());
 
-    if(scubReg.GetCubType() == cube::Cub::Air && ((cubReg.GetCubLight() - scubReg.GetCubLight()) > 0.02f || side == CubInfo::Z_BACK))
+    if((scubReg.GetCubType() == cube::Cub::Air || scubReg.GetCubBlend()) && ((cubReg.GetCubLight() - scubReg.GetCubLight()) > 0.02f || side == CubInfo::Z_BACK))
     {
       //найти увеличение и заполнить свет оттуда
       findLightSource(scubReg, wcsvec, listCubPos, updateGeomMap);
@@ -286,7 +286,7 @@ void Light::findLightSource(cube::CubRegion& cubReg, osg::Vec3d wcpos, MapCubPos
     csvec -= sideReg->GetPosition();
     cube::CubRegion scubReg = sideReg->GetCub(csvec.x(), csvec.y(), csvec.z());
 
-    if(scubReg.GetCubType() == cube::Cub::Air && scubReg.GetCubLight() > 0.12)
+    if((scubReg.GetCubType() == cube::Cub::Air || scubReg.GetCubBlend()) && scubReg.GetCubLight() > 0.12)
     {
       if((scubReg.GetCubLight() - cubLight) > 0.02f || (scubReg.GetCubLight() > 0.98 && side != CubInfo::Z_BACK) /*&& listCubPos.find(&scub) == listCubPos.end()*/)
         listCubPos[scubReg.GetCub()] = std::make_pair(wcsvec, &scubReg.GetCubLight());

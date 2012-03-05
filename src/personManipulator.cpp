@@ -84,6 +84,8 @@ PersonManipulator::PersonManipulator()
   _moveLeft = false;
   _moveRight = false;
   _jump = false;
+
+  _cubType = 1;
 }
 
 void PersonManipulator::setByMatrix( const osg::Matrixd& matrix )
@@ -183,6 +185,24 @@ bool PersonManipulator::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GU
             _jump = true;
             _startJump = _eye.z();
           }
+          return true;
+        }
+        break;
+
+      case osgGA::GUIEventAdapter::KEY_Page_Up:
+        {
+          _cubType++;
+          if(_cubType == CUBE_TYPE)
+            _cubType = 1;
+          return true;
+        }
+        break;
+
+      case osgGA::GUIEventAdapter::KEY_Page_Down:
+        {
+          _cubType--;
+          if(_cubType < 1)
+            _cubType = CUBE_TYPE - 1;
           return true;
         }
         break;
@@ -319,7 +339,7 @@ bool PersonManipulator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
         }
         else if(ea.getButtonMask() & osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON)
         {
-          world.AddCub(newEye);
+          world.AddCub(newEye, (Cub::CubeType)_cubType);
         }
       }
 

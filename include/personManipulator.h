@@ -46,6 +46,8 @@ namespace cube
     double _last_frame_time;
 
     osg::ref_ptr< osg::Node > _node;
+
+    int _cubType;
   };
 }
 

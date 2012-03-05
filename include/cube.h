@@ -2,6 +2,7 @@
 #define __CUBE_H__
 
 #define CUBE_SIZE 1
+#define CUBE_TYPE 8
 
 #include <iostream>
 #include <osg/Texture2D>
@@ -24,7 +25,8 @@ namespace cube
       Stone = 3,
       TruncWood = 4,
       LeavesWood = 5,
-      Pumpkin = 6
+      Pumpkin = 6,
+      Water = 7
     };
   public:
 
