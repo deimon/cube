@@ -761,18 +761,19 @@ void World::AddCub(osg::Vec3d vec, Cub::CubeType cubeType)
       else
       {
         scubReg.GetCubLight() = 0.1f;
+
+        if(scubReg.GetCubType() == cube::Cub::Pumpkin)
+        {
+          // временный блок
+          std::map<osg::Geometry*, DataUpdate> updateGeomMap;
+
+          cube::Light::fillingLocLight(scubReg, vec + norm, 1.0f, &updateGeomMap);
+
+          std::map<osg::Geometry*, DataUpdate>::iterator i = updateGeomMap.begin();
+          for(; i != updateGeomMap.end(); i++)
+            _dataUpdate.push_back(i->second);
+        }
       }
-      //scubReg.SetCubType(cube::Cub::Pumpkin);
-      //{
-      //  // временный блок
-      //  std::map<osg::Geometry*, DataUpdate> updateGeomMap;
-
-      //  cube::Light::fillingLocLight(scubReg, vec + norm, 1.0f, &updateGeomMap);
-
-      //  std::map<osg::Geometry*, DataUpdate>::iterator i = updateGeomMap.begin();
-      //  for(; i != updateGeomMap.end(); i++)
-      //    _dataUpdate.push_back(i->second);
-      //}
 
       add(scubReg, vec + norm, true);
     }
