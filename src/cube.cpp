@@ -9,6 +9,15 @@ CubInfo::CubeSide CubInfo::FirstSide = CubInfo::Y_BACK;
 CubInfo::CubeSide CubInfo::EndSide = CubInfo::Z_BACK;
 CubInfo::CubeSide CubInfo::EndHorizSide = CubInfo::X_BACK;
 
+osg::Vec3 CubInfo::X0Y0Z0 = osg::Vec3d(0.0, 0.0, 0.0);
+osg::Vec3 CubInfo::X0Y0Z1 = osg::Vec3d(0.0, 0.0, 1.0);
+osg::Vec3 CubInfo::X0Y1Z0 = osg::Vec3d(0.0, 1.0, 0.0);
+osg::Vec3 CubInfo::X0Y1Z1 = osg::Vec3d(0.0, 1.0, 1.0);
+osg::Vec3 CubInfo::X1Y0Z0 = osg::Vec3d(1.0, 0.0, 0.0);
+osg::Vec3 CubInfo::X1Y0Z1 = osg::Vec3d(1.0, 0.0, 1.0);
+osg::Vec3 CubInfo::X1Y1Z0 = osg::Vec3d(1.0, 1.0, 0.0);
+osg::Vec3 CubInfo::X1Y1Z1 = osg::Vec3d(1.0, 1.0, 1.0);
+
 CubInfo::CubInfo()
 {
   //Init Normals
@@ -290,4 +299,10 @@ void TextureInfo::init()
   _csTextures[Cub::Water][CubInfo::X_FACE] = 61;
   _csTextures[Cub::Water][CubInfo::Y_FACE] = 61;
   _csTextures[Cub::Water][CubInfo::Z_FACE] = 61;
+  _csColor[Cub::Water][CubInfo::X_BACK] = osg::Vec4d(1.0, 1.0, 1.0, 2.0);
+  _csColor[Cub::Water][CubInfo::Y_BACK] = osg::Vec4d(1.0, 1.0, 1.0, 2.0);
+  _csColor[Cub::Water][CubInfo::Z_BACK] = osg::Vec4d(1.0, 1.0, 1.0, 2.0);
+  _csColor[Cub::Water][CubInfo::X_FACE] = osg::Vec4d(1.0, 1.0, 1.0, 2.0);
+  _csColor[Cub::Water][CubInfo::Y_FACE] = osg::Vec4d(1.0, 1.0, 1.0, 2.0);
+  _csColor[Cub::Water][CubInfo::Z_FACE] = osg::Vec4d(1.0, 1.0, 1.0, 2.0);
 }

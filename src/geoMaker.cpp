@@ -2,6 +2,8 @@
 #include <regionManager.h>
 #include <light.h>
 
+#define WATER_LINE 60
+
 using namespace cube;
 
 Perlin* GeoMaker::_perlin3d = new Perlin(2, 1, 1.0f, 123);
@@ -32,8 +34,29 @@ void GeoMaker::CubFilling(cube::Region* rg, float rnd)
             rg->SetHeight(i,j, k - 1);
         }
         else
-          if(k == rg->GetHeight(i, j) && cubReg.GetCubType() == cube::Cub::Ground)
+          if(k == rg->GetHeight(i, j) && cubReg.GetCubType() == cube::Cub::Ground && k + 1 > WATER_LINE)
             cubReg.SetCubType(cube::Cub::Grass);
+      }
+    }
+  }
+}
+
+void GeoMaker::ObjectFilling(cube::Region* rg)
+{
+  for(int i = 0; i < REGION_WIDTH; i++)
+  {
+    for(int j = 0; j < REGION_WIDTH; j++)
+    {
+      int height = rg->GetHeight(i,j);
+
+      if(height <= WATER_LINE)
+      {
+        for(int z = height + 1; z <= WATER_LINE; z++)
+        {
+          cube::CubRegion wCubReg = rg->GetCub(i, j, z);
+          wCubReg.SetCubType(cube::Cub::Water);
+          wCubReg.SetCubBlend(true);
+        }
       }
     }
   }
@@ -99,7 +122,7 @@ void GeoMaker::RenderFilling(cube::Region* rg)
         {
           osg::Vec3d cpos = rg->GetPosition() + osg::Vec3d(i + 0.1f, j + 0.1f, gIndex * REGION_WIDTH + k + 0.1f);
           cube::CubRegion cubReg = RegionManager::Instance().GetCub(cpos.x(), cpos.y(), cpos.z());
-          if(cubReg.GetCubType() == cube::Cub::Air)
+          if(cubReg.GetCubType() == cube::Cub::Air || cubReg.GetCubBlend())
           {
             for(int s = CubInfo::FirstSide; s <= CubInfo::EndSide; s++)
             {
@@ -141,22 +164,23 @@ void GeoMaker::GenNoise(cube::Region* rg, float rnd)
   int xOffset = rg->GetX() * REGION_WIDTH;
   int yOffset = rg->GetY() * REGION_WIDTH;
 
-  for(int i = -1; i < REGION_WIDTH + 1; i++)
+  for(int i = 0; i < REGION_WIDTH; i++)
   {
-    for(int j = -1; j < REGION_WIDTH + 1; j++)
+    for(int j = 0; j < REGION_WIDTH; j++)
     {
-      int height = 4
-        + (_perlin2d->Get(float(i + xOffset) / 100.0f, float(j + yOffset) / 100.0f) * 0.5f + 0.5f) * (80)
+      int height = 2
+        + (_perlin2d->Get(float(i + xOffset) / 100.0f, float(j + yOffset) / 100.0f) * 0.5f + 0.5f) * (100)
         + (_perlin2d->Get(float(i + xOffset) / 20.0f, float(j + yOffset) / 20.0f) * 0.5f + 0.5f) * (25);
 
       rg->SetHeight(i, j, height);
-
-      if(i < 0 || i >= REGION_WIDTH || j < 0 || j >= REGION_WIDTH)
-        continue;
       
       cube::CubRegion cubReg = rg->GetCub(i, j, height);
-      cubReg.SetCubType(cube::Cub::Grass);
       cubReg.SetCubRendered(true);
+
+      if(height > WATER_LINE)
+        cubReg.SetCubType(cube::Cub::Grass);
+      else
+        cubReg.SetCubType(cube::Cub::Ground);
 
       for(int z = 0; z < height && height < REGION_HEIGHT; z++)
       {

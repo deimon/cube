@@ -10,6 +10,7 @@ namespace cube
   {
   public:
     static void CubFilling(cube::Region* rg, float rnd);
+    static void ObjectFilling(cube::Region* rg);
     static void LightFilling(cube::Region* rg);
     static void RenderFilling(cube::Region* rg);
 

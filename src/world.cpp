@@ -3,6 +3,7 @@
 #include <mathUtils.h>
 #include <light.h>
 #include <regionManager.h>
+#include <geoMaker.h>
 
 #include <OpenThreads/Thread>
 
@@ -77,6 +78,7 @@ private:
             curList->pop_front();
             if(!reg->IsLightFilled())
             {
+              cube::GeoMaker::ObjectFilling(reg);
               reg->LightFilling();
             }
           }
@@ -824,7 +826,10 @@ osg::Geode* World::createGeometry()
   for(int i = -_radius - 1; i <= _radius + 1; i++)
   for(int j = -_radius - 1; j <= _radius + 1; j++)
   {
-    RegionManager::Instance().GetRegion(i, j)->LightFilling();
+    cube::Region* region = RegionManager::Instance().GetRegion(i, j);
+
+    cube::GeoMaker::ObjectFilling(region);
+    region->LightFilling();
   }
 
   for(int i = -_radius; i <= _radius; i++)
@@ -858,7 +863,7 @@ osg::Group* World::GetGeometry()
   _group->addChild(_geode[1]);
 
   _geode[0]->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE | osg::StateAttribute::PROTECTED);
-  _geode[1]->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE | osg::StateAttribute::PROTECTED);
+  _geode[1]->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE | osg::StateAttribute::PROTECTED);
   _geode[1]->getOrCreateStateSet()->setMode(GL_BLEND, osg::StateAttribute::ON);
 
   {
