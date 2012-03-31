@@ -20,6 +20,10 @@
 
 int main( void )
 {
+  SYSTEMTIME sm;
+  GetSystemTime(&sm);
+  std::cout << "START: " << sm.wMinute << ":" << sm.wSecond << ":" << sm.wMilliseconds << std::endl;
+
   cube::World& world = cube::World::Instance();
 
   osgViewer::Viewer viewer;
@@ -61,6 +65,8 @@ int main( void )
   //aspectRatio=double(traits->width)/double(traits->height);
   cam->setProjectionMatrixAsPerspective(70,aspectRatio,z1,z2);
 
+  GetSystemTime(&sm);
+  std::cout << "END: " << sm.wMinute << ":" << sm.wSecond << ":" << sm.wMilliseconds << std::endl;
   //viewer.setRunMaxFrameRate(60);
   viewer.run();
 }

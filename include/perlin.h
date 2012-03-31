@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 
-#define SAMPLE_SIZE 8192
+#define SAMPLE_SIZE 1024
 
 class Perlin
 {
@@ -33,7 +33,7 @@ public:
     return perlin_noise_3D(vec);
   };
 
-private:
+//private:
   void init_perlin(int n,float p);
   float perlin_noise_2D(float vec[2]);
   float perlin_noise_3D(float vec[3]);
@@ -41,7 +41,7 @@ private:
   float noise1(float arg);
   float noise2(float vec[2]);
   float noise3(float vec[3]);
-  void normalize2(float v[2]);
+  static void normalize2(float v[2]);
   void normalize3(float v[3]);
   void init(void);
 

@@ -146,12 +146,19 @@ World::World()
 
   _radius = 4;
 
+  SYSTEMTIME sm;
+  GetSystemTime(&sm);
+  std::cout << "S CubFilling: " << sm.wMinute << ":" << sm.wSecond << ":" << sm.wMilliseconds << std::endl;
+
   for(int i = -_radius - 2; i <= _radius + 2; i++)
   for(int j = -_radius - 2; j <= _radius + 2; j++)
   {
     cube::Region* region = cube::Region::Generation(i, j);
     region->CubFilling(_rnd);
   }
+
+  GetSystemTime(&sm);
+  std::cout << "E CubFilling: " << sm.wMinute << ":" << sm.wSecond << ":" << sm.wMilliseconds << std::endl;
 
   _cgThread = new CreateGeomThread(this);
 }
@@ -432,16 +439,16 @@ void World::update()
       _addRegionsForCubFilling.back()->push_back(reg);
     }
 
-    for(int j = -_radius - 1; j <= _radius + 1; j++)
-    {
-      int i = _radius + 1;
-      int x = i + curRegX;
-      int y = j + curRegY;
-      cube::Region* reg = RegionManager::Instance().ContainsRegion(x, y);
-      if(reg == NULL)
-        reg = cube::Region::Generation(x, y);
-      _addRegionsForLightFilling.back()->push_back(reg);
-    }
+    //for(int j = -_radius - 1; j <= _radius + 1; j++)
+    //{
+    //  int i = _radius + 1;
+    //  int x = i + curRegX;
+    //  int y = j + curRegY;
+    //  cube::Region* reg = RegionManager::Instance().ContainsRegion(x, y);
+    //  if(reg == NULL)
+    //    reg = cube::Region::Generation(x, y);
+    //  _addRegionsForLightFilling.back()->push_back(reg);
+    //}
 
     for(int j = -_radius; j <= _radius; j++)
     {
@@ -484,16 +491,16 @@ void World::update()
       _addRegionsForCubFilling.back()->push_back(reg);
     }
 
-    for(int j = -_radius - 1; j <= _radius + 1; j++)
-    {
-      int i = -_radius - 1;
-      int x = i + curRegX;
-      int y = j + curRegY;
-      cube::Region* reg = RegionManager::Instance().ContainsRegion(x, y);
-      if(reg == NULL)
-        reg = cube::Region::Generation(x, y);
-      _addRegionsForLightFilling.back()->push_back(reg);
-    }
+    //for(int j = -_radius - 1; j <= _radius + 1; j++)
+    //{
+    //  int i = -_radius - 1;
+    //  int x = i + curRegX;
+    //  int y = j + curRegY;
+    //  cube::Region* reg = RegionManager::Instance().ContainsRegion(x, y);
+    //  if(reg == NULL)
+    //    reg = cube::Region::Generation(x, y);
+    //  _addRegionsForLightFilling.back()->push_back(reg);
+    //}
 
     for(int j = -_radius; j <= _radius; j++)
     {
@@ -536,16 +543,16 @@ void World::update()
       _addRegionsForCubFilling.back()->push_back(reg);
     }
 
-    for(int j = -_radius - 1; j <= _radius + 1; j++)
-    {
-      int i = _radius + 1;
-      int x = j + curRegX;
-      int y = i + curRegY;
-      cube::Region* reg = RegionManager::Instance().ContainsRegion(x, y);
-      if(reg == NULL)
-        reg = cube::Region::Generation(x, y);
-      _addRegionsForLightFilling.back()->push_back(reg);
-    }
+    //for(int j = -_radius - 1; j <= _radius + 1; j++)
+    //{
+    //  int i = _radius + 1;
+    //  int x = j + curRegX;
+    //  int y = i + curRegY;
+    //  cube::Region* reg = RegionManager::Instance().ContainsRegion(x, y);
+    //  if(reg == NULL)
+    //    reg = cube::Region::Generation(x, y);
+    //  _addRegionsForLightFilling.back()->push_back(reg);
+    //}
 
     for(int j = -_radius; j <= _radius; j++)
     {
@@ -588,16 +595,16 @@ void World::update()
       _addRegionsForCubFilling.back()->push_back(reg);
     }
 
-    for(int j = -_radius - 1; j <= _radius + 1; j++)
-    {
-      int i = -_radius - 1;
-      int x = j + curRegX;
-      int y = i + curRegY;
-      cube::Region* reg = RegionManager::Instance().ContainsRegion(x, y);
-      if(reg == NULL)
-        reg = cube::Region::Generation(x, y);
-      _addRegionsForLightFilling.back()->push_back(reg);
-    }
+    //for(int j = -_radius - 1; j <= _radius + 1; j++)
+    //{
+    //  int i = -_radius - 1;
+    //  int x = j + curRegX;
+    //  int y = i + curRegY;
+    //  cube::Region* reg = RegionManager::Instance().ContainsRegion(x, y);
+    //  if(reg == NULL)
+    //    reg = cube::Region::Generation(x, y);
+    //  _addRegionsForLightFilling.back()->push_back(reg);
+    //}
 
     for(int j = -_radius; j <= _radius; j++)
     {
@@ -628,7 +635,7 @@ void World::update()
   {
     _addRegionsForRenderFilling.push_back(new RegionsList);
     _addRegionsForCubFilling.push_back(new RegionsList);
-    _addRegionsForLightFilling.push_back(new RegionsList);
+    //_addRegionsForLightFilling.push_back(new RegionsList);
   }
 }
 
@@ -813,25 +820,29 @@ osg::Geode* World::createGeometry()
 
   _group->getOrCreateStateSet()->setTextureAttributeAndModes(0, _texInfo->GetTexture(), osg::StateAttribute::ON);
 
-  for(int i = -_radius; i <= _radius; i++)
-  for(int j = -_radius; j <= _radius; j++)
-  {
-    cube::Region* region = RegionManager::Instance().GetRegion(i, j);
-    
-    cube::Wood::Generate(RegionManager::Instance(), region, 
-      cube::MathUtils::random(0, REGION_WIDTH),
-      cube::MathUtils::random(0, REGION_WIDTH));
-  }
+  //for(int i = -_radius; i <= _radius; i++)
+  //for(int j = -_radius; j <= _radius; j++)
+  //{
+  //  cube::Region* region = RegionManager::Instance().GetRegion(i, j);
+  //  
+  //  cube::Wood::Generate(RegionManager::Instance(), region, 
+  //    cube::MathUtils::random(0, REGION_WIDTH),
+  //    cube::MathUtils::random(0, REGION_WIDTH));
+  //}
 
-  for(int i = -_radius - 1; i <= _radius + 1; i++)
-  for(int j = -_radius - 1; j <= _radius + 1; j++)
-  {
-    cube::Region* region = RegionManager::Instance().GetRegion(i, j);
+  //for(int i = -_radius - 1; i <= _radius + 1; i++)
+  //for(int j = -_radius - 1; j <= _radius + 1; j++)
+  //{
+  //  cube::Region* region = RegionManager::Instance().GetRegion(i, j);
 
-    cube::GeoMaker::ObjectFilling(region);
-    region->LightFilling();
-  }
+  //  cube::GeoMaker::ObjectFilling(region);
+  //  region->LightFilling();
+  //}
 
+  SYSTEMTIME sm;
+  GetSystemTime(&sm);
+  std::cout << "S RenderFilling: " << sm.wMinute << ":" << sm.wSecond << ":" << sm.wMilliseconds << std::endl;
+  
   for(int i = -_radius; i <= _radius; i++)
     for(int j = -_radius; j <= _radius; j++)
     {
@@ -840,6 +851,9 @@ osg::Geode* World::createGeometry()
       region->RenderFilling();
     }
 
+  GetSystemTime(&sm);
+  std::cout << "F RenderFilling: " << sm.wMinute << ":" << sm.wSecond << ":" << sm.wMilliseconds << std::endl;
+
   for(int i = -_radius; i <= _radius; i++)
   for(int j = -_radius; j <= _radius; j++)
   {
@@ -847,6 +861,9 @@ osg::Geode* World::createGeometry()
 
     World::Instance().UpdateRegionGeoms(region);
   }
+
+  GetSystemTime(&sm);
+  std::cout << "F UpdateRegionGeoms: " << sm.wMinute << ":" << sm.wSecond << ":" << sm.wMilliseconds << std::endl;
 
   return NULL;
 }

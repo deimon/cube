@@ -13,15 +13,20 @@ void GeoMaker::CubFilling(cube::Region* rg, float rnd)
 {
   GenNoise(rg, rnd);
 
-  for(int k = REGION_HEIGHT - 1; k >= 0; k--)
+  ObjectFilling(rg);
+
+  for(int k = REGION_HEIGHT - 4; k >= 0; k--)
   {
     for(int i = 0; i < REGION_WIDTH; i++)
     {
       for(int j = 0; j < REGION_WIDTH; j++)
       {
         cube::CubRegion cubReg = rg->GetCub(i, j, k);
-        if(cubReg.GetCubType() != cube::Cub::Air && 
-          _perlin3d->Get((float)(i + rg->GetX() * REGION_WIDTH)/30.0f, (float)(j + rg->GetY() * REGION_WIDTH)/30.0f, (float)k/20.0f) < -0.4f)
+        cube::CubRegion upCubReg = rg->GetCub(i, j, k + 3);
+
+        float pn = _perlin3d->Get((float)(i + rg->GetX() * REGION_WIDTH)/24.0f, (float)(j + rg->GetY() * REGION_WIDTH)/24.0f, (float)k/16.0f);
+        if(cubReg.GetCubType() != cube::Cub::Air && cubReg.GetCubType() != cube::Cub::Water && upCubReg.GetCubType() != cube::Cub::Water &&
+          pn > 0.6f)
         {
           cubReg.SetCubType(cube::Cub::Air);
 
@@ -114,6 +119,9 @@ void GeoMaker::RenderFilling(cube::Region* rg)
 {
   for(int gIndex = GEOM_COUNT - 1; gIndex >= 0; gIndex--)
   {
+    if(rg->_airCubCount[0][gIndex] == CUBS_IN_GEOM)
+      continue;
+
     for(int i = -1; i <= REGION_WIDTH; i++)
     {
       for(int j = -1; j <= REGION_WIDTH; j++)

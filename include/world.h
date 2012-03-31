@@ -9,6 +9,9 @@
 #include <osg/Texture2D>
 #include "singleton.h"
 
+#include "windows.h"
+#include <iostream>
+
 class CreateGeomThread;
 
 namespace cube
@@ -29,6 +32,8 @@ namespace cube
   class World : public utils::Singleton<World>
   {
   public:
+
+    SYSTEMTIME _st;
 
     typedef std::list<cube::Region*> RegionsList;
 
