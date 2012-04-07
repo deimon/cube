@@ -5,9 +5,9 @@ varying vec3 normal;
 
 void main(void)
 {
-  vec4 texColor = texture2D(texture, gl_TexCoord[0]);
+  vec4 texColor = texture2D(texture, gl_TexCoord[0].xy);
   
-  if(texColor.a == 0)
+  if(texColor.a == 0.)
     discard;
     
   //vec3 L = normalize(vec3(0.5, 0.5, 0.5));
