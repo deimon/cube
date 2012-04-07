@@ -30,7 +30,7 @@ namespace cube
 
   protected:
     RegionsContainer _regions;
-    std::map<int, std::map<int, bool>> _regionsCreated;
+    std::map<int, std::map<int, bool> > _regionsCreated;
   };
 }
 

@@ -10,7 +10,7 @@ namespace cube
   {
   public:
 
-    typedef std::map<const cube::Cub*, std::pair<osg::Vec3d, float*>> MapCubPos;
+    typedef std::map<const cube::Cub*, std::pair<osg::Vec3d, float*> > MapCubPos;
 
     static void RecalcAndFillingLight(cube::CubRegion& cubReg, osg::Vec3d wcpos, 
                                       std::map<osg::Geometry*, World::DataUpdate>* updateGeomMap = NULL);

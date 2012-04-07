@@ -46,7 +46,7 @@ namespace cube
     float _light;
     float _locLight;
 
-    friend CubRegion;
+    friend class CubRegion;
   };
 
   class CubInfo: public utils::Singleton<CubInfo>
@@ -76,7 +76,7 @@ namespace cube
   protected:
 
     std::map<CubInfo::CubeSide, osg::Vec3> _normals;
-    std::map<CubInfo::CubeSide, std::map<int, osg::Vec3>> _vertex;
+    std::map<CubInfo::CubeSide, std::map<int, osg::Vec3> > _vertex;
   };
 
   //***************************************************************************

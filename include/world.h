@@ -104,7 +104,7 @@ namespace cube
     int _radius;
 
   public:
-    friend CreateGeomThread;
+    friend class CreateGeomThread;
   };
 }
 #endif
