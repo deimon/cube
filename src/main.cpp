@@ -16,6 +16,7 @@
 #include <osgGA/TerrainManipulator>
 #include <world.h>
 
+#include <debugEventHandler.h>
 #include <personManipulator.h>
 
 int main( void )
@@ -40,6 +41,7 @@ int main( void )
   keyswitchManipulator->addMatrixManipulator( '4', "Trackball", new osgGA::TrackballManipulator() );
 
   viewer.setCameraManipulator( keyswitchManipulator.get() );
+  viewer.addEventHandler( new cube::DebugEventHandler());
 
   viewer.setSceneData(world.GetGeometry());
 

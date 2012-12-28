@@ -15,6 +15,7 @@ SET(SOURCES
     ./src/regionManager.cpp
     ./src/test.cpp
     ./src/world.cpp
+    ./src/debugEventHandler.cpp
 )
 
 SET(INCLUDE
@@ -29,6 +30,7 @@ SET(INCLUDE
     ./include/singleton.h
     ./include/wood.h
     ./include/world.h
+    ./include/debugEventHandler.h
 )
 
 add_executable(cube ${SOURCES} ${INCLUDE})
