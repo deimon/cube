@@ -21,10 +21,6 @@ namespace cube
     void home( double /*currentTime*/ );
     void home(const osgGA::GUIEventAdapter& ,osgGA::GUIActionAdapter&) {home(0);}
 
-    void setNode( osg::Node* );
-    const osg::Node* getNode() const;
-    osg::Node* getNode();
-
   protected:
     void calcStep(osg::Vec3d vDir, osgGA::GUIActionAdapter& us);
 
@@ -44,8 +40,6 @@ namespace cube
 
     double _delta_frame_time;
     double _last_frame_time;
-
-    osg::ref_ptr< osg::Node > _node;
 
     int _cubType;
   };

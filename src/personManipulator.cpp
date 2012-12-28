@@ -132,22 +132,6 @@ void PersonManipulator::home( double /*currentTime*/ )
   setTransformation(_homeEye, m.getRotate().inverse());
 }
 
-void PersonManipulator::setNode( osg::Node* node )
-{
-  _node = node;
-}
-
-const osg::Node* PersonManipulator::getNode() const
-{
-  return _node.get();
-}
-
-osg::Node* PersonManipulator::getNode()
-{
-  return _node.get();
-}
-
-
 bool PersonManipulator::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us )
 {
   switch(ea.getUnmodifiedKey())
