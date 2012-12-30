@@ -760,7 +760,7 @@ void World::AddCub(osg::Vec3d vec, Cub::CubeType cubeType)
       }
       else
       {
-        scubReg.GetCubLight() = 0.1f;
+        //scubReg.GetCubLight() = 0.1f;
 
         if(scubReg.GetCubType() == cube::Cub::Pumpkin)
         {

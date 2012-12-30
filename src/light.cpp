@@ -247,6 +247,8 @@ void Light::FindLightSourceAndFillingLight(cube::CubRegion& cubReg, osg::Vec3d w
     }
   }
 
+  cubReg.GetCubLight() = 0.1f;
+
   Light::MapCubPos listLightSource;
   Light::MapCubPos::iterator i = listCubPos.begin();
   for(; i != listCubPos.end(); i++)
