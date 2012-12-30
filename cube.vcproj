@@ -241,7 +241,6 @@
 			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="1"
-			InheritedPropertySheets="..\..\docs\sheets\build_release64.vsprops;..\..\docs\sheets\3rdparty_release64.vsprops"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -265,7 +264,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				EnableIntrinsicFunctions="false"
-				AdditionalIncludeDirectories="./include"
+				AdditionalIncludeDirectories="./include;&quot;..\..\..\3rdparty\x64\osg-3.0.0\include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -284,7 +283,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="osg.lib osgUtil.lib osgDB.lib osgGA.lib osgViewer.lib osgText.lib osgManipulator.lib OpenThreads.lib"
 				LinkIncremental="0"
+				AdditionalLibraryDirectories="&quot;..\..\..\3rdparty\x64\osg-3.0.0\lib&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				OptimizeReferences="2"
