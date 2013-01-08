@@ -91,6 +91,9 @@ void GeoMaker::RenderFilling(cube::Region* rg)
 {
   for(int gIndex = GEOM_COUNT - 1; gIndex >= 0; gIndex--)
   {
+    if(rg->_airCubCount[0][gIndex] == CUBS_IN_GEOM)
+      continue;
+
     for(int i = -1; i <= REGION_WIDTH; i++)
     {
       for(int j = -1; j <= REGION_WIDTH; j++)
