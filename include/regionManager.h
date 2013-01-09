@@ -20,7 +20,7 @@ namespace cube
     RegionManager(){}
     ~RegionManager(){}
 
-    cube::Region* GetRegion(int i, int j) { return _regions[i][j]; }
+    cube::Region* GetRegion(int i, int j);
     void SetRegion(int i, int j, cube::Region* reg) { _regions[i][j] = reg; }
     cube::Region* ContainsRegion(int xreg, int yreg);
     cube::CubRegion GetCub(float x, float y, float z);

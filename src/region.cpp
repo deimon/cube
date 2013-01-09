@@ -2,6 +2,7 @@
 #include <geoMaker.h>
 #include <world.h>
 #include <regionManager.h>
+#include <mathUtils.h>
 
 using namespace cube;
 
@@ -9,6 +10,9 @@ int Region::countRegion = 0;
 
 cube::Region* Region::Generation(int xreg, int yreg)
 {
+  xreg = cube::MathUtils::toCycleCoord(xreg);
+  yreg = cube::MathUtils::toCycleCoord(yreg);
+
   cube::Region* region = new Region();
   region->_xReg = xreg;
   region->_yReg = yreg;

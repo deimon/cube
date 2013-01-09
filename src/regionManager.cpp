@@ -1,10 +1,22 @@
 #include <regionManager.h>
 #include <world.h>
+#include <mathUtils.h>
 
 using namespace cube;
 
+cube::Region* RegionManager::GetRegion(int i, int j)
+{
+  i = cube::MathUtils::toCycleCoord(i);
+  j = cube::MathUtils::toCycleCoord(j);
+
+  return _regions[i][j];
+}
+
 cube::Region* RegionManager::ContainsRegion(int xreg, int yreg)
 {
+  xreg = cube::MathUtils::toCycleCoord(xreg);
+  yreg = cube::MathUtils::toCycleCoord(yreg);
+
   if(_regions.find(xreg) != _regions.end())
   {
     if(_regions[xreg].find(yreg) != _regions[xreg].end())
@@ -16,10 +28,14 @@ cube::Region* RegionManager::ContainsRegion(int xreg, int yreg)
 
 cube::CubRegion RegionManager::GetCub(float x, float y, float z)
 {
-  cube::Region* rg = ContainsRegion(Region::ToRegionIndex(x), Region::ToRegionIndex(y));
+  int xreg = Region::ToRegionIndex(x);
+  int yreg = Region::ToRegionIndex(y);
+
+  cube::Region* rg = ContainsRegion(xreg, yreg);
 
   if(rg)
   {
+    rg->SetPosition(xreg, yreg);
     x -= rg->GetPosition().x();
     y -= rg->GetPosition().y();
     return rg->GetCub(x, y, z);

@@ -35,7 +35,8 @@ namespace cube
     static int ToRegionIndex(float worldPos);
 
     cube::CubRegion GetCub(int x, int y, int z);
-    const osg::Vec3d& GetPosition(){ return _position;}
+    void SetPosition(int xreg, int yreg){ _position.set(REGION_WIDTH * xreg, REGION_WIDTH * yreg, 0.0); }
+    const osg::Vec3d& GetPosition(){ return _position; }
 
     osg::Geometry* GetGeometry(int k, bool blend = false){ if(blend) return _geom[1][k]; else return _geom[0][k]; }
     void SetGeometry(int k, osg::Geometry* geom, bool blend = false){ if(blend) _geom[1][k] = geom; else _geom[0][k] = geom; }
