@@ -244,6 +244,11 @@ void PersonManipulator::calcStep(osg::Vec3d vDir, osgGA::GUIActionAdapter& us)
   if(RegionManager::Instance().GetCub(_eye.x(), _eye.y() + vDir.y(), _eye.z() - (PERSON_HEIGHT-1)).GetCubType() == cube::Cub::Air)
     newEye.y() += vDir.y() - dy;
 
+  //if(newEye.x() > 15) newEye.x() -= 15;
+  //if(newEye.y() > 15) newEye.y() -= 15;
+  //if(newEye.x() < 0) newEye.x() += 15;
+  //if(newEye.y() < 0) newEye.y() += 15;
+
   _eye = newEye;
 
   world._you = _eye;

@@ -9,6 +9,12 @@
 #include <osg/Texture2D>
 #include "singleton.h"
 
+#define DUBUGMODE
+#ifdef DUBUGMODE
+#include "windows.h"
+#include <iostream>
+#endif
+
 class CreateGeomThread;
 
 namespace cube

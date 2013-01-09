@@ -60,6 +60,13 @@ private:
             if(!reg->IsCubFilled())
             {
               reg->CubFilling(_world->_rnd);
+
+              for(int k = 0; k < cube::MathUtils::random(0, 32); k++)
+              {
+                cube::Wood::Generate(RegionManager::Instance(), reg, 
+                  cube::MathUtils::random(0, REGION_WIDTH),
+                  cube::MathUtils::random(0, REGION_WIDTH));
+              }
             }
           }
 
@@ -144,12 +151,41 @@ World::World()
 
   _radius = 4;
 
+#ifdef DUBUGMODE
+  {//DEBUG
+    SYSTEMTIME sm;
+    GetSystemTime(&sm);
+    std::cout << "START StartedCubFilling: " << sm.wMinute << ":" << sm.wSecond << ":" << sm.wMilliseconds << std::endl;
+  }
+#endif
+
   for(int i = -_radius - 2; i <= _radius + 2; i++)
   for(int j = -_radius - 2; j <= _radius + 2; j++)
   {
     cube::Region* region = cube::Region::Generation(i, j);
     region->CubFilling(_rnd);
   }
+
+  for(int i = -_radius; i <= _radius; i++)
+  for(int j = -_radius; j <= _radius; j++)
+  {
+    cube::Region* region = RegionManager::Instance().GetRegion(i, j);
+
+    for(int k = 0; k < cube::MathUtils::random(0, 32); k++)
+    {
+      cube::Wood::Generate(RegionManager::Instance(), region, 
+        cube::MathUtils::random(0, REGION_WIDTH),
+        cube::MathUtils::random(0, REGION_WIDTH));
+    }
+  }
+
+#ifdef DUBUGMODE
+  {//DEBUG
+    SYSTEMTIME sm;
+    GetSystemTime(&sm);
+    std::cout << "END StartedCubFilling: " << sm.wMinute << ":" << sm.wSecond << ":" << sm.wMilliseconds << std::endl;
+  }
+#endif
 
   _cgThread = new CreateGeomThread(this);
 }
@@ -811,21 +847,27 @@ osg::Geode* World::createGeometry()
 
   _group->getOrCreateStateSet()->setTextureAttributeAndModes(0, _texInfo->GetTexture(), osg::StateAttribute::ON);
 
-  for(int i = -_radius; i <= _radius; i++)
-  for(int j = -_radius; j <= _radius; j++)
-  {
-    cube::Region* region = RegionManager::Instance().GetRegion(i, j);
-    
-    cube::Wood::Generate(RegionManager::Instance(), region, 
-      cube::MathUtils::random(0, REGION_WIDTH),
-      cube::MathUtils::random(0, REGION_WIDTH));
+#ifdef DUBUGMODE
+  {//DEBUG
+    SYSTEMTIME sm;
+    GetSystemTime(&sm);
+    std::cout << "START StartedLightFilling: " << sm.wMinute << ":" << sm.wSecond << ":" << sm.wMilliseconds << std::endl;
   }
+#endif
 
   for(int i = -_radius - 1; i <= _radius + 1; i++)
   for(int j = -_radius - 1; j <= _radius + 1; j++)
   {
     RegionManager::Instance().GetRegion(i, j)->LightFilling();
   }
+
+#ifdef DUBUGMODE
+  {//DEBUG
+    SYSTEMTIME sm;
+    GetSystemTime(&sm);
+    std::cout << "END StartedLightFilling AND START StartedRenderFilling: " << sm.wMinute << ":" << sm.wSecond << ":" << sm.wMilliseconds << std::endl;
+  }
+#endif
 
   for(int i = -_radius; i <= _radius; i++)
     for(int j = -_radius; j <= _radius; j++)
@@ -835,6 +877,14 @@ osg::Geode* World::createGeometry()
       region->RenderFilling();
     }
 
+#ifdef DUBUGMODE
+    {//DEBUG
+      SYSTEMTIME sm;
+      GetSystemTime(&sm);
+      std::cout << "END StartedRenderFilling: " << sm.wMinute << ":" << sm.wSecond << ":" << sm.wMilliseconds << std::endl;
+    }
+#endif
+
   for(int i = -_radius; i <= _radius; i++)
   for(int j = -_radius; j <= _radius; j++)
   {
@@ -842,6 +892,14 @@ osg::Geode* World::createGeometry()
 
     World::Instance().UpdateRegionGeoms(region);
   }
+
+#ifdef DUBUGMODE
+  {//DEBUG
+    SYSTEMTIME sm;
+    GetSystemTime(&sm);
+    std::cout << "END UpdateRegionGeoms: " << sm.wMinute << ":" << sm.wSecond << ":" << sm.wMilliseconds << std::endl;
+  }
+#endif
 
   return NULL;
 }
