@@ -10,15 +10,15 @@ int Region::countRegion = 0;
 
 cube::Region* Region::Generation(int xreg, int yreg)
 {
-  xreg = cube::MathUtils::toCycleCoord(xreg);
-  yreg = cube::MathUtils::toCycleCoord(yreg);
+  int cXreg = cube::MathUtils::toCycleCoord(xreg);
+  int cYreg = cube::MathUtils::toCycleCoord(yreg);
 
   cube::Region* region = new Region();
-  region->_xReg = xreg;
-  region->_yReg = yreg;
-  region->_position.set(REGION_WIDTH * xreg, REGION_WIDTH * yreg, 0.0);
+  region->_xReg = cXreg;
+  region->_yReg = cYreg;
+  region->SetPosition(xreg, yreg);
 
-  RegionManager::Instance().SetRegion(xreg, yreg, region);
+  RegionManager::Instance().SetRegion(cXreg, cYreg, region);
 
   return region;
 }
@@ -62,6 +62,14 @@ int Region::ToRegionIndex(float worldPos)
 
 cube::CubRegion Region::GetCub(int x, int y, int z)
 {
+  x = x % REGION_WIDTH;
+  if(x < 0)
+    x += REGION_WIDTH;
+
+  y = y % REGION_WIDTH;
+  if(y < 0)
+    y += REGION_WIDTH;
+
   return CubRegion(this, _m[x][y][z], z / GEOM_SIZE);
 }
 

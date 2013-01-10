@@ -123,7 +123,6 @@ void GeoMaker::RenderFilling(cube::Region* rg)
                 srg = RegionManager::Instance().CreateRegion(rx, ry);
               }
 
-              srg->SetPosition(rx, ry);
               vec -= srg->GetPosition();
 
               cube::CubRegion scubReg = srg->GetCub(vec.x(), vec.y(), vec.z());

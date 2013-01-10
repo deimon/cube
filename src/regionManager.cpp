@@ -6,21 +6,27 @@ using namespace cube;
 
 cube::Region* RegionManager::GetRegion(int i, int j)
 {
-  i = cube::MathUtils::toCycleCoord(i);
-  j = cube::MathUtils::toCycleCoord(j);
+  int cXreg = cube::MathUtils::toCycleCoord(i);
+  int cYreg = cube::MathUtils::toCycleCoord(j);
 
-  return _regions[i][j];
+  _regions[cXreg][cYreg]->SetPosition(i, j);
+
+  return _regions[cXreg][cYreg];
 }
 
 cube::Region* RegionManager::ContainsRegion(int xreg, int yreg)
 {
-  xreg = cube::MathUtils::toCycleCoord(xreg);
-  yreg = cube::MathUtils::toCycleCoord(yreg);
+  int cXreg = cube::MathUtils::toCycleCoord(xreg);
+  int cYreg = cube::MathUtils::toCycleCoord(yreg);
 
-  if(_regions.find(xreg) != _regions.end())
+  if(_regions.find(cXreg) != _regions.end())
   {
-    if(_regions[xreg].find(yreg) != _regions[xreg].end())
-      return _regions[xreg][yreg];
+    if(_regions[cXreg].find(cYreg) != _regions[cXreg].end())
+    {
+      _regions[cXreg][cYreg]->SetPosition(xreg, yreg);
+
+      return _regions[cXreg][cYreg];
+    }
   }
 
   return NULL;
@@ -35,7 +41,6 @@ cube::CubRegion RegionManager::GetCub(float x, float y, float z)
 
   if(rg)
   {
-    rg->SetPosition(xreg, yreg);
     x -= rg->GetPosition().x();
     y -= rg->GetPosition().y();
     return rg->GetCub(x, y, z);
