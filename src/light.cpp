@@ -120,7 +120,7 @@ void Light::RecalcAndFillingLight(cube::CubRegion& cubReg, osg::Vec3d wcpos, std
   }
 }
 
-void Light::StartFillingLight(cube::CubRegion& cubReg, osg::Vec3d wcpos, float prevLight, int iStartReg, int jStartReg)
+void Light::StartFillingLight(cube::CubRegion& cubReg, osg::Vec3d wcpos, float prevLight, osg::Vec3d startRegPos)
 {
   {
     osg::Vec3d csvec = wcpos;
@@ -142,12 +142,14 @@ void Light::StartFillingLight(cube::CubRegion& cubReg, osg::Vec3d wcpos, float p
     int rx = Region::ToRegionIndex(csvec.x());
     int ry = Region::ToRegionIndex(csvec.y());
 
-    if(abs(iStartReg - rx) <= 1 && abs(jStartReg - ry) <= 1)
-    {
-      cube::CubRegion scubReg = RegionManager::Instance().GetCub(csvec.x(), csvec.y(), csvec.z());
+    cube::CubRegion scubReg = RegionManager::Instance().GetCub(csvec.x(), csvec.y(), csvec.z());
 
+    osg::Vec3d dif = startRegPos - scubReg.GetRegion()->GetPosition();
+
+    if(abs(dif.x()) < REGION_WIDTH + 0.1f && abs(dif.y()) < REGION_WIDTH + 0.1f)
+    {
       if((scubReg.GetCubType() == cube::Cub::Air || scubReg.GetCubBlend()) && (cubReg.GetCubLight() - scubReg.GetCubLight()) > 0.12f)
-        StartFillingLight(scubReg, csvec, cubReg.GetCubLight() - 0.1f, iStartReg, jStartReg);
+        StartFillingLight(scubReg, csvec, cubReg.GetCubLight() - 0.1f, startRegPos);
     }
   }
 

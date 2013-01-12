@@ -73,7 +73,7 @@ void GeoMaker::LightFilling(cube::Region* rg)
 
               if(downCubReg.GetCubType() == cube::Cub::Air || downCubReg.GetCubBlend())
               {
-                cube::Light::StartFillingLight(downCubReg, cpos, cubReg.GetCubLight(), rg->GetX(), rg->GetY());
+                cube::Light::StartFillingLight(downCubReg, cpos, cubReg.GetCubLight(), rg->GetPosition());
                 found = true;
               }
             }

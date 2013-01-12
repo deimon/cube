@@ -61,12 +61,12 @@ private:
             {
               reg->CubFilling(_world->_rnd);
 
-              //for(int k = 0; k < cube::MathUtils::random(0, 32); k++)
-              //{
-              //  cube::Wood::Generate(RegionManager::Instance(), reg, 
-              //    cube::MathUtils::random(0, REGION_WIDTH),
-              //    cube::MathUtils::random(0, REGION_WIDTH));
-              //}
+              for(int k = 0; k < cube::MathUtils::random(0, 32); k++)
+              {
+                cube::Wood::Generate(RegionManager::Instance(), reg, 
+                  cube::MathUtils::random(0, REGION_WIDTH),
+                  cube::MathUtils::random(0, REGION_WIDTH));
+              }
             }
           }
 
@@ -167,8 +167,8 @@ World::World()
     region->CubFilling(_rnd);
   }
 
-  for(int i = -_radius; i <= _radius; i++)
-  for(int j = -_radius; j <= _radius; j++)
+  for(int i = -_radius - 2; i <= _radius + 2; i++)
+  for(int j = -_radius - 2; j <= _radius + 2; j++)
   {
     cube::Region* region = RegionManager::Instance().GetRegion(i, j);
 
