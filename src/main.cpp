@@ -18,6 +18,7 @@
 
 #include <debugEventHandler.h>
 #include <personManipulator.h>
+#include <regionManager.h>
 
 int main( void )
 {
@@ -65,4 +66,5 @@ int main( void )
 
   //viewer.setRunMaxFrameRate(60);
   viewer.run();
+  cube::RegionManager::Instance().Save();
 }

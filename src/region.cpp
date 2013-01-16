@@ -5,6 +5,9 @@
 #include <mathUtils.h>
 #include <wood.h>
 
+#include <sstream>
+#include <fstream>
+
 using namespace cube;
 
 int Region::countRegion = 0;
@@ -27,7 +30,7 @@ cube::Region* Region::Generation(int xreg, int yreg)
   return region;
 }
 
-void Region::CubFilling(float rnd)
+void Region::CubFilling(int rnd)
 {
   if(_cubFilled)
     return;
@@ -42,19 +45,66 @@ void Region::CubFilling(float rnd)
     _airCubCount[1][z] = CUBS_IN_GEOM;
   }
 
-  cube::GeoMaker::CubFilling(this, rnd);
+  std::ostringstream oss;
+  oss << "./res/maps/" << World::Instance()._rnd << "_" << _xReg << _yReg << ".cub";
 
-  if(!this->IsOffside())
+  std::string fileName = oss.str();
+  std::fstream stream;
+  stream.open( fileName.c_str(), std::ios::in );
+  if(stream.is_open())
   {
-    for(int k = 0; k < cube::MathUtils::random(0, 32); k++)
+    char ch;
+
+    for(int i = 0; i < REGION_WIDTH; i++)
+      for(int j = 0; j < REGION_WIDTH; j++)
+        for(int k = 0; k < REGION_HEIGHT; k++)
+        {
+          stream >> ch;
+
+          cube::CubRegion cubReg = this->GetCub(i, j, k);
+          cubReg.SetCubType((Cub::CubeType)ch);
+        }
+
+    stream.close();
+  }
+  else
+  {
+    cube::GeoMaker::CubFilling(this, rnd);
+
+    if(!this->IsOffside())
     {
-      cube::Wood::Generate(RegionManager::Instance(), this, 
-        cube::MathUtils::random(0, REGION_WIDTH),
-        cube::MathUtils::random(0, REGION_WIDTH));
+      for(int k = 0; k < cube::MathUtils::random(0, 32); k++)
+      {
+        cube::Wood::Generate(RegionManager::Instance(), this, 
+          cube::MathUtils::random(0, REGION_WIDTH),
+          cube::MathUtils::random(0, REGION_WIDTH));
+      }
     }
   }
 
   _cubFilled = true;
+}
+
+void Region::Save()
+{
+  std::ostringstream oss;
+  oss << "./res/maps/" << World::Instance()._rnd << "_" << _xReg << _yReg << ".cub";
+
+  std::string fileName = oss.str();
+  std::fstream stream(fileName.c_str(), std::ios::out|std::ios::trunc);
+  if(stream.is_open())
+  {
+    char ch;
+
+    for(int i = 0; i < REGION_WIDTH; i++)
+      for(int j = 0; j < REGION_WIDTH; j++)
+        for(int k = 0; k < REGION_HEIGHT; k++)
+        {
+          ch = this->GetCub(i, j, k).GetCubType();
+          stream << ch;
+        }
+    stream.close();
+  }
 }
 
 void Region::LightFilling()

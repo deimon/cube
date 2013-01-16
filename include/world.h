@@ -81,7 +81,7 @@ namespace cube
 
     mutable OpenThreads::Mutex  _mutex;
 
-    float _rnd;
+    int _rnd;
     int _worldRadius;
 
     osg::Uniform* _worldLight;

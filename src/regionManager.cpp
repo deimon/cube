@@ -69,3 +69,13 @@ void RegionManager::ForacheRegion(Callback& cb)
     cb.operator()(yrg->second);
   }
 }
+
+void RegionManager::Save()
+{
+  RegionsContainer::iterator xrg;
+  YRegionsContainer::iterator yrg;
+
+  for(xrg = _regions.begin(); xrg != _regions.end(); xrg++)
+  for(yrg = xrg->second.begin(); yrg != xrg->second.end(); yrg++)
+    yrg->second->Save();
+}

@@ -130,7 +130,7 @@ World::World()
   _you.set(5.0, 5.0, 0.0);
 
   srand(time(NULL));
-  _rnd = 777.0f; // osg::PI*2*10 + ((float)rand() / RAND_MAX)* (osg::PI*3*10 - osg::PI*2*10);
+  _rnd = 777; // osg::PI*2*10 + ((float)rand() / RAND_MAX)* (osg::PI*3*10 - osg::PI*2*10);
   _worldRadius = 8;
 
   _radius = 4;

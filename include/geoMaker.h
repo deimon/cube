@@ -9,7 +9,7 @@ namespace cube
   class GeoMaker
   {
   public:
-    static void CubFilling(cube::Region* rg, float rnd);
+    static void CubFilling(cube::Region* rg, int rnd);
     static void LightFilling(cube::Region* rg);
     static void RenderFilling(cube::Region* rg);
 

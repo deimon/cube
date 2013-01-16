@@ -7,7 +7,7 @@ using namespace cube;
 Perlin* GeoMaker::_perlin3d = new Perlin(2, 1, 1.0f, 123);
 Perlin* GeoMaker::_perlin2d = new Perlin(1, 1, 1.0f, 123);
 
-void GeoMaker::CubFilling(cube::Region* rg, float rnd)
+void GeoMaker::CubFilling(cube::Region* rg, int rnd)
 {
   if(rg->IsOffside())
     GenOffsideNoise(rg, rnd);

@@ -28,6 +28,8 @@ namespace cube
 
     void ForacheRegion(Callback& cb);
 
+    void Save();
+
   protected:
     RegionsContainer _regions;
     std::map<int, std::map<int, bool> > _regionsCreated;
