@@ -3,6 +3,7 @@
 #include <world.h>
 #include <regionManager.h>
 #include <mathUtils.h>
+#include <wood.h>
 
 using namespace cube;
 
@@ -28,6 +29,9 @@ cube::Region* Region::Generation(int xreg, int yreg)
 
 void Region::CubFilling(float rnd)
 {
+  if(_cubFilled)
+    return;
+
   for(int z = 0; z < GEOM_COUNT; z++)
   {
     _geom[0][z] = NULL;
@@ -40,17 +44,33 @@ void Region::CubFilling(float rnd)
 
   cube::GeoMaker::CubFilling(this, rnd);
 
+  if(!this->IsOffside())
+  {
+    for(int k = 0; k < cube::MathUtils::random(0, 32); k++)
+    {
+      cube::Wood::Generate(RegionManager::Instance(), this, 
+        cube::MathUtils::random(0, REGION_WIDTH),
+        cube::MathUtils::random(0, REGION_WIDTH));
+    }
+  }
+
   _cubFilled = true;
 }
 
 void Region::LightFilling()
 {
+  if(_lightFilled)
+    return;
+
   cube::GeoMaker::LightFilling(this);
   _lightFilled = true;
 }
 
 void Region::RenderFilling()
 {
+  if(_renderFilled)
+    return;
+
   cube::GeoMaker::RenderFilling(this);
   _renderFilled = true;
 }

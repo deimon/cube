@@ -57,20 +57,7 @@ private:
           {
             cube::Region* reg = curList->front();
             curList->pop_front();
-            if(!reg->IsCubFilled())
-            {
-              reg->CubFilling(_world->_rnd);
-
-              if(!reg->IsOffside())
-              {
-                for(int k = 0; k < cube::MathUtils::random(0, 32); k++)
-                {
-                  cube::Wood::Generate(RegionManager::Instance(), reg, 
-                    cube::MathUtils::random(0, REGION_WIDTH),
-                    cube::MathUtils::random(0, REGION_WIDTH));
-                }
-              }
-            }
+            reg->CubFilling(_world->_rnd);
           }
 
           delete curList;
@@ -85,10 +72,7 @@ private:
           {
             cube::Region* reg = curList->front();
             curList->pop_front();
-            if(!reg->IsLightFilled())
-            {
-              reg->LightFilling();
-            }
+            reg->LightFilling();
           }
 
           delete curList;
@@ -103,11 +87,7 @@ private:
           {
             cube::Region* reg = curList->front();
             curList->pop_front();
-
-            if(!reg->IsRenderFilled())
-            {
-              reg->RenderFilling();
-            }
+            reg->RenderFilling();
 
             _world->UpdateRegionGeoms(reg, false);
 
@@ -168,19 +148,6 @@ World::World()
   {
     cube::Region* region = cube::Region::Generation(i, j);
     region->CubFilling(_rnd);
-  }
-
-  for(int i = -_radius - 2; i <= _radius + 2; i++)
-  for(int j = -_radius - 2; j <= _radius + 2; j++)
-  {
-    cube::Region* region = RegionManager::Instance().GetRegion(i, j);
-
-    for(int k = 0; k < cube::MathUtils::random(0, 32); k++)
-    {
-      cube::Wood::Generate(RegionManager::Instance(), region, 
-        cube::MathUtils::random(0, REGION_WIDTH),
-        cube::MathUtils::random(0, REGION_WIDTH));
-    }
   }
 
 #ifdef DUBUGMODE
