@@ -63,6 +63,8 @@ namespace cube
     bool InScene() { return _inScene; }
     void SetInScene(bool inScene) { _inScene = inScene; }
 
+    bool IsOffside() { return _offside; }
+
   protected:
 
     Region()
@@ -76,6 +78,7 @@ namespace cube
       _renderFilled = false;
       _inVisibleZone = false;
       _inScene = false;
+      _offside = false;
     }
 
     bool _cubFilled;
@@ -83,6 +86,7 @@ namespace cube
     bool _renderFilled;
     bool _inVisibleZone;
     bool _inScene;
+    bool _offside;
 
     static int countRegion;
     long id;

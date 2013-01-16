@@ -7,25 +7,25 @@ using namespace cube;
 cube::Region* RegionManager::GetRegion(int i, int j)
 {
   int cXreg = cube::MathUtils::toCycleCoord(i);
-  int cYreg = cube::MathUtils::toCycleCoord(j);
+  //int cYreg = cube::MathUtils::toCycleCoord(j);
 
-  _regions[cXreg][cYreg]->SetPosition(i, j);
+  _regions[cXreg][j]->SetPosition(i, j);
 
-  return _regions[cXreg][cYreg];
+  return _regions[cXreg][j];
 }
 
 cube::Region* RegionManager::ContainsRegion(int xreg, int yreg)
 {
   int cXreg = cube::MathUtils::toCycleCoord(xreg);
-  int cYreg = cube::MathUtils::toCycleCoord(yreg);
+  //int cYreg = cube::MathUtils::toCycleCoord(yreg);
 
   if(_regions.find(cXreg) != _regions.end())
   {
-    if(_regions[cXreg].find(cYreg) != _regions[cXreg].end())
+    if(_regions[cXreg].find(yreg) != _regions[cXreg].end())
     {
-      _regions[cXreg][cYreg]->SetPosition(xreg, yreg);
+      _regions[cXreg][yreg]->SetPosition(xreg, yreg);
 
-      return _regions[cXreg][cYreg];
+      return _regions[cXreg][yreg];
     }
   }
 

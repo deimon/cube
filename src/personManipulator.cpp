@@ -245,9 +245,9 @@ void PersonManipulator::calcStep(osg::Vec3d vDir, osgGA::GUIActionAdapter& us)
     newEye.y() += vDir.y() - dy;
 
   //if(newEye.x() > 15) newEye.x() -= 15;
-  //if(newEye.y() > 15) newEye.y() -= 15;
+  if(newEye.y() > (World::Instance()._worldRadius + 1)  * REGION_WIDTH) newEye.y() = (World::Instance()._worldRadius + 1) * REGION_WIDTH;
   //if(newEye.x() < 0) newEye.x() += 15;
-  //if(newEye.y() < 0) newEye.y() += 15;
+  if(newEye.y() < -((World::Instance()._worldRadius) * REGION_WIDTH)) newEye.y() = -((World::Instance()._worldRadius) * REGION_WIDTH);
 
   _eye = newEye;
 

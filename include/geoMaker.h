@@ -18,6 +18,7 @@ namespace cube
     static Perlin* _perlin2d;
 
     static void GenNoise(cube::Region* rg, float rnd);
+    static void GenOffsideNoise(cube::Region* rg, float rnd);
   };
 }
 

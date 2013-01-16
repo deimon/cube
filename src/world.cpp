@@ -61,11 +61,14 @@ private:
             {
               reg->CubFilling(_world->_rnd);
 
-              for(int k = 0; k < cube::MathUtils::random(0, 32); k++)
+              if(!reg->IsOffside())
               {
-                cube::Wood::Generate(RegionManager::Instance(), reg, 
-                  cube::MathUtils::random(0, REGION_WIDTH),
-                  cube::MathUtils::random(0, REGION_WIDTH));
+                for(int k = 0; k < cube::MathUtils::random(0, 32); k++)
+                {
+                  cube::Wood::Generate(RegionManager::Instance(), reg, 
+                    cube::MathUtils::random(0, REGION_WIDTH),
+                    cube::MathUtils::random(0, REGION_WIDTH));
+                }
               }
             }
           }

@@ -11,14 +11,17 @@ int Region::countRegion = 0;
 cube::Region* Region::Generation(int xreg, int yreg)
 {
   int cXreg = cube::MathUtils::toCycleCoord(xreg);
-  int cYreg = cube::MathUtils::toCycleCoord(yreg);
+  //int cYreg = cube::MathUtils::toCycleCoord(yreg);
 
   cube::Region* region = new Region();
   region->_xReg = cXreg;
-  region->_yReg = cYreg;
+  region->_yReg = yreg;
   region->SetPosition(xreg, yreg);
 
-  RegionManager::Instance().SetRegion(cXreg, cYreg, region);
+  if(abs(yreg) > World::Instance()._worldRadius)
+    region->_offside = true;
+
+  RegionManager::Instance().SetRegion(cXreg, yreg, region);
 
   return region;
 }
