@@ -3,6 +3,7 @@
 #include <mathUtils.h>
 #include <light.h>
 #include <regionManager.h>
+#include <geoMaker.h>
 
 #include <OpenThreads/Thread>
 
@@ -35,6 +36,38 @@ public:
 
   std::list<cube::Region*> _addToSceneRegions;
 
+  void Clear()
+  {
+    while(!_completed)
+      OpenThreads::Thread::microSleep(100);
+
+    _addToSceneRegions.clear();
+
+    while(!_addRegionsForCubFilling.empty())
+    {
+      World::RegionsList* rl = _addRegionsForCubFilling.front();
+      rl->clear();
+      delete rl;
+      _addRegionsForCubFilling.pop_front();
+    }
+
+    while(!_addRegionsForLightFilling.empty())
+    {
+      World::RegionsList* rl = _addRegionsForLightFilling.front();
+      rl->clear();
+      delete rl;
+      _addRegionsForLightFilling.pop_front();
+    }
+
+    while(!_addRegionsForRenderFilling.empty())
+    {
+      World::RegionsList* rl = _addRegionsForRenderFilling.front();
+      rl->clear();
+      delete rl;
+      _addRegionsForRenderFilling.pop_front();
+    }
+  }
+
 protected:
   ~CreateGeomThread() { quit(); }
 
@@ -57,7 +90,7 @@ private:
           {
             cube::Region* reg = curList->front();
             curList->pop_front();
-            reg->CubFilling(_world->_rnd);
+            reg->CubFilling();
           }
 
           delete curList;
@@ -118,46 +151,8 @@ void WorldCallback::operator()(osg::Node* node, osg::NodeVisitor* nv)
 
 World::World()
 {
-  _addRegionsForRenderFilling.push_back(new RegionsList);
-  _addRegionsForCubFilling.push_back(new RegionsList);
-  _addRegionsForLightFilling.push_back(new RegionsList);
-
-  _frame = 0;
-  // эти параметры надо будет устанавливать
-  // в соответствии с местом появления персонажа
-  _prevRegX = 0;
-  _prevRegY = 0;
-  _you.set(5.0, 5.0, 0.0);
-
-  srand(time(NULL));
-  _rnd = 777; // osg::PI*2*10 + ((float)rand() / RAND_MAX)* (osg::PI*3*10 - osg::PI*2*10);
-  _worldRadius = 8;
-
-  _radius = 4;
-
-#ifdef DUBUGMODE
-  {//DEBUG
-    SYSTEMTIME sm;
-    GetSystemTime(&sm);
-    std::cout << "START StartedCubFilling: " << sm.wMinute << ":" << sm.wSecond << ":" << sm.wMilliseconds << std::endl;
-  }
-#endif
-
-  for(int i = -_radius - 2; i <= _radius + 2; i++)
-  for(int j = -_radius - 2; j <= _radius + 2; j++)
-  {
-    cube::Region* region = cube::Region::Generation(i, j);
-    region->CubFilling(_rnd);
-  }
-
-#ifdef DUBUGMODE
-  {//DEBUG
-    SYSTEMTIME sm;
-    GetSystemTime(&sm);
-    std::cout << "END StartedCubFilling: " << sm.wMinute << ":" << sm.wSecond << ":" << sm.wMilliseconds << std::endl;
-  }
-#endif
-
+  _mapCreated = false;
+  _newMap = false;
   _cgThread = new CreateGeomThread(this);
 }
 
@@ -312,6 +307,22 @@ void World::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset, bool
 
 void World::update()
 {
+  if(_newMap)
+  {
+    if(_mapCreated)
+    {
+      _mapCreated = false;
+      destroyMap();
+    }
+    createMap();
+    _newMap = false;
+
+    return;
+  }
+
+  if(!_mapCreated)
+    return;
+
   // отправка в поток регионов на обработку и получение обработаных регионов
   if(_cgThread->IsCompleted() /*&& !_addRegions.empty()*/)
   {
@@ -809,14 +820,58 @@ void World::UpdateRegionGeoms(cube::Region* rg, bool addToScene)
   }
 }
 
-osg::Geode* World::createGeometry()
+void World::CreateMap(int rnd)
 {
-  _geode[0] = new osg::Geode;
-  _geode[1] = new osg::Geode;
+  _newRnd = rnd;
+  _newMap = true;
+  _you.set(5.0, 5.0, 100.0);
+}
 
-  _texInfo = new TextureInfo("./res/mc16-7.png", 16);
+void World::createMap()
+{
+  if(_rnd == 777)
+    _newRnd = 27;
+  _rnd = _newRnd;
 
-  _group->getOrCreateStateSet()->setTextureAttributeAndModes(0, _texInfo->GetTexture(), osg::StateAttribute::ON);
+  cube::GeoMaker::InitPerlin(_rnd);
+
+  _frame = 0;
+  srand(time(NULL));
+
+  _addRegionsForRenderFilling.push_back(new RegionsList);
+  _addRegionsForCubFilling.push_back(new RegionsList);
+  _addRegionsForLightFilling.push_back(new RegionsList);
+
+  // эти параметры надо будет устанавливать
+  // в соответствии с местом появления персонажа
+  _prevRegX = 0;
+  _prevRegY = 0;
+
+  _worldRadius = 8;
+  _radius = 4;
+
+#ifdef DUBUGMODE
+  {//DEBUG
+    SYSTEMTIME sm;
+    GetSystemTime(&sm);
+    std::cout << "START StartedCubFilling: " << sm.wMinute << ":" << sm.wSecond << ":" << sm.wMilliseconds << std::endl;
+  }
+#endif
+
+  for(int i = -_radius - 2; i <= _radius + 2; i++)
+    for(int j = -_radius - 2; j <= _radius + 2; j++)
+    {
+      cube::Region* region = cube::Region::Generation(i, j);
+      region->CubFilling();
+    }
+
+#ifdef DUBUGMODE
+    {//DEBUG
+      SYSTEMTIME sm;
+      GetSystemTime(&sm);
+      std::cout << "END StartedCubFilling: " << sm.wMinute << ":" << sm.wSecond << ":" << sm.wMilliseconds << std::endl;
+    }
+#endif
 
 #ifdef DUBUGMODE
   {//DEBUG
@@ -861,7 +916,8 @@ osg::Geode* World::createGeometry()
   {
     cube::Region* region = RegionManager::Instance().GetRegion(i, j);
 
-    World::Instance().UpdateRegionGeoms(region);
+    World::Instance().UpdateRegionGeoms(region, false);
+    _addToSceneRegions.push_back(region);
   }
 
 #ifdef DUBUGMODE
@@ -872,7 +928,55 @@ osg::Geode* World::createGeometry()
   }
 #endif
 
-  return NULL;
+  _mapCreated = true;
+}
+
+void World::destroyMap()
+{
+  _cgThread->Clear();
+  _dataUpdate.clear();
+  _delRegionsForVisual.clear();
+  _addToSceneRegions.clear();
+
+  while(!_addRegionsForCubFilling.empty())
+  {
+    RegionsList* rl = _addRegionsForCubFilling.front();
+    rl->clear();
+    delete rl;
+    _addRegionsForCubFilling.pop_front();
+  }
+
+  while(!_addRegionsForLightFilling.empty())
+  {
+    RegionsList* rl = _addRegionsForLightFilling.front();
+    rl->clear();
+    delete rl;
+    _addRegionsForLightFilling.pop_front();
+  }
+
+  while(!_addRegionsForRenderFilling.empty())
+  {
+    RegionsList* rl = _addRegionsForRenderFilling.front();
+    rl->clear();
+    delete rl;
+    _addRegionsForRenderFilling.pop_front();
+  }
+
+  struct ClearRegCallback : public RegionManager::Callback
+  {
+    ClearRegCallback(World* world) : _world(world) {}
+    void operator()(cube::Region* reg)
+    {
+      _world->clearRegionGeoms(reg);
+    }
+
+    World* _world;
+  };
+
+  RegionManager::Instance().ForacheRegion(ClearRegCallback(this));
+
+  RegionManager::Instance().Save();
+  RegionManager::Instance().Clear();
 }
 
 osg::Group* World::GetGeometry()
@@ -882,7 +986,12 @@ osg::Group* World::GetGeometry()
   _group->setUpdateCallback(new WorldCallback(this));
   _group->removeChildren(0, _group->getNumChildren());
 
-  createGeometry();
+  _texInfo = new TextureInfo("./res/mc16-7.png", 16);
+  _group->getOrCreateStateSet()->setTextureAttributeAndModes(0, _texInfo->GetTexture(), osg::StateAttribute::ON);
+
+  _geode[0] = new osg::Geode;
+  _geode[1] = new osg::Geode;
+
   _group->addChild(_geode[0]);
   _group->addChild(_geode[1]);
 
@@ -907,6 +1016,10 @@ osg::Group* World::GetGeometry()
     _worldLight = new osg::Uniform("sun", 0.6f);
     ss->addUniform(_worldLight);
   }
+
+  _newRnd = 777;
+  _you.set(5.0, 5.0, 100.0);
+  createMap();
 
   return _group;
 }

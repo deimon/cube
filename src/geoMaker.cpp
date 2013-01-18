@@ -7,13 +7,19 @@ using namespace cube;
 Perlin* GeoMaker::_perlin3d = new Perlin(2, 1, 1.0f, 123);
 Perlin* GeoMaker::_perlin2d = new Perlin(1, 1, 1.0f, 123);
 
-void GeoMaker::CubFilling(cube::Region* rg, int rnd)
+void GeoMaker::InitPerlin(int seed)
+{
+  _perlin2d->SetSeed(seed);
+  _perlin3d->SetSeed(seed);
+}
+
+void GeoMaker::CubFilling(cube::Region* rg)
 {
   if(rg->IsOffside())
-    GenOffsideNoise(rg, rnd);
+    GenOffsideNoise(rg);
   else
   {
-    GenNoise(rg, rnd);
+    GenNoise(rg);
 
     for(int k = REGION_HEIGHT - 1; k >= 0; k--)
     {
@@ -144,7 +150,7 @@ void GeoMaker::RenderFilling(cube::Region* rg)
   }
 }
 
-void GeoMaker::GenNoise(cube::Region* rg, float rnd)
+void GeoMaker::GenNoise(cube::Region* rg)
 {
   int xOffset = rg->GetX() * REGION_WIDTH;
   int yOffset = rg->GetY() * REGION_WIDTH;
@@ -179,7 +185,7 @@ void GeoMaker::GenNoise(cube::Region* rg, float rnd)
   }
 }
 
-void GeoMaker::GenOffsideNoise(cube::Region* rg, float rnd)
+void GeoMaker::GenOffsideNoise(cube::Region* rg)
 {
   int xOffset = rg->GetX() * REGION_WIDTH;
   int yOffset = rg->GetY() * REGION_WIDTH;

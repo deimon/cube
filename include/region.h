@@ -28,7 +28,7 @@ namespace cube
     long GetId() { return id; }
 
     static cube::Region* Generation(int xreg, int yreg);
-    void CubFilling(int rnd);
+    void CubFilling();
     void Save();
     void LightFilling();
     void RenderFilling();

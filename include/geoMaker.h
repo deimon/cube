@@ -9,7 +9,9 @@ namespace cube
   class GeoMaker
   {
   public:
-    static void CubFilling(cube::Region* rg, int rnd);
+    static void InitPerlin(int seed);
+
+    static void CubFilling(cube::Region* rg);
     static void LightFilling(cube::Region* rg);
     static void RenderFilling(cube::Region* rg);
 
@@ -17,8 +19,8 @@ namespace cube
     static Perlin* _perlin3d;
     static Perlin* _perlin2d;
 
-    static void GenNoise(cube::Region* rg, float rnd);
-    static void GenOffsideNoise(cube::Region* rg, float rnd);
+    static void GenNoise(cube::Region* rg);
+    static void GenOffsideNoise(cube::Region* rg);
   };
 }
 

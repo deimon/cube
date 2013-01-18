@@ -190,6 +190,14 @@ bool PersonManipulator::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GU
           return true;
         }
         break;
+
+      case osgGA::GUIEventAdapter::KEY_Tab:
+        {
+          cube::World::Instance().CreateMap(777);
+          _eye = cube::World::Instance()._you;
+          return true;
+        }
+        break;
     }
 
   return false;
@@ -324,79 +332,85 @@ bool PersonManipulator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 
 bool PersonManipulator::handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us )
 {
-  double current_frame_time = ea.getTime();
-
-  _delta_frame_time = current_frame_time - _last_frame_time;
-  _last_frame_time = current_frame_time;
-
-  cube::World& world = cube::World::Instance();
-
-  osg::Vec3d currentRotation = _rotation * osg::Vec3d(0., 0., -1);
-  currentRotation.z() = 0;
-  currentRotation.normalize();
-
-  osg::Vec3d moveDirection;
-
-  if(_moveForward)
-    moveDirection += currentRotation;
-
-  if(_moveBackward)
-    moveDirection -= currentRotation;
-
-  if(_moveLeft)
+  if(cube::World::Instance().IsMapCreated())
   {
-    osg::Vec3d vDir = currentRotation;
-    double x = vDir.x();
-    vDir.x() = vDir.y();
-    vDir.y() = -x;
-    moveDirection -= vDir;
-  }
+    double current_frame_time = ea.getTime();
 
-  if(_moveRight)
-  {
-    osg::Vec3d vDir = currentRotation;
-    double x = vDir.x();
-    vDir.x() = vDir.y();
-    vDir.y() = -x;
-    moveDirection += vDir;
-  }
+    _delta_frame_time = current_frame_time - _last_frame_time;
+    _last_frame_time = current_frame_time;
 
-  if(moveDirection.length() > 0.01)
-  {
-    moveDirection.normalize();
-    calcStep(moveDirection * movementSpeed * _delta_frame_time, us);
-  }
+    if(_delta_frame_time > 0.1)
+      return false;
 
-  if(_jump)
-  {
-    _eye += osg::Vec3d(0.0, 0.0, 5.0) * _delta_frame_time;
-    world._you = _eye;
+    cube::World& world = cube::World::Instance();
 
-    if((_eye.z() - _startJump) > 1.2f)
-      _jump = false;
+    osg::Vec3d currentRotation = _rotation * osg::Vec3d(0., 0., -1);
+    currentRotation.z() = 0;
+    currentRotation.normalize();
 
-    us.requestRedraw();
+    osg::Vec3d moveDirection;
 
-    osg::CoordinateFrame coordinateFrame = getCoordinateFrame( _eye );
-    osg::Vec3d localUp = getUpVector( coordinateFrame );
-    fixVerticalAxis(_rotation, localUp, true );
-  }
-  else
-  {
-    osg::Vec3d prevEye = _eye;
-    cube::CubRegion cubReg = RegionManager::Instance().GetCub(prevEye.x(), prevEye.y(), prevEye.z() - PERSON_HEIGHT);
+    if(_moveForward)
+      moveDirection += currentRotation;
 
-    if(cubReg.GetCubType() == cube::Cub::Air)
+    if(_moveBackward)
+      moveDirection -= currentRotation;
+
+    if(_moveLeft)
     {
-      prevEye += osg::Vec3d(0.0, 0.0, -5.0) * _delta_frame_time;
+      osg::Vec3d vDir = currentRotation;
+      double x = vDir.x();
+      vDir.x() = vDir.y();
+      vDir.y() = -x;
+      moveDirection -= vDir;
+    }
 
-      cube::CubRegion newcubReg = RegionManager::Instance().GetCub(prevEye.x(), prevEye.y(), prevEye.z() - PERSON_HEIGHT);
+    if(_moveRight)
+    {
+      osg::Vec3d vDir = currentRotation;
+      double x = vDir.x();
+      vDir.x() = vDir.y();
+      vDir.y() = -x;
+      moveDirection += vDir;
+    }
+
+    if(moveDirection.length() > 0.01)
+    {
+      moveDirection.normalize();
+      calcStep(moveDirection * movementSpeed * _delta_frame_time, us);
+    }
+
+    if(_jump)
+    {
+      _eye += osg::Vec3d(0.0, 0.0, 5.0) * _delta_frame_time;
+      world._you = _eye;
+
+      if((_eye.z() - _startJump) > 1.2f)
+        _jump = false;
+
+      us.requestRedraw();
+
+      osg::CoordinateFrame coordinateFrame = getCoordinateFrame( _eye );
+      osg::Vec3d localUp = getUpVector( coordinateFrame );
+      fixVerticalAxis(_rotation, localUp, true );
+    }
+    else
+    {
+      osg::Vec3d prevEye = _eye;
+      cube::CubRegion cubReg = RegionManager::Instance().GetCub(prevEye.x(), prevEye.y(), prevEye.z() - PERSON_HEIGHT);
 
       if(cubReg.GetCubType() == cube::Cub::Air)
-        setTransformation(prevEye, _rotation);
-      else
       {
+        prevEye += osg::Vec3d(0.0, 0.0, -5.0) * _delta_frame_time;
 
+        cube::CubRegion newcubReg = RegionManager::Instance().GetCub(prevEye.x(), prevEye.y(), prevEye.z() - PERSON_HEIGHT);
+
+        if(cubReg.GetCubType() == cube::Cub::Air)
+          setTransformation(prevEye, _rotation);
+        else
+        {
+
+        }
       }
     }
   }

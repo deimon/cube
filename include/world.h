@@ -66,6 +66,7 @@ namespace cube
     ~World(){}
 
     osg::Group* GetGeometry();
+    void CreateMap(int rnd);
     void update();
 
     void del(cube::CubRegion& cubReg, osg::Vec3d wcpos);
@@ -82,13 +83,18 @@ namespace cube
     mutable OpenThreads::Mutex  _mutex;
 
     int _rnd;
+    int _newRnd;
     int _worldRadius;
 
     osg::Uniform* _worldLight;
 
+    bool IsMapCreated() { return _mapCreated; }
+
   protected:
     void updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset, bool blend = false, bool updateScene = false);
     void clearRegionGeoms(cube::Region* rg);
+    void createMap();
+    void destroyMap();
 
     int _prevRegX, _prevRegY;
 
@@ -97,8 +103,6 @@ namespace cube
     std::list<RegionsList*> _addRegionsForRenderFilling;
     RegionsList _delRegionsForVisual;
     RegionsList _addToSceneRegions;
-
-    osg::Geode* createGeometry();
 
     osg::Group* _group;
     osg::Geode* _geode[2];
@@ -109,6 +113,9 @@ namespace cube
 
     int _frame;
     int _radius;
+
+    bool _mapCreated;
+    bool _newMap;
 
   public:
     friend class CreateGeomThread;

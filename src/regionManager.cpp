@@ -53,7 +53,7 @@ cube::CubRegion RegionManager::GetCub(float x, float y, float z)
 cube::Region* RegionManager::CreateRegion(int xreg, int yreg)
 {
   cube::Region* region = cube::Region::Generation(xreg, yreg);
-  region->CubFilling(World::Instance()._rnd);
+  region->CubFilling();
 
   return region;
 }
@@ -78,4 +78,19 @@ void RegionManager::Save()
   for(xrg = _regions.begin(); xrg != _regions.end(); xrg++)
   for(yrg = xrg->second.begin(); yrg != xrg->second.end(); yrg++)
     yrg->second->Save();
+}
+
+void RegionManager::Clear()
+{
+  RegionsContainer::iterator xrg;
+  YRegionsContainer::iterator yrg;
+
+  for(xrg = _regions.begin(); xrg != _regions.end(); xrg++)
+    for(yrg = xrg->second.begin(); yrg != xrg->second.end(); yrg++)
+      delete yrg->second;
+
+  for(xrg = _regions.begin(); xrg != _regions.end(); xrg++)
+    xrg->second.clear();
+
+  _regions.clear();
 }

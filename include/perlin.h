@@ -15,6 +15,11 @@ public:
 
   Perlin(int octaves,float freq,float amp,int seed);
 
+  void SetSeed(int seed)
+  {
+    mSeed = seed;
+    mStart = true;
+  }
 
   float Get(float x,float y)
   {

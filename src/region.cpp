@@ -30,7 +30,7 @@ cube::Region* Region::Generation(int xreg, int yreg)
   return region;
 }
 
-void Region::CubFilling(int rnd)
+void Region::CubFilling()
 {
   if(_cubFilled)
     return;
@@ -69,7 +69,7 @@ void Region::CubFilling(int rnd)
   }
   else
   {
-    cube::GeoMaker::CubFilling(this, rnd);
+    cube::GeoMaker::CubFilling(this);
 
     if(!this->IsOffside())
     {

@@ -29,6 +29,7 @@ namespace cube
     void ForacheRegion(Callback& cb);
 
     void Save();
+    void Clear();
 
   protected:
     RegionsContainer _regions;
