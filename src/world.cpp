@@ -145,6 +145,7 @@ private:
 
 World::World()
 {
+  _hudMode = false;
   _mapCreated = false;
   _newMap = false;
   _cgThread = new CreateGeomThread(this);

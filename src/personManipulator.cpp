@@ -198,6 +198,12 @@ bool PersonManipulator::handleKeyUp( const osgGA::GUIEventAdapter& ea, osgGA::GU
           return true;
         }
         break;
+      case osgGA::GUIEventAdapter::KEY_E:
+        {
+          cube::World::Instance().SetHudMode(!cube::World::Instance().IsHudMode());
+          return true;
+        }
+        break;
     }
 
   return false;
@@ -332,7 +338,7 @@ bool PersonManipulator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 
 bool PersonManipulator::handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us )
 {
-  if(cube::World::Instance().IsMapCreated())
+  if(cube::World::Instance().IsMapCreated() && !cube::World::Instance().IsHudMode())
   {
     double current_frame_time = ea.getTime();
 
@@ -415,15 +421,21 @@ bool PersonManipulator::handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GU
     }
   }
 
-  homeCursorPositionX = (ea.getXmin() + ea.getXmax()) / 2.0f;
-  homeCursorPositionY = (ea.getYmin() + ea.getYmax()) / 2.0f;
-  us.requestWarpPointer(homeCursorPositionX, homeCursorPositionY);
+  if(!cube::World::Instance().IsHudMode())
+  {
+    homeCursorPositionX = (ea.getXmin() + ea.getXmax()) / 2.0f;
+    homeCursorPositionY = (ea.getYmin() + ea.getYmax()) / 2.0f;
+    us.requestWarpPointer(homeCursorPositionX, homeCursorPositionY);
+  }
 
   return false;
 }
 
 bool PersonManipulator::handleMouseMove( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& us )
 {
+  if(cube::World::Instance().IsHudMode())
+    return true;
+
   float dx = ea.getX() - homeCursorPositionX;
   float dy = ea.getY() - homeCursorPositionY;
 

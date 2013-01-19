@@ -51,11 +51,11 @@ int main( void )
   osgViewer::ViewerBase::Windows windows;
   viewer.getWindows(windows);
 
-  for (osgViewer::ViewerBase::Windows::iterator itr = windows.begin(); itr != windows.end(); ++itr)
-  {
-      (*itr)->useCursor(false);
-      //(*itr)->setCursor(osgViewer::GraphicsWindow::NoCursor);
-  }
+  //for (osgViewer::ViewerBase::Windows::iterator itr = windows.begin(); itr != windows.end(); ++itr)
+  //{
+  //    (*itr)->useCursor(false);
+  //    //(*itr)->setCursor(osgViewer::GraphicsWindow::NoCursor);
+  //}
 
   osg::Camera* cam = viewer.getCamera();
 

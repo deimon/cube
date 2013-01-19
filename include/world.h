@@ -45,6 +45,8 @@ namespace cube
     int _worldRadius;
 
     bool IsMapCreated() { return _mapCreated; }
+    bool IsHudMode() { return _hudMode; }
+    void SetHudMode(bool hudMode) { _hudMode = hudMode; }
 
   protected:
     void createMap();
@@ -67,6 +69,7 @@ namespace cube
 
     bool _mapCreated;
     bool _newMap;
+    bool _hudMode;
 
   public:
     friend class CreateGeomThread;
