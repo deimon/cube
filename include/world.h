@@ -49,6 +49,7 @@ namespace cube
     void SetHudMode(bool hudMode) { _hudMode = hudMode; }
 
   protected:
+    void startFilling(World* world, int radius, int i, int j);
     void createMap();
     void destroyMap();
 

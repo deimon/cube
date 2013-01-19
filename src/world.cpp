@@ -176,7 +176,7 @@ void World::update()
     {
       RegionsList* rl = _addRegionsForCubFilling.front();
       
-      if(rl->empty())
+      if(rl->empty() && _addRegionsForCubFilling.size() == 1)
         break;
 
       _cgThread->_addRegionsForCubFilling.push_back(rl);
@@ -187,7 +187,7 @@ void World::update()
     {
       RegionsList* rl = _addRegionsForLightFilling.front();
 
-      if(rl->empty())
+      if(rl->empty() && _addRegionsForLightFilling.size() == 1)
         break;
 
       _cgThread->_addRegionsForLightFilling.push_back(rl);
@@ -198,7 +198,7 @@ void World::update()
     {
       RegionsList* rl = _addRegionsForRenderFilling.front();
 
-      if(rl->empty())
+      if(rl->empty() && _addRegionsForRenderFilling.size() == 1)
         break;
 
       _cgThread->_addRegionsForRenderFilling.push_back(rl);
@@ -619,6 +619,22 @@ void World::CreateMap(int rnd)
   _you.set(5.0, 5.0, 100.0);
 }
 
+void World::startFilling(World* world, int radius, int i, int j)
+{
+  cube::Region* region = cube::Region::Generation(i, j);
+  
+  world->_addRegionsForCubFilling.back()->push_back(region);
+  
+  if(radius <= world->_radius + 1)
+    world->_addRegionsForLightFilling.back()->push_back(region);
+
+  if(radius <= world->_radius)
+  {
+    region->SetVisibleZone(true);
+    world->_addRegionsForRenderFilling.back()->push_back(region);
+  }
+}
+
 void World::createMap()
 {
   if(_rnd == 777)
@@ -630,9 +646,14 @@ void World::createMap()
   _frame = 0;
   srand(time(NULL));
 
-  _addRegionsForRenderFilling.push_back(new RegionsList);
   _addRegionsForCubFilling.push_back(new RegionsList);
+
   _addRegionsForLightFilling.push_back(new RegionsList);
+  _addRegionsForLightFilling.push_back(new RegionsList);
+
+  _addRegionsForRenderFilling.push_back(new RegionsList);
+  _addRegionsForRenderFilling.push_back(new RegionsList);
+  _addRegionsForRenderFilling.push_back(new RegionsList);
 
   // эти параметры надо будет устанавливать
   // в соответствии с местом появления персонажа
@@ -642,102 +663,34 @@ void World::createMap()
   _worldRadius = 8;
   _radius = 4;
 
-#ifdef DUBUGMODE
-  {//DEBUG
-    SYSTEMTIME sm;
-    GetSystemTime(&sm);
-    std::cout << "START StartedCubFilling: " << sm.wMinute << ":" << sm.wSecond << ":" << sm.wMilliseconds << std::endl;
-  }
-#endif
-
-  for(int i = -_radius - 2; i <= _radius + 2; i++)
-    for(int j = -_radius - 2; j <= _radius + 2; j++)
-    {
-      cube::Region* region = cube::Region::Generation(i, j);
-      region->CubFilling();
-    }
-
-#ifdef DUBUGMODE
-    {//DEBUG
-      SYSTEMTIME sm;
-      GetSystemTime(&sm);
-      std::cout << "END StartedCubFilling: " << sm.wMinute << ":" << sm.wSecond << ":" << sm.wMilliseconds << std::endl;
-    }
-#endif
-
-#ifdef DUBUGMODE
-  {//DEBUG
-    SYSTEMTIME sm;
-    GetSystemTime(&sm);
-    std::cout << "START StartedLightFilling: " << sm.wMinute << ":" << sm.wSecond << ":" << sm.wMilliseconds << std::endl;
-  }
-#endif
-
-  for(int i = -_radius - 1; i <= _radius + 1; i++)
-  for(int j = -_radius - 1; j <= _radius + 1; j++)
-  {
-    RegionManager::Instance().GetRegion(i, j)->LightFilling();
-  }
-
-#ifdef DUBUGMODE
-  {//DEBUG
-    SYSTEMTIME sm;
-    GetSystemTime(&sm);
-    std::cout << "END StartedLightFilling AND START StartedRenderFilling: " << sm.wMinute << ":" << sm.wSecond << ":" << sm.wMilliseconds << std::endl;
-  }
-#endif
-
-  for(int i = -_radius; i <= _radius; i++)
-    for(int j = -_radius; j <= _radius; j++)
-    {
-      cube::Region* region = RegionManager::Instance().GetRegion(i, j);
-      region->SetVisibleZone(true);
-      region->RenderFilling();
-    }
-
-#ifdef DUBUGMODE
-    {//DEBUG
-      SYSTEMTIME sm;
-      GetSystemTime(&sm);
-      std::cout << "END StartedRenderFilling: " << sm.wMinute << ":" << sm.wSecond << ":" << sm.wMilliseconds << std::endl;
-    }
-#endif
-
-  for(int i = -_radius; i <= _radius; i++)
-  for(int j = -_radius; j <= _radius; j++)
-  {
-    cube::Region* region = RegionManager::Instance().GetRegion(i, j);
-    World::Instance().UpdateRegionGeoms(region, false);
-  }
-
   int i = 0, j = 0;
-  _addToSceneRegions.push_back(RegionManager::Instance().GetRegion(i, j));
-  for(int r = 1; r <= _radius; r++)
+  startFilling(this, 0, i, j);
+  for(int r = 1; r <= _radius + 2; r++)
   {
     j = -r;
     for(i = -r; i <= r-1; i++)
-      _addToSceneRegions.push_back(RegionManager::Instance().GetRegion(i, j));
+      startFilling(this, r, i, j);
 
     i = r;
     for(j = -r; j <= r-1; j++)
-      _addToSceneRegions.push_back(RegionManager::Instance().GetRegion(i, j));
+      startFilling(this, r, i, j);
 
     j = r;
     for(i = r; i >= -(r-1); i--)
-      _addToSceneRegions.push_back(RegionManager::Instance().GetRegion(i, j));
+      startFilling(this, r, i, j);
 
     i = -r;
     for(j = r; j >= -(r-1); j--)
-      _addToSceneRegions.push_back(RegionManager::Instance().GetRegion(i, j));
-  }
+      startFilling(this, r, i, j);
 
-#ifdef DUBUGMODE
-  {//DEBUG
-    SYSTEMTIME sm;
-    GetSystemTime(&sm);
-    std::cout << "END UpdateRegionGeoms: " << sm.wMinute << ":" << sm.wSecond << ":" << sm.wMilliseconds << std::endl;
+    _addRegionsForCubFilling.push_back(new RegionsList);
+    
+    if(r <= _radius + 1)
+      _addRegionsForLightFilling.push_back(new RegionsList);
+
+    if(r <= _radius)
+      _addRegionsForRenderFilling.push_back(new RegionsList);
   }
-#endif
 
   _mapCreated = true;
 }
