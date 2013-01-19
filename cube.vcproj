@@ -328,6 +328,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\include\definition.h"
+				>
+			</File>
+			<File
 				RelativePath=".\include\geoMaker.h"
 				>
 			</File>
@@ -337,6 +341,10 @@
 			</File>
 			<File
 				RelativePath=".\include\personManipulator.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\RenderGroup.h"
 				>
 			</File>
 			<File
@@ -443,6 +451,10 @@
 			</File>
 			<File
 				RelativePath=".\src\personManipulator.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\RenderGroup.cpp"
 				>
 			</File>
 			<File

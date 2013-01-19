@@ -14,18 +14,18 @@ bool DebugEventHandler::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
       {
       case osgGA::GUIEventAdapter::KEY_Home:
         {
-          float sun;
-          cube::World::Instance()._worldLight->get(sun);
-          cube::World::Instance()._worldLight->set(sun + 0.05f);
+          //float sun;
+          //cube::World::Instance()._worldLight->get(sun);
+          //cube::World::Instance()._worldLight->set(sun + 0.05f);
           return true;
         }
         break;
 
       case osgGA::GUIEventAdapter::KEY_End:
         {
-          float sun;
-          cube::World::Instance()._worldLight->get(sun);
-          cube::World::Instance()._worldLight->set(sun - 0.05f);
+          //float sun;
+          //cube::World::Instance()._worldLight->get(sun);
+          //cube::World::Instance()._worldLight->set(sun - 0.05f);
           return true;
         }
         break;

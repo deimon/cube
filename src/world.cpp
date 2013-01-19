@@ -4,6 +4,7 @@
 #include <light.h>
 #include <regionManager.h>
 #include <geoMaker.h>
+#include <RenderGroup.h>
 
 #include <OpenThreads/Thread>
 
@@ -142,167 +143,11 @@ private:
   cube::World* _world;
 };
 
-void WorldCallback::operator()(osg::Node* node, osg::NodeVisitor* nv)
-{
-  _world->update();
-  traverse(node, nv);
-}
-
-
 World::World()
 {
   _mapCreated = false;
   _newMap = false;
   _cgThread = new CreateGeomThread(this);
-}
-
-void World::clearRegionGeoms(cube::Region* rg)
-{
-  if(rg != NULL)
-  {
-    if(rg->_geometryCreated)
-    {
-      for(int s = 0; s < 2; s++)
-      for(int i = 0; i < GEOM_COUNT; i++)
-      {
-        osg::Geometry* geom = rg->GetGeometry(i, s == 1);
-        if(geom)
-        {
-          _geode[s]->removeDrawable(geom);
-          rg->SetGeometry(i, NULL, s == 1);
-        }
-      }
-
-      rg->_geometryCreated = false;
-    }
-  }
-}
-
-osg::Geometry* NewOSGGeom()
-{
-  osg::Geometry* curGeom = new osg::Geometry;
-  curGeom->setUseVertexBufferObjects(true);
-
-  osg::Vec3Array* coords;
-  osg::Vec4Array* colours;
-  osg::Vec3Array* normals;
-  osg::Vec2Array* tcoords;
-  osg::DrawArrays* drawArr;
-
-  coords = new osg::Vec3Array();
-  colours = new osg::Vec4Array();
-  normals = new osg::Vec3Array();
-  drawArr = new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0, 4);
-  tcoords = new osg::Vec2Array();
-
-  curGeom->setVertexArray(coords);
-  curGeom->setColorArray(colours);
-  curGeom->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
-  curGeom->setNormalArray(normals);
-  curGeom->setNormalBinding(osg::Geometry::BIND_PER_PRIMITIVE);
-
-  curGeom->addPrimitiveSet(drawArr);
-
-  curGeom->setTexCoordArray(0,tcoords);
-
-  return curGeom;
-}
-
-void World::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset, bool blend, bool updateScene)
-{
-  int geomIndex = zOffset / GEOM_SIZE;
-
-  geom = reg->GetGeometry(geomIndex, blend);
-
-  if(reg->_renderedCubCount[blend?1:0][geomIndex] > 0)
-  {
-    if(geom == NULL)
-    {
-      geom = NewOSGGeom();
-      reg->SetGeometry(geomIndex, geom, blend);
-
-      if(updateScene)
-        _geode[blend?1:0]->addDrawable(geom);
-    }
-  }
-  else
-  {
-    if(updateScene)
-      _geode[blend?1:0]->removeDrawable(geom);
-    reg->SetGeometry(geomIndex, NULL, blend);
-    return;
-  }
-
-  //*****************************************************************************
-
-  osg::Vec3Array* coords;
-  osg::Vec4Array* colours;
-  osg::Vec3Array* normals;
-  osg::Vec2Array* tcoords;
-
-  osg::DrawArrays* drawArr;
-
-  coords = dynamic_cast<osg::Vec3Array*>(geom->getVertexArray());
-  colours = dynamic_cast<osg::Vec4Array*>(geom->getColorArray());
-  normals = dynamic_cast<osg::Vec3Array*>(geom->getNormalArray());
-  drawArr = dynamic_cast<osg::DrawArrays*>(geom->getPrimitiveSet(0));
-  tcoords = dynamic_cast<osg::Vec2Array*>(geom->getTexCoordArray(0));
-
-  coords->clear();
-  colours->clear();
-  normals->clear();
-  tcoords->clear();
-
-  for(int x = 0; x < GEOM_SIZE; x++)
-  for(int y = 0; y < GEOM_SIZE; y++)
-  for(int z = 0; z < GEOM_SIZE; z++)
-  {
-    cube::CubRegion cubReg = reg->GetCub(x, y, z + zOffset);
-
-    if(cubReg.GetCubType() == cube::Cub::Air || !cubReg.GetCubRendered() || cubReg.GetCubBlend() != blend) //!!!!!!!
-      continue;
-
-    osg::Vec3d pos = reg->GetPosition() + osg::Vec3d( x, y, z + zOffset);
-
-    for(int side = CubInfo::FirstSide; side <= CubInfo::EndSide; side++)
-    {
-      CubInfo::CubeSide cside = (CubInfo::CubeSide)side;
-
-      osg::Vec3d sidePos = pos + CubInfo::Instance().GetNormal(cside) + osg::Vec3d(0.1, 0.1, 0.1);
-      cube::CubRegion scubReg = RegionManager::Instance().GetCub(sidePos.x(), sidePos.y(), sidePos.z());
-
-      if(  scubReg.GetCubType() == cube::Cub::Air 
-        || scubReg.GetCubType() == cube::Cub::LeavesWood 
-        || scubReg.GetCubType() == cube::Cub::TruncWood
-        || (scubReg.GetCubType() == cube::Cub::Water && cubReg.GetCubType() != cube::Cub::Water))
-      {
-        CubInfo::Instance().FillVertCoord(cside, coords, pos);
-
-        _texInfo->FillTexCoord(cubReg.GetCubType(), cside, tcoords);
-
-        osg::Vec4d color = _texInfo->GetSideColor(cubReg.GetCubType(), cside);
-
-        //float light = scubReg.GetCubLight() + scubReg.GetCubLocLight();
-        //if(light > 1.0f)
-        //  light = 1.0f;
-        //color *= light;
-
-        //colours->push_back(color);
-        //colours->push_back(color);
-        //colours->push_back(color);
-        //colours->push_back(color);
-
-        CubInfo::Instance().FillColorBuffer(cside, colours, pos, color);
-
-        normals->push_back(CubInfo::Instance().GetNormal(cside));
-      }
-    }
-
-    drawArr->setCount(coords->size());
-  }
-
-  geom->dirtyDisplayList();
-  geom->dirtyBound();
 }
 
 void World::update()
@@ -372,12 +217,7 @@ void World::update()
   }
 
   // пересоздание измененных геометрий (удаление/добавление кубика, распространение света и т.д.)
-  for(int i = 0; i < _dataUpdate.size(); i++)
-  {
-    //if(_dataUpdate[i]._geom)
-    updateGeom(_dataUpdate[i]._geom, _dataUpdate[i]._reg, _dataUpdate[i]._zCubOff, _dataUpdate[i]._blend, true);
-  }
-  _dataUpdate.clear();
+  _renderGroup->Update();
 
   // добавление и удаление из очереди в сцену по 1 региону за фрейм
   if(!_addToSceneRegions.empty() && _frame == 0)
@@ -392,15 +232,7 @@ void World::update()
       {
         add = true;
         reg->SetInScene(true);
-
-        for(int s = 0; s < 2; s++)
-        for(int offset = 0; offset < GEOM_COUNT; offset++)
-        {
-          osg::Geometry* curGeom = reg->GetGeometry(offset, s == 1);
-
-          if(curGeom != NULL)
-            _geode[s]->addDrawable(curGeom);
-        }
+        _renderGroup->FillRegionGeoms(reg);
       }
     } while(!add && !_addToSceneRegions.empty());
 
@@ -417,7 +249,7 @@ void World::update()
         {
           del = true;
           reg->SetInScene(false);
-          clearRegionGeoms(reg);
+          _renderGroup->ClearRegionGeoms(reg);
         }
       } while(!del && !_delRegionsForVisual.empty());
     }
@@ -650,7 +482,7 @@ void World::update()
 
 void World::del(cube::CubRegion& cubReg, osg::Vec3d wcpos)
 {
-  std::map<osg::Geometry*, DataUpdate> updateGeomMap;
+  std::map<osg::Geometry*, RenderGroup::DataUpdate> updateGeomMap;
 
   cubReg.SetCubType(cube::Cub::Air);
   cubReg.SetCubRendered(false);
@@ -660,19 +492,17 @@ void World::del(cube::CubRegion& cubReg, osg::Vec3d wcpos)
 
   osg::Geometry* curGeom = cubReg.GetRegion()->GetGeometry(cubReg.GetGeomIndex(), blend);
 
-  updateGeomMap[curGeom] = DataUpdate(curGeom, cubReg.GetRegion(), cubReg.GetGeomIndex(), blend);
+  updateGeomMap[curGeom] = RenderGroup::DataUpdate(curGeom, cubReg.GetRegion(), cubReg.GetGeomIndex(), blend);
 
   //*************************************
   cube::Light::RecalcAndFillingLight(cubReg, wcpos, &updateGeomMap);
 
-  std::map<osg::Geometry*, DataUpdate>::iterator i = updateGeomMap.begin();
-  for(; i != updateGeomMap.end(); i++)
-    _dataUpdate.push_back(i->second);
+  _renderGroup->PushToUpdate(&updateGeomMap);
 }
 
 void World::add(cube::CubRegion& cubReg, osg::Vec3d wcpos, bool recalcLight)
 {
-  std::map<osg::Geometry*, DataUpdate> updateGeomMap;
+  std::map<osg::Geometry*, RenderGroup::DataUpdate> updateGeomMap;
 
   if(!cubReg.GetCubRendered())
   {
@@ -681,7 +511,7 @@ void World::add(cube::CubRegion& cubReg, osg::Vec3d wcpos, bool recalcLight)
 
   osg::Geometry* curGeom = cubReg.GetRegion()->GetGeometry(cubReg.GetGeomIndex(), cubReg.GetCubBlend());
 
-  updateGeomMap[curGeom] = DataUpdate(curGeom, cubReg.GetRegion(), cubReg.GetGeomIndex(), cubReg.GetCubBlend());
+  updateGeomMap[curGeom] = RenderGroup::DataUpdate(curGeom, cubReg.GetRegion(), cubReg.GetGeomIndex(), cubReg.GetCubBlend());
 
   //*************************************
   if(recalcLight)
@@ -689,9 +519,7 @@ void World::add(cube::CubRegion& cubReg, osg::Vec3d wcpos, bool recalcLight)
     cube::Light::FindLightSourceAndFillingLight(cubReg, wcpos, &updateGeomMap);
   }
 
-  std::map<osg::Geometry*, DataUpdate>::iterator i = updateGeomMap.begin();
-  for(; i != updateGeomMap.end(); i++)
-    _dataUpdate.push_back(i->second);
+  _renderGroup->PushToUpdate(&updateGeomMap);
 }
 
 
@@ -707,32 +535,6 @@ void World::RemoveCub(osg::Vec3d vec)
   cube::CubRegion cubReg = reg->GetCub(cvec.x(), cvec.y(), cvec.z());
 
   del(cubReg, vec);
-
-  // нахождение новой травки если её удалили
-  /*if((int)(cvec.z()) == reg->GetHeight(cvec.x(), cvec.y()))
-  {
-    for(int i = cvec.z(); i >= 0; i--)
-    {
-      cube::Cub& bottomCub = reg->GetCub(cvec.x(), cvec.y(), i);
-      if(bottomCub._type != cube::Cub::Air)
-      {
-        reg->SetHeight(cvec.x(), cvec.y(), i);
-
-        if(bottomCub._type == cube::Cub::Ground)
-        {
-          bottomCub._type = cube::Cub::Grass;
-
-          int bz = i / GEOM_SIZE;
-          osg::Geometry* curGeom = reg->GetGeometry(bz);
-
-          _dataUpdate.push_back(DataUpdate(curGeom, reg, bz));
-        }
-
-        break;
-      }
-    }
-  }*/
-
 
   for(int i = CubInfo::FirstSide; i <= CubInfo::EndSide; i++)
   {
@@ -783,13 +585,11 @@ void World::AddCub(osg::Vec3d vec, Cub::CubeType cubeType)
         if(scubReg.GetCubType() == cube::Cub::Pumpkin)
         {
           // временный блок
-          std::map<osg::Geometry*, DataUpdate> updateGeomMap;
+          std::map<osg::Geometry*, RenderGroup::DataUpdate> updateGeomMap;
 
           cube::Light::fillingLocLight(scubReg, vec + norm, 1.0f, &updateGeomMap);
 
-          std::map<osg::Geometry*, DataUpdate>::iterator i = updateGeomMap.begin();
-          for(; i != updateGeomMap.end(); i++)
-            _dataUpdate.push_back(i->second);
+          _renderGroup->PushToUpdate(&updateGeomMap);
         }
       }
 
@@ -802,16 +602,7 @@ void World::UpdateRegionGeoms(cube::Region* rg, bool addToScene)
 {
   if(!rg->_geometryCreated)
   {
-    for(int s = 0; s < 2; s++)
-    for(int offset = 0; offset < GEOM_COUNT; offset++)
-    {
-      if(rg->_renderedCubCount[s][offset] < 1)
-        continue;
-
-      osg::Geometry* curGeom = rg->GetGeometry(offset, s == 1);
-
-      updateGeom(curGeom, rg, offset * GEOM_SIZE, s == 1, addToScene);
-    }
+    _renderGroup->UpdateRegionGeoms(rg, addToScene);
 
     if(addToScene)
       rg->SetInScene(true);
@@ -934,7 +725,7 @@ void World::createMap()
 void World::destroyMap()
 {
   _cgThread->Clear();
-  _dataUpdate.clear();
+  _renderGroup->ClearDataUpdate();
   _delRegionsForVisual.clear();
   _addToSceneRegions.clear();
 
@@ -967,7 +758,7 @@ void World::destroyMap()
     ClearRegCallback(World* world) : _world(world) {}
     void operator()(cube::Region* reg)
     {
-      _world->clearRegionGeoms(reg);
+      _world->_renderGroup->ClearRegionGeoms(reg);
     }
 
     World* _world;
@@ -981,45 +772,11 @@ void World::destroyMap()
 
 osg::Group* World::GetGeometry()
 {
-  _group = new osg::Group;
-
-  _group->setUpdateCallback(new WorldCallback(this));
-  _group->removeChildren(0, _group->getNumChildren());
-
-  _texInfo = new TextureInfo("./res/mc16-7.png", 16);
-  _group->getOrCreateStateSet()->setTextureAttributeAndModes(0, _texInfo->GetTexture(), osg::StateAttribute::ON);
-
-  _geode[0] = new osg::Geode;
-  _geode[1] = new osg::Geode;
-
-  _group->addChild(_geode[0]);
-  _group->addChild(_geode[1]);
-
-  _geode[0]->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE | osg::StateAttribute::PROTECTED);
-  _geode[1]->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE | osg::StateAttribute::PROTECTED);
-  _geode[1]->getOrCreateStateSet()->setMode(GL_BLEND, osg::StateAttribute::ON);
-
-  {
-    osg::Shader *vs = new osg::Shader(osg::Shader::VERTEX);
-    vs->loadShaderSourceFromFile("./res/shaders/main.vert");
-    osg::Shader *fs = new osg::Shader(osg::Shader::FRAGMENT);
-    fs->loadShaderSourceFromFile("./res/shaders/main.frag");
-
-    osg::StateSet* ss = _group->getOrCreateStateSet();
-
-    osg::Program* program = new osg::Program();
-    program->addShader(vs);
-    program->addShader(fs);
-    ss->setAttributeAndModes(program, osg::StateAttribute::ON | osg::StateAttribute::PROTECTED);
-    ss->addUniform(new osg::Uniform("texture", 0));
-
-    _worldLight = new osg::Uniform("sun", 0.6f);
-    ss->addUniform(_worldLight);
-  }
+  _renderGroup = new RenderGroup(this);
 
   _newRnd = 777;
   _you.set(5.0, 5.0, 100.0);
   createMap();
 
-  return _group;
+  return _renderGroup;
 }
