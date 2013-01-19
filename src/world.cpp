@@ -707,9 +707,28 @@ void World::createMap()
   for(int j = -_radius; j <= _radius; j++)
   {
     cube::Region* region = RegionManager::Instance().GetRegion(i, j);
-
     World::Instance().UpdateRegionGeoms(region, false);
-    _addToSceneRegions.push_back(region);
+  }
+
+  int i = 0, j = 0;
+  _addToSceneRegions.push_back(RegionManager::Instance().GetRegion(i, j));
+  for(int r = 1; r <= _radius; r++)
+  {
+    j = -r;
+    for(i = -r; i <= r-1; i++)
+      _addToSceneRegions.push_back(RegionManager::Instance().GetRegion(i, j));
+
+    i = r;
+    for(j = -r; j <= r-1; j++)
+      _addToSceneRegions.push_back(RegionManager::Instance().GetRegion(i, j));
+
+    j = r;
+    for(i = r; i >= -(r-1); i--)
+      _addToSceneRegions.push_back(RegionManager::Instance().GetRegion(i, j));
+
+    i = -r;
+    for(j = r; j >= -(r-1); j--)
+      _addToSceneRegions.push_back(RegionManager::Instance().GetRegion(i, j));
   }
 
 #ifdef DUBUGMODE
