@@ -146,6 +146,25 @@ cube::CubRegion Region::GetCub(int x, int y, int z)
   return CubRegion(this, _m[x][y][z], z / GEOM_SIZE);
 }
 
+void Region::ResetGeom()
+{
+  if(_geometryCreated)
+  {
+    for(int s = 0; s < 2; s++)
+      for(int i = 0; i < GEOM_COUNT; i++)
+      {
+        osg::Geometry* geom = GetGeometry(i, s == 1);
+        if(geom)
+        {
+          _geomToClear.push_back(std::make_pair(s, geom));
+          SetGeometry(i, NULL, s == 1);
+        }
+      }
+
+    _geometryCreated = false;
+  }
+}
+
 //*******************************************************
 //**class CubRegion
 

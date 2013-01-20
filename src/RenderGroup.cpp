@@ -124,6 +124,14 @@ void RenderGroup::ClearRegionGeoms(cube::Region* rg)
 
       rg->_geometryCreated = false;
     }
+    else
+      if(!rg->_geomToClear.empty())
+      {
+        for(int i = 0; i < rg->_geomToClear.size(); i++)
+          _geode[rg->_geomToClear[i].first]->removeDrawable(rg->_geomToClear[i].second);
+
+        rg->_geomToClear.clear();
+      }
   }
 }
 

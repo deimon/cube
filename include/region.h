@@ -60,6 +60,10 @@ namespace cube
 
     bool IsOffside() { return _offside; }
 
+    void ResetGeom();
+
+    std::vector<std::pair<int, osg::Geometry*>> _geomToClear;
+
   protected:
 
     Region()

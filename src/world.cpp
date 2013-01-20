@@ -312,6 +312,7 @@ void World::update()
       if(reg)
       {
         reg->SetVisibleZone(false);
+        reg->ResetGeom();
         _delRegionsForVisual.push_back(reg);
       }
     }
@@ -364,6 +365,7 @@ void World::update()
       if(reg)
       {
         reg->SetVisibleZone(false);
+        reg->ResetGeom();
         _delRegionsForVisual.push_back(reg);
       }
     }
@@ -416,6 +418,7 @@ void World::update()
       if(reg)
       {
         reg->SetVisibleZone(false);
+        reg->ResetGeom();
         _delRegionsForVisual.push_back(reg);
       }
     }
@@ -468,6 +471,7 @@ void World::update()
       if(reg)
       {
         reg->SetVisibleZone(false);
+        reg->ResetGeom();
         _delRegionsForVisual.push_back(reg);
       }
     }
@@ -601,7 +605,7 @@ void World::AddCub(osg::Vec3d vec, Cub::CubeType cubeType)
 
 void World::UpdateRegionGeoms(cube::Region* rg, bool addToScene)
 {
-  if(!rg->_geometryCreated)
+  if(!rg->_geometryCreated && rg->InVisibleZone())
   {
     _renderGroup->UpdateRegionGeoms(rg, addToScene);
 
