@@ -1,6 +1,7 @@
 #include <RenderGroup.h>
 #include <world.h>
 #include <regionManager.h>
+#include <mathUtils.h>
 
 #include <osg/NodeCallback>
 #include <osg/Group>
@@ -221,6 +222,26 @@ void RenderGroup::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset
 
     osg::Vec3d pos = reg->GetPosition() + osg::Vec3d( x, y, z + zOffset);
 
+    if(cubReg.GetCubType() == cube::Block::ObjGrass)
+    {
+      osg::Vec4d color = _texInfo->GetSideColor(cubReg.GetCubType(), CubInfo::X_BACK);
+
+      for(int i = 0; i < 4; i++)
+      {
+        osg::Vec3d rndPos = pos - osg::Vec3d(0.2, 0.2, 0.0) + osg::Vec3d(MathUtils::random() * 0.4, MathUtils::random() * 0.4, 0.0);
+        CubInfo::Instance().CrossFillVertCoord(coords, rndPos, i);
+
+        _texInfo->FillTexCoord(cubReg.GetCubType(), CubInfo::X_BACK, tcoords);
+
+        CubInfo::Instance().SimpleFillColorBuffer(colours, color);
+
+        normals->push_back(CubInfo::Instance().GetNormal(CubInfo::X_BACK));
+      }
+
+      drawArr->setCount(coords->size());
+      continue;
+    }
+
     for(int side = CubInfo::FirstSide; side <= CubInfo::EndSide; side++)
     {
       CubInfo::CubeSide cside = (CubInfo::CubeSide)side;
@@ -231,7 +252,8 @@ void RenderGroup::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset
       if(  scubReg.GetCubType() == cube::Block::Air 
         || scubReg.GetCubType() == cube::Block::LeavesWood 
         || scubReg.GetCubType() == cube::Block::TruncWood
-        || (scubReg.GetCubType() == cube::Block::Water && cubReg.GetCubType() != cube::Block::Water))
+        || (scubReg.GetCubType() == cube::Block::Water && cubReg.GetCubType() != cube::Block::Water)
+        || scubReg.GetCubType() == cube::Block::ObjGrass )
       {
         CubInfo::Instance().FillVertCoord(cside, coords, pos);
 

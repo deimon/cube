@@ -252,10 +252,12 @@ void PersonManipulator::calcStep(osg::Vec3d vDir, osgGA::GUIActionAdapter& us)
   cube::World& world = cube::World::Instance();
   osg::Vec3d newEye = _eye;
 
-  if(RegionManager::Instance().GetCub(_eye.x() + vDir.x(), _eye.y(), _eye.z() - (PERSON_HEIGHT-1)).GetCubType() == cube::Block::Air)
+  Block::BlockType bt = RegionManager::Instance().GetCub(_eye.x() + vDir.x(), _eye.y(), _eye.z() - (PERSON_HEIGHT-1)).GetCubType();
+  if(bt == cube::Block::Air || bt == cube::Block::ObjGrass)
     newEye.x() += vDir.x() - dx;
 
-  if(RegionManager::Instance().GetCub(_eye.x(), _eye.y() + vDir.y(), _eye.z() - (PERSON_HEIGHT-1)).GetCubType() == cube::Block::Air)
+  bt = RegionManager::Instance().GetCub(_eye.x(), _eye.y() + vDir.y(), _eye.z() - (PERSON_HEIGHT-1)).GetCubType();
+  if(bt == cube::Block::Air || bt == cube::Block::ObjGrass)
     newEye.y() += vDir.y() - dy;
 
   //if(newEye.x() > 15) newEye.x() -= 15;
@@ -405,13 +407,13 @@ bool PersonManipulator::handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GU
       osg::Vec3d prevEye = _eye;
       cube::CubRegion cubReg = RegionManager::Instance().GetCub(prevEye.x(), prevEye.y(), prevEye.z() - PERSON_HEIGHT);
 
-      if(cubReg.GetCubType() == cube::Block::Air)
+      if(cubReg.GetCubType() == cube::Block::Air || cubReg.GetCubType() == cube::Block::ObjGrass)
       {
         prevEye += osg::Vec3d(0.0, 0.0, -5.0) * _delta_frame_time;
 
         cube::CubRegion newcubReg = RegionManager::Instance().GetCub(prevEye.x(), prevEye.y(), prevEye.z() - PERSON_HEIGHT);
 
-        if(cubReg.GetCubType() == cube::Block::Air)
+        if(cubReg.GetCubType() == cube::Block::Air || cubReg.GetCubType() == cube::Block::ObjGrass)
           setTransformation(prevEye, _rotation);
         else
         {

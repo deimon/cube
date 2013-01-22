@@ -69,6 +69,20 @@ void CubInfo::FillVertCoord(CubInfo::CubeSide cubeSide, osg::Vec3Array* coords, 
   coords->push_back(offset + _vertex[cubeSide][3]);
 }
 
+void CubInfo::CrossFillVertCoord(osg::Vec3Array* coords, osg::Vec3d offset, int side)
+{
+  int ver1 = side % 2 ? 1 : 0;
+  int ver2 = side % 2 ? 2 : 3;
+
+  CubInfo::CubeSide cs1 = side < 2 ? CubInfo::X_FACE : CubInfo::X_BACK;
+  CubInfo::CubeSide cs2 = side < 2 ? CubInfo::X_BACK : CubInfo::X_FACE;
+
+  coords->push_back(offset + _vertex[cs1][ver1]);
+  coords->push_back(offset + _vertex[cs2][ver1]);
+  coords->push_back(offset + _vertex[cs2][ver2]);
+  coords->push_back(offset + _vertex[cs1][ver2]);
+}
+
 void CubInfo::FillColorBuffer(CubInfo::CubeSide cubeSide, osg::Vec4Array* colors, osg::Vec3d pos, osg::Vec4d color)
 {
   float sum[4] = {0.0f, 0.0f, 0.0f, 0.0f};
@@ -197,6 +211,15 @@ void CubInfo::FillColorBuffer(CubInfo::CubeSide cubeSide, osg::Vec4Array* colors
   colors->push_back(color * sum[3]);
 }
 
+void CubInfo::SimpleFillColorBuffer(osg::Vec4Array* colors, osg::Vec4d color)
+{
+  colors->push_back(color);
+  colors->push_back(color);
+  colors->push_back(color);
+  colors->push_back(color);
+}
+
+
 TextureInfo::TextureInfo(std::string path, int count)
 {
   init();
@@ -232,7 +255,7 @@ osg::Vec4d& TextureInfo::GetSideColor(Block::BlockType cubeType, CubInfo::CubeSi
 void TextureInfo::init()
 {
   for(int ct = 0; ct < CUBE_TYPE; ct++)
-    for(int cs = 0; cs < CUBE_TYPE; cs++)
+    for(int cs = 0; cs <= CubInfo::Z_BACK; cs++)
       _csColor[(Block::BlockType)ct][(CubInfo::CubeSide)cs] = osg::Vec4d(1.0, 1.0, 1.0, 1.0);
 
   _csTextures[Block::Ground][CubInfo::X_BACK] = 242;
@@ -290,4 +313,14 @@ void TextureInfo::init()
   _csTextures[Block::Water][CubInfo::X_FACE] = 61;
   _csTextures[Block::Water][CubInfo::Y_FACE] = 61;
   _csTextures[Block::Water][CubInfo::Z_FACE] = 61;
+
+  _csTextures[Block::Ironstone][CubInfo::X_BACK] = 209;
+  _csTextures[Block::Ironstone][CubInfo::Y_BACK] = 209;
+  _csTextures[Block::Ironstone][CubInfo::Z_BACK] = 209;
+  _csTextures[Block::Ironstone][CubInfo::X_FACE] = 209;
+  _csTextures[Block::Ironstone][CubInfo::Y_FACE] = 209;
+  _csTextures[Block::Ironstone][CubInfo::Z_FACE] = 209;
+
+  _csTextures[Block::ObjGrass][CubInfo::X_BACK] = 215;
+  _csColor[Block::ObjGrass][CubInfo::X_BACK] = osg::Vec4d(0.51, 0.91, 0.19, 1.0);
 }

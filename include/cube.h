@@ -2,7 +2,7 @@
 #define __CUBE_H__
 
 #define CUBE_SIZE 1
-#define CUBE_TYPE 8
+#define CUBE_TYPE 10
 
 #include <iostream>
 #include <osg/Texture2D>
@@ -60,7 +60,9 @@ namespace cube
     const osg::Vec3& GetVertex(CubInfo::CubeSide cubeSide, int numVertex);
 
     void FillVertCoord(CubInfo::CubeSide cubeSide, osg::Vec3Array* coords, osg::Vec3d offset);
+    void CrossFillVertCoord(osg::Vec3Array* coords, osg::Vec3d offset, int side);
     void FillColorBuffer(CubInfo::CubeSide cubeSide, osg::Vec4Array* colors, osg::Vec3d pos, osg::Vec4d color);
+    void SimpleFillColorBuffer(osg::Vec4Array* colors, osg::Vec4d color);
 
   protected:
 

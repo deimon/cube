@@ -79,6 +79,8 @@ void Region::CubFilling()
           cube::MathUtils::random(0, REGION_WIDTH),
           cube::MathUtils::random(0, REGION_WIDTH));
       }
+
+      BlockProducer::Instance().Generate(this);
     }
   }
 

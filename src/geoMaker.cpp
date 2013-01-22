@@ -1,6 +1,10 @@
 #include <geoMaker.h>
 #include <regionManager.h>
 #include <light.h>
+#include <baseBlock.h>
+#include <ironstoneBlock.h>
+#include <pumpkinBlock.h>
+#include <objGrassBlock.h>
 
 using namespace cube;
 
@@ -11,6 +15,10 @@ void GeoMaker::InitPerlin(int seed)
 {
   _perlin2d->SetSeed(seed);
   _perlin3d->SetSeed(seed);
+
+  BlockProducer::Instance().AddBlock(new IronstoneBlock);
+  BlockProducer::Instance().AddBlock(new PumpkinBlock);
+  BlockProducer::Instance().AddBlock(new ObjGrassBlock);
 }
 
 void GeoMaker::CubFilling(cube::Region* rg)
@@ -113,7 +121,7 @@ void GeoMaker::RenderFilling(cube::Region* rg)
         {
           osg::Vec3d cpos = rg->GetPosition() + osg::Vec3d(i + 0.1f, j + 0.1f, gIndex * REGION_WIDTH + k + 0.1f);
           cube::CubRegion cubReg = RegionManager::Instance().GetCub(cpos.x(), cpos.y(), cpos.z());
-          if(cubReg.GetCubType() == cube::Block::Air)
+          if(cubReg.GetCubType() == cube::Block::Air || cubReg.GetCubType() == cube::Block::ObjGrass)
           {
             for(int s = CubInfo::FirstSide; s <= CubInfo::EndSide; s++)
             {

@@ -485,6 +485,30 @@
 				RelativePath=".\blocks\include\baseBlock.h"
 				>
 			</File>
+			<File
+				RelativePath=".\blocks\src\ironstoneBlock.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\blocks\include\ironstoneBlock.h"
+				>
+			</File>
+			<File
+				RelativePath=".\blocks\src\objGrassBlock.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\blocks\include\objGrassBlock.h"
+				>
+			</File>
+			<File
+				RelativePath=".\blocks\src\pumpkinBlock.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\blocks\include\pumpkinBlock.h"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>
