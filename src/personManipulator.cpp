@@ -252,10 +252,10 @@ void PersonManipulator::calcStep(osg::Vec3d vDir, osgGA::GUIActionAdapter& us)
   cube::World& world = cube::World::Instance();
   osg::Vec3d newEye = _eye;
 
-  if(RegionManager::Instance().GetCub(_eye.x() + vDir.x(), _eye.y(), _eye.z() - (PERSON_HEIGHT-1)).GetCubType() == cube::Cub::Air)
+  if(RegionManager::Instance().GetCub(_eye.x() + vDir.x(), _eye.y(), _eye.z() - (PERSON_HEIGHT-1)).GetCubType() == cube::Block::Air)
     newEye.x() += vDir.x() - dx;
 
-  if(RegionManager::Instance().GetCub(_eye.x(), _eye.y() + vDir.y(), _eye.z() - (PERSON_HEIGHT-1)).GetCubType() == cube::Cub::Air)
+  if(RegionManager::Instance().GetCub(_eye.x(), _eye.y() + vDir.y(), _eye.z() - (PERSON_HEIGHT-1)).GetCubType() == cube::Block::Air)
     newEye.y() += vDir.y() - dy;
 
   //if(newEye.x() > 15) newEye.x() -= 15;
@@ -308,7 +308,7 @@ bool PersonManipulator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
       {
         newEye = _eye + vDir * k;
         cube::CubRegion cubReg = RegionManager::Instance().GetCub(newEye.x(), newEye.y(), newEye.z());
-        if(cubReg.GetCubType() != cube::Cub::Air)
+        if(cubReg.GetCubType() != cube::Block::Air)
         {
           found = true;
           break;
@@ -323,7 +323,7 @@ bool PersonManipulator::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
         }
         else if(ea.getButtonMask() & osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON)
         {
-          world.AddCub(newEye, (Cub::CubeType)_cubType);
+          world.AddCub(newEye, (Block::BlockType)_cubType);
         }
       }
 
@@ -405,13 +405,13 @@ bool PersonManipulator::handleFrame( const osgGA::GUIEventAdapter& ea, osgGA::GU
       osg::Vec3d prevEye = _eye;
       cube::CubRegion cubReg = RegionManager::Instance().GetCub(prevEye.x(), prevEye.y(), prevEye.z() - PERSON_HEIGHT);
 
-      if(cubReg.GetCubType() == cube::Cub::Air)
+      if(cubReg.GetCubType() == cube::Block::Air)
       {
         prevEye += osg::Vec3d(0.0, 0.0, -5.0) * _delta_frame_time;
 
         cube::CubRegion newcubReg = RegionManager::Instance().GetCub(prevEye.x(), prevEye.y(), prevEye.z() - PERSON_HEIGHT);
 
-        if(cubReg.GetCubType() == cube::Cub::Air)
+        if(cubReg.GetCubType() == cube::Block::Air)
           setTransformation(prevEye, _rotation);
         else
         {

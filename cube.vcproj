@@ -264,7 +264,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				EnableIntrinsicFunctions="false"
-				AdditionalIncludeDirectories="./include;&quot;..\..\..\3rdparty\x64\osg-3.0.0\include&quot;"
+				AdditionalIncludeDirectories="./include;./blocks/include;&quot;..\..\..\3rdparty\x64\osg-3.0.0\include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -475,6 +475,14 @@
 			</File>
 			<File
 				RelativePath=".\include\perlin.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="blocks"
+			>
+			<File
+				RelativePath=".\blocks\include\baseBlock.h"
 				>
 			</File>
 		</Filter>

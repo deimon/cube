@@ -28,10 +28,10 @@ void GeoMaker::CubFilling(cube::Region* rg)
         for(int j = 0; j < REGION_WIDTH; j++)
         {
           cube::CubRegion cubReg = rg->GetCub(i, j, k);
-          if(cubReg.GetCubType() != cube::Cub::Air && 
+          if(cubReg.GetCubType() != cube::Block::Air && 
             _perlin3d->Get((float)(i + rg->GetX() * REGION_WIDTH)/30.0f, (float)(j + rg->GetY() * REGION_WIDTH)/30.0f, (float)k/20.0f) < -0.4f)
           {
-            cubReg.SetCubType(cube::Cub::Air);
+            cubReg.SetCubType(cube::Block::Air);
 
             if(cubReg.GetCubRendered())
             {
@@ -42,8 +42,8 @@ void GeoMaker::CubFilling(cube::Region* rg)
               rg->SetHeight(i,j, k - 1);
           }
           else
-            if(k == rg->GetHeight(i, j) && cubReg.GetCubType() == cube::Cub::Ground)
-              cubReg.SetCubType(cube::Cub::Grass);
+            if(k == rg->GetHeight(i, j) && cubReg.GetCubType() == cube::Block::Ground)
+              cubReg.SetCubType(cube::Block::Grass);
         }
       }
     }
@@ -77,12 +77,12 @@ void GeoMaker::LightFilling(cube::Region* rg)
             osg::Vec3d cpos = rg->GetPosition() + osg::Vec3d(i + 0.1f, j + 0.1f, gIndex * REGION_WIDTH + k + 0.1f);
             cube::CubRegion cubReg = RegionManager::Instance().GetCub(cpos.x(), cpos.y(), cpos.z());
 
-            if((cubReg.GetCubType() == cube::Cub::Air || cubReg.GetCubBlend()) && cubReg.GetCubLight() > 0.12f)
+            if((cubReg.GetCubType() == cube::Block::Air || cubReg.GetCubBlend()) && cubReg.GetCubLight() > 0.12f)
             {
               cpos.z() -= 1.0f;
               cube::CubRegion downCubReg = RegionManager::Instance().GetCub(cpos.x(), cpos.y(), cpos.z());
 
-              if(downCubReg.GetCubType() == cube::Cub::Air || downCubReg.GetCubBlend())
+              if(downCubReg.GetCubType() == cube::Block::Air || downCubReg.GetCubBlend())
               {
                 cube::Light::StartFillingLight(downCubReg, cpos, cubReg.GetCubLight(), rg->GetPosition());
                 found = true;
@@ -113,7 +113,7 @@ void GeoMaker::RenderFilling(cube::Region* rg)
         {
           osg::Vec3d cpos = rg->GetPosition() + osg::Vec3d(i + 0.1f, j + 0.1f, gIndex * REGION_WIDTH + k + 0.1f);
           cube::CubRegion cubReg = RegionManager::Instance().GetCub(cpos.x(), cpos.y(), cpos.z());
-          if(cubReg.GetCubType() == cube::Cub::Air)
+          if(cubReg.GetCubType() == cube::Block::Air)
           {
             for(int s = CubInfo::FirstSide; s <= CubInfo::EndSide; s++)
             {
@@ -138,7 +138,7 @@ void GeoMaker::RenderFilling(cube::Region* rg)
 
               cube::CubRegion scubReg = srg->GetCub(vec.x(), vec.y(), vec.z());
 
-              if(!scubReg.GetCubRendered() && scubReg.GetCubType() != cube::Cub::Air)
+              if(!scubReg.GetCubRendered() && scubReg.GetCubType() != cube::Block::Air)
               {
                 scubReg.SetCubRendered(true);
               }
@@ -169,7 +169,7 @@ void GeoMaker::GenNoise(cube::Region* rg)
         continue;
       
       cube::CubRegion cubReg = rg->GetCub(i, j, height);
-      cubReg.SetCubType(cube::Cub::Grass);
+      cubReg.SetCubType(cube::Block::Grass);
       cubReg.SetCubRendered(true);
 
       for(int z = 0; z < height && height < REGION_HEIGHT; z++)
@@ -177,9 +177,9 @@ void GeoMaker::GenNoise(cube::Region* rg)
         cube::CubRegion cubReg = rg->GetCub(i, j, z);
 
         if(z / 85.0 < ((float)rand() / RAND_MAX))
-          cubReg.SetCubType(cube::Cub::Stone);
+          cubReg.SetCubType(cube::Block::Stone);
         else
-          cubReg.SetCubType(cube::Cub::Ground);
+          cubReg.SetCubType(cube::Block::Ground);
       }
     }
   }
@@ -204,14 +204,14 @@ void GeoMaker::GenOffsideNoise(cube::Region* rg)
         continue;
 
       cube::CubRegion cubReg = rg->GetCub(i, j, height);
-      cubReg.SetCubType(cube::Cub::Stone);
+      cubReg.SetCubType(cube::Block::Stone);
       cubReg.SetCubRendered(true);
 
       for(int z = 0; z < height && height < REGION_HEIGHT; z++)
       {
         cube::CubRegion cubReg = rg->GetCub(i, j, z);
 
-        cubReg.SetCubType(cube::Cub::Stone);
+        cubReg.SetCubType(cube::Block::Stone);
       }
     }
   }

@@ -489,7 +489,7 @@ void World::del(cube::CubRegion& cubReg, osg::Vec3d wcpos)
 {
   std::map<osg::Geometry*, RenderGroup::DataUpdate> updateGeomMap;
 
-  cubReg.SetCubType(cube::Cub::Air);
+  cubReg.SetCubType(cube::Block::Air);
   cubReg.SetCubRendered(false);
 
   bool blend = cubReg.GetCubBlend();
@@ -553,7 +553,7 @@ void World::RemoveCub(osg::Vec3d vec)
 
     int geomSideIndex = cvec.z() / GEOM_SIZE;
 
-    if(scubReg.GetCubType() != cube::Cub::Air && 
+    if(scubReg.GetCubType() != cube::Block::Air && 
       (!scubReg.GetCubRendered() || reg != sideReg || geomIndex != geomSideIndex || cubReg.GetCubBlend() != scubReg.GetCubBlend()))
     {
       add(scubReg, wcvec);
@@ -561,7 +561,7 @@ void World::RemoveCub(osg::Vec3d vec)
   }
 }
 
-void World::AddCub(osg::Vec3d vec, Cub::CubeType cubeType)
+void World::AddCub(osg::Vec3d vec, Block::BlockType cubeType)
 {
   cube::Region* reg = RegionManager::Instance().GetRegion(Region::ToRegionIndex(vec.x()), Region::ToRegionIndex(vec.y()));
   osg::Vec3d cvec = vec - reg->GetPosition();
@@ -576,10 +576,10 @@ void World::AddCub(osg::Vec3d vec, Cub::CubeType cubeType)
     cvec -= reg->GetPosition();
     cube::CubRegion scubReg = reg->GetCub(cvec.x(), cvec.y(), cvec.z());
 
-    if(scubReg.GetCubType() == cube::Cub::Air)
+    if(scubReg.GetCubType() == cube::Block::Air)
     {
       scubReg.SetCubType(cubeType);
-      if(cubeType == cube::Cub::Water)
+      if(cubeType == cube::Block::Water)
       {
         scubReg.SetCubBlend(true);
       }
@@ -587,7 +587,7 @@ void World::AddCub(osg::Vec3d vec, Cub::CubeType cubeType)
       {
         //scubReg.GetCubLight() = 0.1f;
 
-        if(scubReg.GetCubType() == cube::Cub::Pumpkin)
+        if(scubReg.GetCubType() == cube::Block::Pumpkin)
         {
           // временный блок
           std::map<osg::Geometry*, RenderGroup::DataUpdate> updateGeomMap;

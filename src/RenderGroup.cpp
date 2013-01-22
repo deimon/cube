@@ -216,7 +216,7 @@ void RenderGroup::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset
   {
     cube::CubRegion cubReg = reg->GetCub(x, y, z + zOffset);
 
-    if(cubReg.GetCubType() == cube::Cub::Air || !cubReg.GetCubRendered() || cubReg.GetCubBlend() != blend) //!!!!!!!
+    if(cubReg.GetCubType() == cube::Block::Air || !cubReg.GetCubRendered() || cubReg.GetCubBlend() != blend) //!!!!!!!
       continue;
 
     osg::Vec3d pos = reg->GetPosition() + osg::Vec3d( x, y, z + zOffset);
@@ -228,10 +228,10 @@ void RenderGroup::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset
       osg::Vec3d sidePos = pos + CubInfo::Instance().GetNormal(cside) + osg::Vec3d(0.1, 0.1, 0.1);
       cube::CubRegion scubReg = RegionManager::Instance().GetCub(sidePos.x(), sidePos.y(), sidePos.z());
 
-      if(  scubReg.GetCubType() == cube::Cub::Air 
-        || scubReg.GetCubType() == cube::Cub::LeavesWood 
-        || scubReg.GetCubType() == cube::Cub::TruncWood
-        || (scubReg.GetCubType() == cube::Cub::Water && cubReg.GetCubType() != cube::Cub::Water))
+      if(  scubReg.GetCubType() == cube::Block::Air 
+        || scubReg.GetCubType() == cube::Block::LeavesWood 
+        || scubReg.GetCubType() == cube::Block::TruncWood
+        || (scubReg.GetCubType() == cube::Block::Water && cubReg.GetCubType() != cube::Block::Water))
       {
         CubInfo::Instance().FillVertCoord(cside, coords, pos);
 

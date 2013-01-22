@@ -112,8 +112,8 @@ namespace cube
     float& GetCubLight() { return _cub._light; }
     float& GetCubLocLight() { return _cub._locLight; }
 
-    const Cub::CubeType& GetCubType() { return _cub._type; }
-    void SetCubType(Cub::CubeType type);
+    const Block::BlockType& GetCubType() { return _cub._type; }
+    void SetCubType(Block::BlockType type);
 
     void SetCubRendered(bool rendered);
     bool GetCubRendered() { return _cub._rendered; }

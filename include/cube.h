@@ -9,6 +9,8 @@
 #include <singleton.h>
 #include <osg/Vec4>
 
+#include <baseBlock.h>
+
 namespace cube
 {
   class CubRegion;
@@ -17,22 +19,9 @@ namespace cube
   {
   public:
 
-    enum CubeType
-    {
-      Air = 0,
-      Ground = 1,
-      Grass = 2,
-      Stone = 3,
-      TruncWood = 4,
-      LeavesWood = 5,
-      Pumpkin = 6,
-      Water = 7
-    };
-  public:
-
     Cub()
       : _rendered(false)
-      , _type(Air)
+      , _type(Block::Air)
       , _blend(false)
       , _light(0.1f)
       , _locLight(0.0f)
@@ -40,7 +29,7 @@ namespace cube
     }
 
   protected:
-    CubeType _type;
+    Block::BlockType _type;
     bool _rendered;
     bool _blend;
     float _light;
@@ -86,18 +75,18 @@ namespace cube
   {
   public:
     typedef std::map<CubInfo::CubeSide, int> SidesTexture;
-    typedef std::map<Cub::CubeType, SidesTexture> CubeTextures;
+    typedef std::map<Block::BlockType, SidesTexture> CubeTextures;
 
     typedef std::map<CubInfo::CubeSide, osg::Vec4d> SidesColor;
-    typedef std::map<Cub::CubeType, SidesColor> CubeColors;
+    typedef std::map<Block::BlockType, SidesColor> CubeColors;
 
     TextureInfo(std::string path, int count);
 
     osg::Texture2D* GetTexture() { return _texture; }
     int GetCount() { return _count; }
 
-    void FillTexCoord(Cub::CubeType cubeType, CubInfo::CubeSide cubeSide, osg::Vec2Array* tcoords);
-    osg::Vec4d& GetSideColor(Cub::CubeType cubeType, CubInfo::CubeSide cubeSide);
+    void FillTexCoord(Block::BlockType cubeType, CubInfo::CubeSide cubeSide, osg::Vec2Array* tcoords);
+    osg::Vec4d& GetSideColor(Block::BlockType cubeType, CubInfo::CubeSide cubeSide);
 
   protected:
     void init();

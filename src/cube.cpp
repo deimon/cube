@@ -209,7 +209,7 @@ TextureInfo::TextureInfo(std::string path, int count)
   _texture->setImage(img);
 }
 
-void TextureInfo::FillTexCoord(Cub::CubeType cubeType, CubInfo::CubeSide cubeSide, osg::Vec2Array* tcoords)
+void TextureInfo::FillTexCoord(Block::BlockType cubeType, CubInfo::CubeSide cubeSide, osg::Vec2Array* tcoords)
 {
   int num = _csTextures[cubeType][cubeSide];
   int yk = num / _count;
@@ -223,7 +223,7 @@ void TextureInfo::FillTexCoord(Cub::CubeType cubeType, CubInfo::CubeSide cubeSid
   tcoords->push_back(osg::Vec2d(step * xk    , step * (yk+1)));
 }
 
-osg::Vec4d& TextureInfo::GetSideColor(Cub::CubeType cubeType, CubInfo::CubeSide cubeSide)
+osg::Vec4d& TextureInfo::GetSideColor(Block::BlockType cubeType, CubInfo::CubeSide cubeSide)
 {
   return _csColor[cubeType][cubeSide];
 }
@@ -233,61 +233,61 @@ void TextureInfo::init()
 {
   for(int ct = 0; ct < CUBE_TYPE; ct++)
     for(int cs = 0; cs < CUBE_TYPE; cs++)
-      _csColor[(Cub::CubeType)ct][(CubInfo::CubeSide)cs] = osg::Vec4d(1.0, 1.0, 1.0, 1.0);
+      _csColor[(Block::BlockType)ct][(CubInfo::CubeSide)cs] = osg::Vec4d(1.0, 1.0, 1.0, 1.0);
 
-  _csTextures[Cub::Ground][CubInfo::X_BACK] = 242;
-  _csTextures[Cub::Ground][CubInfo::Y_BACK] = 242;
-  _csTextures[Cub::Ground][CubInfo::Z_BACK] = 242;
-  _csTextures[Cub::Ground][CubInfo::X_FACE] = 242;
-  _csTextures[Cub::Ground][CubInfo::Y_FACE] = 242;
-  _csTextures[Cub::Ground][CubInfo::Z_FACE] = 242;
+  _csTextures[Block::Ground][CubInfo::X_BACK] = 242;
+  _csTextures[Block::Ground][CubInfo::Y_BACK] = 242;
+  _csTextures[Block::Ground][CubInfo::Z_BACK] = 242;
+  _csTextures[Block::Ground][CubInfo::X_FACE] = 242;
+  _csTextures[Block::Ground][CubInfo::Y_FACE] = 242;
+  _csTextures[Block::Ground][CubInfo::Z_FACE] = 242;
 
-  _csTextures[Cub::Grass][CubInfo::X_BACK] = 243;
-  _csTextures[Cub::Grass][CubInfo::Y_BACK] = 243;
-  _csTextures[Cub::Grass][CubInfo::Z_BACK] = 242;
-  _csTextures[Cub::Grass][CubInfo::X_FACE] = 243;
-  _csTextures[Cub::Grass][CubInfo::Y_FACE] = 243;
-  _csTextures[Cub::Grass][CubInfo::Z_FACE] = 240;
-  _csColor[Cub::Grass][CubInfo::Z_FACE] = osg::Vec4d(0.68, 0.94, 0.47, 1.0);
+  _csTextures[Block::Grass][CubInfo::X_BACK] = 243;
+  _csTextures[Block::Grass][CubInfo::Y_BACK] = 243;
+  _csTextures[Block::Grass][CubInfo::Z_BACK] = 242;
+  _csTextures[Block::Grass][CubInfo::X_FACE] = 243;
+  _csTextures[Block::Grass][CubInfo::Y_FACE] = 243;
+  _csTextures[Block::Grass][CubInfo::Z_FACE] = 240;
+  _csColor[Block::Grass][CubInfo::Z_FACE] = osg::Vec4d(0.68, 0.94, 0.47, 1.0);
 
-  _csTextures[Cub::Stone][CubInfo::X_BACK] = 241;
-  _csTextures[Cub::Stone][CubInfo::Y_BACK] = 241;
-  _csTextures[Cub::Stone][CubInfo::Z_BACK] = 241;
-  _csTextures[Cub::Stone][CubInfo::X_FACE] = 241;
-  _csTextures[Cub::Stone][CubInfo::Y_FACE] = 241;
-  _csTextures[Cub::Stone][CubInfo::Z_FACE] = 241;
+  _csTextures[Block::Stone][CubInfo::X_BACK] = 241;
+  _csTextures[Block::Stone][CubInfo::Y_BACK] = 241;
+  _csTextures[Block::Stone][CubInfo::Z_BACK] = 241;
+  _csTextures[Block::Stone][CubInfo::X_FACE] = 241;
+  _csTextures[Block::Stone][CubInfo::Y_FACE] = 241;
+  _csTextures[Block::Stone][CubInfo::Z_FACE] = 241;
 
-  _csTextures[Cub::TruncWood][CubInfo::X_BACK] = 228;
-  _csTextures[Cub::TruncWood][CubInfo::Y_BACK] = 228;
-  _csTextures[Cub::TruncWood][CubInfo::Z_BACK] = 229;
-  _csTextures[Cub::TruncWood][CubInfo::X_FACE] = 228;
-  _csTextures[Cub::TruncWood][CubInfo::Y_FACE] = 228;
-  _csTextures[Cub::TruncWood][CubInfo::Z_FACE] = 229;
+  _csTextures[Block::TruncWood][CubInfo::X_BACK] = 228;
+  _csTextures[Block::TruncWood][CubInfo::Y_BACK] = 228;
+  _csTextures[Block::TruncWood][CubInfo::Z_BACK] = 229;
+  _csTextures[Block::TruncWood][CubInfo::X_FACE] = 228;
+  _csTextures[Block::TruncWood][CubInfo::Y_FACE] = 228;
+  _csTextures[Block::TruncWood][CubInfo::Z_FACE] = 229;
 
-  _csTextures[Cub::LeavesWood][CubInfo::X_BACK] = 196;
-  _csTextures[Cub::LeavesWood][CubInfo::Y_BACK] = 196;
-  _csTextures[Cub::LeavesWood][CubInfo::Z_BACK] = 196;
-  _csTextures[Cub::LeavesWood][CubInfo::X_FACE] = 196;
-  _csTextures[Cub::LeavesWood][CubInfo::Y_FACE] = 196;
-  _csTextures[Cub::LeavesWood][CubInfo::Z_FACE] = 196;
-  _csColor[Cub::LeavesWood][CubInfo::X_BACK] = osg::Vec4d(0.68, 0.94, 0.47, 1.0);
-  _csColor[Cub::LeavesWood][CubInfo::Y_BACK] = osg::Vec4d(0.68, 0.94, 0.47, 1.0);
-  _csColor[Cub::LeavesWood][CubInfo::Z_BACK] = osg::Vec4d(0.68, 0.94, 0.47, 1.0);
-  _csColor[Cub::LeavesWood][CubInfo::X_FACE] = osg::Vec4d(0.68, 0.94, 0.47, 1.0);
-  _csColor[Cub::LeavesWood][CubInfo::Y_FACE] = osg::Vec4d(0.68, 0.94, 0.47, 1.0);
-  _csColor[Cub::LeavesWood][CubInfo::Z_FACE] = osg::Vec4d(0.68, 0.94, 0.47, 1.0);
+  _csTextures[Block::LeavesWood][CubInfo::X_BACK] = 196;
+  _csTextures[Block::LeavesWood][CubInfo::Y_BACK] = 196;
+  _csTextures[Block::LeavesWood][CubInfo::Z_BACK] = 196;
+  _csTextures[Block::LeavesWood][CubInfo::X_FACE] = 196;
+  _csTextures[Block::LeavesWood][CubInfo::Y_FACE] = 196;
+  _csTextures[Block::LeavesWood][CubInfo::Z_FACE] = 196;
+  _csColor[Block::LeavesWood][CubInfo::X_BACK] = osg::Vec4d(0.68, 0.94, 0.47, 1.0);
+  _csColor[Block::LeavesWood][CubInfo::Y_BACK] = osg::Vec4d(0.68, 0.94, 0.47, 1.0);
+  _csColor[Block::LeavesWood][CubInfo::Z_BACK] = osg::Vec4d(0.68, 0.94, 0.47, 1.0);
+  _csColor[Block::LeavesWood][CubInfo::X_FACE] = osg::Vec4d(0.68, 0.94, 0.47, 1.0);
+  _csColor[Block::LeavesWood][CubInfo::Y_FACE] = osg::Vec4d(0.68, 0.94, 0.47, 1.0);
+  _csColor[Block::LeavesWood][CubInfo::Z_FACE] = osg::Vec4d(0.68, 0.94, 0.47, 1.0);
 
-  _csTextures[Cub::Pumpkin][CubInfo::X_BACK] = 134;
-  _csTextures[Cub::Pumpkin][CubInfo::Y_BACK] = 134;
-  _csTextures[Cub::Pumpkin][CubInfo::Z_BACK] = 150;
-  _csTextures[Cub::Pumpkin][CubInfo::X_FACE] = 136;
-  _csTextures[Cub::Pumpkin][CubInfo::Y_FACE] = 134;
-  _csTextures[Cub::Pumpkin][CubInfo::Z_FACE] = 150;
+  _csTextures[Block::Pumpkin][CubInfo::X_BACK] = 134;
+  _csTextures[Block::Pumpkin][CubInfo::Y_BACK] = 134;
+  _csTextures[Block::Pumpkin][CubInfo::Z_BACK] = 150;
+  _csTextures[Block::Pumpkin][CubInfo::X_FACE] = 136;
+  _csTextures[Block::Pumpkin][CubInfo::Y_FACE] = 134;
+  _csTextures[Block::Pumpkin][CubInfo::Z_FACE] = 150;
 
-  _csTextures[Cub::Water][CubInfo::X_BACK] = 61;
-  _csTextures[Cub::Water][CubInfo::Y_BACK] = 61;
-  _csTextures[Cub::Water][CubInfo::Z_BACK] = 61;
-  _csTextures[Cub::Water][CubInfo::X_FACE] = 61;
-  _csTextures[Cub::Water][CubInfo::Y_FACE] = 61;
-  _csTextures[Cub::Water][CubInfo::Z_FACE] = 61;
+  _csTextures[Block::Water][CubInfo::X_BACK] = 61;
+  _csTextures[Block::Water][CubInfo::Y_BACK] = 61;
+  _csTextures[Block::Water][CubInfo::Z_BACK] = 61;
+  _csTextures[Block::Water][CubInfo::X_FACE] = 61;
+  _csTextures[Block::Water][CubInfo::Y_FACE] = 61;
+  _csTextures[Block::Water][CubInfo::Z_FACE] = 61;
 }

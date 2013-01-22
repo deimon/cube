@@ -81,9 +81,9 @@ osg::Group* GetGeometry()
 
         cube::CubInfo::Instance().FillVertCoord(cside, coords, pos);
 
-        texInfo->FillTexCoord(cube::Cub::LeavesWood, cside, tcoords);
+        texInfo->FillTexCoord(cube::Block::LeavesWood, cside, tcoords);
 
-        osg::Vec4d color = texInfo->GetSideColor(cube::Cub::LeavesWood, cside);
+        osg::Vec4d color = texInfo->GetSideColor(cube::Block::LeavesWood, cside);
         colours->push_back(color);
         normals->push_back(cube::CubInfo::Instance().GetNormal(cside));
       }

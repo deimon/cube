@@ -62,7 +62,7 @@ void Region::CubFilling()
           stream >> ch;
 
           cube::CubRegion cubReg = this->GetCub(i, j, k);
-          cubReg.SetCubType((Cub::CubeType)ch);
+          cubReg.SetCubType((Block::BlockType)ch);
         }
 
     stream.close();
@@ -168,14 +168,14 @@ void Region::ResetGeom()
 //*******************************************************
 //**class CubRegion
 
-void CubRegion::SetCubType(Cub::CubeType type)
+void CubRegion::SetCubType(Block::BlockType type)
 {
   if(_cub._type != type)
   {
-    if(type == cube::Cub::Air)
+    if(type == cube::Block::Air)
       _region->_airCubCount[0][_geomIndex]++;
     else
-      if(_cub._type == cube::Cub::Air)
+      if(_cub._type == cube::Block::Air)
         _region->_airCubCount[0][_geomIndex]--;
 
     _cub._type = type;

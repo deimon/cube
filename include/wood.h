@@ -22,9 +22,9 @@ namespace cube
       {
         cube::CubRegion cubReg = rg->GetCub(rgx, rgy, rgz + height);
 
-        if(cubReg.GetCubType() == cube::Cub::Air)
+        if(cubReg.GetCubType() == cube::Block::Air)
         {
-          cubReg.SetCubType(cube::Cub::TruncWood);
+          cubReg.SetCubType(cube::Block::TruncWood);
           cubReg.SetCubRendered(true);
         }
 
@@ -50,13 +50,13 @@ namespace cube
         float cy = y - rg->GetPosition().y();
         cube::CubRegion cubReg = rg->GetCub(cx, cy, z);
 
-        if(  cubReg.GetCubType() == cube::Cub::Air 
-          || cubReg.GetCubType() == cube::Cub::TruncWood 
-          || cubReg.GetCubType() == cube::Cub::LeavesWood)
+        if(  cubReg.GetCubType() == cube::Block::Air 
+          || cubReg.GetCubType() == cube::Block::TruncWood 
+          || cubReg.GetCubType() == cube::Block::LeavesWood)
         {
-          if(cubReg.GetCubType() == cube::Cub::Air)
+          if(cubReg.GetCubType() == cube::Block::Air)
           {
-            cubReg.SetCubType(cube::Cub::LeavesWood);
+            cubReg.SetCubType(cube::Block::LeavesWood);
             cubReg.SetCubRendered(true);
           }
 
