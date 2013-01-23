@@ -225,10 +225,10 @@ void RenderGroup::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset
     if(cubReg.GetCubType() == cube::Block::ObjGrass)
     {
       osg::Vec4d color = _texInfo->GetSideColor(cubReg.GetCubType(), CubInfo::X_BACK);
+      osg::Vec3d rndPos = pos - osg::Vec3d(0.2, 0.2, 0.0) + osg::Vec3d(MathUtils::random() * 0.4, MathUtils::random() * 0.4, 0.0);
 
       for(int i = 0; i < 4; i++)
       {
-        osg::Vec3d rndPos = pos - osg::Vec3d(0.2, 0.2, 0.0) + osg::Vec3d(MathUtils::random() * 0.4, MathUtils::random() * 0.4, 0.0);
         CubInfo::Instance().CrossFillVertCoord(coords, rndPos, i);
 
         _texInfo->FillTexCoord(cubReg.GetCubType(), CubInfo::X_BACK, tcoords);
