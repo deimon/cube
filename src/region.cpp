@@ -8,6 +8,10 @@
 #include <sstream>
 #include <fstream>
 
+#include <ironstoneBlock.h>
+#include <pumpkinBlock.h>
+#include <objGrassBlock.h>
+
 using namespace cube;
 
 int Region::countRegion = 0;
@@ -80,7 +84,7 @@ void Region::CubFilling()
           cube::MathUtils::random(0, REGION_WIDTH));
       }
 
-      BlockProducer::Instance().Generate(this);
+      BLOCKPRODUCER.Generate(this);
     }
   }
 

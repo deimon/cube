@@ -1,7 +1,7 @@
 #ifndef __BASEBLOCK_H__
 #define __BASEBLOCK_H__
 
-#include <vector>
+#include <map>
 #include "singleton.h"
 
 namespace cube
@@ -37,29 +37,47 @@ namespace cube
       BlockType _type;
   };
 
-  class BlockProducer: public utils::Singleton<BlockProducer>
+  class BlockProducer
   {
   public:
     
     ~BlockProducer()
     {
-      for(int i = 0; i < _bloks.size(); i++)
-        delete _bloks[i];
+      std::map<std::string, Block*>::iterator it = _bloks.begin();
+      while(_bloks.begin() != _bloks.end())
+      {
+        delete it->second;
+        _bloks.erase(it);
 
-      _bloks.clear();
+        it = _bloks.begin();
+      }
     }
 
-    void AddBlock(Block* block) { _bloks.push_back(block); }
+    void AddBlock(const std::string& name, Block* block) { if(_bloks.count(name) == 0) _bloks[name] = block; }
 
     void Generate(Region* reg)
     {
-      for(int i = 0; i < _bloks.size(); i++)
-        _bloks[i]->Generate(reg);
+      std::map<std::string, Block*>::iterator it = _bloks.begin();
+      for(; it != _bloks.end(); it++)
+        it->second->Generate(reg);
     }
 
   private:
-    std::vector<Block*> _bloks;
+    std::map<std::string, Block*> _bloks;
   };
+
+  static BlockProducer BLOCKPRODUCER;
+
+  class RegisterBlock
+  {
+  public: 
+    RegisterBlock(const std::string& name, Block* block)
+    {
+      BLOCKPRODUCER.AddBlock(name, block);
+    }
+  };
+
+  #define REGISTER_BLOCK(TYPE) static RegisterBlock rb##TYPE(#TYPE, new TYPE);
 }
 
 #endif

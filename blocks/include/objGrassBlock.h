@@ -15,6 +15,7 @@ namespace cube
 
   protected:
   };
+  REGISTER_BLOCK(ObjGrassBlock);
 }
 
 #endif

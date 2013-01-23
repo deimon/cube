@@ -2,9 +2,6 @@
 #include <regionManager.h>
 #include <light.h>
 #include <baseBlock.h>
-#include <ironstoneBlock.h>
-#include <pumpkinBlock.h>
-#include <objGrassBlock.h>
 
 using namespace cube;
 
@@ -15,10 +12,6 @@ void GeoMaker::InitPerlin(int seed)
 {
   _perlin2d->SetSeed(seed);
   _perlin3d->SetSeed(seed);
-
-  BlockProducer::Instance().AddBlock(new IronstoneBlock);
-  BlockProducer::Instance().AddBlock(new PumpkinBlock);
-  BlockProducer::Instance().AddBlock(new ObjGrassBlock);
 }
 
 void GeoMaker::CubFilling(cube::Region* rg)
