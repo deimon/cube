@@ -23,7 +23,8 @@ namespace cube
       Pumpkin = 6,
       Water = 7,
       Ironstone = 8,
-      ObjGrass = 9
+      ObjGrass = 9,
+      Screamer = 10
     };
 
     Block(BlockType type)
@@ -32,6 +33,8 @@ namespace cube
     }
 
     virtual void Generate(Region* reg) = 0;
+
+    virtual void Update() {};
 
     protected:
       BlockType _type;

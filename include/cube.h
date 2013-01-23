@@ -2,7 +2,7 @@
 #define __CUBE_H__
 
 #define CUBE_SIZE 1
-#define CUBE_TYPE 10
+#define CUBE_TYPE 11
 
 #include <iostream>
 #include <osg/Texture2D>

@@ -323,4 +323,11 @@ void TextureInfo::init()
 
   _csTextures[Block::ObjGrass][CubInfo::X_BACK] = 215;
   _csColor[Block::ObjGrass][CubInfo::X_BACK] = osg::Vec4d(0.51, 0.91, 0.19, 1.0);
+
+  _csTextures[Block::Screamer][CubInfo::X_BACK] = 151;
+  _csTextures[Block::Screamer][CubInfo::Y_BACK] = 151;
+  _csTextures[Block::Screamer][CubInfo::Z_BACK] = 151;
+  _csTextures[Block::Screamer][CubInfo::X_FACE] = 151;
+  _csTextures[Block::Screamer][CubInfo::Y_FACE] = 151;
+  _csTextures[Block::Screamer][CubInfo::Z_FACE] = 151;
 }

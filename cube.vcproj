@@ -509,6 +509,14 @@
 				RelativePath=".\blocks\include\pumpkinBlock.h"
 				>
 			</File>
+			<File
+				RelativePath=".\blocks\src\screamerBlock.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\blocks\include\screamerBlock.h"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>
