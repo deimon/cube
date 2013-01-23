@@ -80,8 +80,8 @@ void Region::CubFilling()
       for(int k = 0; k < cube::MathUtils::random(0, 32); k++)
       {
         cube::Wood::Generate(RegionManager::Instance(), this, 
-          cube::MathUtils::random(0, REGION_WIDTH),
-          cube::MathUtils::random(0, REGION_WIDTH));
+          cube::MathUtils::random(0, REGION_WIDTH - 1),
+          cube::MathUtils::random(0, REGION_WIDTH - 1));
       }
 
       BLOCKPRODUCER.Generate(this);

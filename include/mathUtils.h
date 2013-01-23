@@ -3,6 +3,7 @@
 
 #include <region.h>
 #include <osg/Vec3>
+#include <osg/Math>
 #include <world.h>
 
 namespace cube
@@ -29,7 +30,7 @@ namespace cube
 
     static int random(int a, int b)
     {
-      return a + ((float)rand() / RAND_MAX) * (b - a);
+      return osg::round(a + ((float)rand() / RAND_MAX) * (b - a));
     }
   };
 }
