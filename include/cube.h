@@ -36,6 +36,7 @@ namespace cube
     float _locLight;
 
     friend class CubRegion;
+    friend class Region;
   };
 
   class CubInfo: public utils::Singleton<CubInfo>

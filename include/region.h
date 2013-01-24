@@ -62,6 +62,8 @@ namespace cube
 
     void ResetGeom();
 
+    void UpdateCubs(double curTime, RenderGroup::DataUpdateContainer* dataUpdate);
+
     std::vector<std::pair<int, osg::Geometry*>> _geomToClear;
 
   protected:
@@ -97,6 +99,18 @@ namespace cube
     osg::Vec3d _position;
 
     osg::Geometry* _geom[2][GEOM_COUNT];
+
+    struct CubUpdateData
+    {
+      osg::Vec3d wpos;
+      CubRegion* cubReg;
+      double nextTimeUpdate;
+    };
+
+    std::map<Cub*, CubUpdateData> _updatedCubs;
+    std::vector<Cub*> _deleteUpdatedCubs;
+
+    friend CubRegion;
   };
 
   class CubRegion
@@ -120,6 +134,9 @@ namespace cube
 
     void SetCubBlend(bool blend);
     bool GetCubBlend() { return _cub._blend; }
+
+    void Updated(osg::Vec3d wcpos, double nextTimeUpdate);
+    void NotUpdated();
 
   protected:
     Region* _region;

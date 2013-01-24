@@ -27,7 +27,7 @@ namespace cube
 
     osg::Group* GetGeometry();
     void CreateMap(int rnd);
-    void update();
+    void update(double time);
 
     void del(cube::CubRegion& cubReg, osg::Vec3d wcpos);
     void add(cube::CubRegion& cubReg, osg::Vec3d wcpos, bool recalcLight = false);

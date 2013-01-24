@@ -12,10 +12,12 @@ namespace cube
     ScreamerBlock();
 
     void Generate(Region* reg);
+    
+    void Update(double curTime, cube::CubRegion& cubReg, osg::Vec3d wcpos, RenderGroup::DataUpdateContainer* dataUpdate);
 
   protected:
   };
-  REGISTER_BLOCK(ScreamerBlock);
+  REGISTER_BLOCK(Block::Screamer, ScreamerBlock);
 }
 
 #endif

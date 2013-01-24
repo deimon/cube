@@ -46,15 +46,17 @@ namespace cube
       bool _blend;
     };
 
+    typedef std::map<osg::Geometry*, RenderGroup::DataUpdate> DataUpdateContainer;
+
     void Update();
-    void PushToUpdate(std::map<osg::Geometry*, RenderGroup::DataUpdate>* updateGeomMap);
+    void PushToUpdate(DataUpdateContainer* updateGeomMap);
     void ClearDataUpdate() { _dataUpdate.clear(); }
 
     void UpdateRegionGeoms(cube::Region* rg, bool addToScene);
     void FillRegionGeoms(cube::Region* rg);
     void ClearRegionGeoms(cube::Region* rg);
 
-    std::vector<DataUpdate> _dataUpdate;
+    DataUpdateContainer _dataUpdate;
 
   protected:
     void updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset, bool blend = false, bool updateScene = false);

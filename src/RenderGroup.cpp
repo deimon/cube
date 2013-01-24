@@ -18,7 +18,7 @@ public:
   WorldCallback(cube::World *world): _world(world) {};
   virtual void operator()(osg::Node* node, osg::NodeVisitor* nv)
   {
-    _world->update();
+    _world->update(nv->getFrameStamp()->getReferenceTime());
     traverse(node, nv);
   }
 
@@ -31,7 +31,7 @@ RenderGroup::RenderGroup(cube::World *world)
   setUpdateCallback(new WorldCallback(world));
   removeChildren(0, getNumChildren());
 
-  _texInfo = new TextureInfo("./res/mc16-7.png", 16);
+  _texInfo = new TextureInfo("./res/mc16.png", 16);
   getOrCreateStateSet()->setTextureAttributeAndModes(0, _texInfo->GetTexture(), osg::StateAttribute::ON);
 
   _geode[0] = new osg::Geode;
@@ -65,19 +65,21 @@ RenderGroup::RenderGroup(cube::World *world)
 
 void RenderGroup::Update()
 {
-  for(int i = 0; i < _dataUpdate.size(); i++)
+  DataUpdateContainer::iterator i = _dataUpdate.begin();
+  for(; i != _dataUpdate.end(); i++)
   {
     //if(_dataUpdate[i]._geom)
-    updateGeom(_dataUpdate[i]._geom, _dataUpdate[i]._reg, _dataUpdate[i]._zCubOff, _dataUpdate[i]._blend, true);
+    updateGeom(i->second._geom, i->second._reg, i->second._zCubOff, i->second._blend, true);
   }
   _dataUpdate.clear();
 }
 
- void RenderGroup::PushToUpdate(std::map<osg::Geometry*, RenderGroup::DataUpdate>* updateGeomMap)
+ void RenderGroup::PushToUpdate(DataUpdateContainer* updateGeomMap)
  {
-   std::map<osg::Geometry*, RenderGroup::DataUpdate>::iterator i = updateGeomMap->begin();
+   DataUpdateContainer::iterator i = updateGeomMap->begin();
    for(; i != updateGeomMap->end(); i++)
-     _dataUpdate.push_back(i->second);
+     if(_dataUpdate.find(i->first) == _dataUpdate.end())
+      _dataUpdate[i->first] = i->second;
  }
 
 void RenderGroup::UpdateRegionGeoms(cube::Region* rg, bool addToScene)

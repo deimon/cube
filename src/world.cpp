@@ -151,7 +151,7 @@ World::World()
   _cgThread = new CreateGeomThread(this);
 }
 
-void World::update()
+void World::update(double time)
 {
   if(_newMap)
   {
@@ -217,6 +217,23 @@ void World::update()
     _cgThread->Calculate();
   }
 
+  int curRegX = Region::ToRegionIndex(_you.x());
+  int curRegY = Region::ToRegionIndex(_you.y());
+
+  {
+    RenderGroup::DataUpdateContainer updateGeomMap;
+
+    for(int i = -1; i <= 1; i++)
+    for(int j = -1; j <= 1; j++)
+    {
+      cube::Region* reg = RegionManager::Instance().ContainsRegion(curRegX, curRegY);
+      if(reg && reg->InScene())
+        reg->UpdateCubs(time, &updateGeomMap);
+    }
+
+    _renderGroup->PushToUpdate(&updateGeomMap);
+  }
+
   // пересоздание измененных геометрий (удаление/добавление кубика, распространение света и т.д.)
   _renderGroup->Update();
 
@@ -260,9 +277,6 @@ void World::update()
   _frame %= 5;
 
   // добавление в очередь на обработку регионов появляющихся или исчезающих на горизонте
-  int curRegX = Region::ToRegionIndex(_you.x());
-  int curRegY = Region::ToRegionIndex(_you.y());
-
   bool newRegionList = false;
 
   if(curRegX > _prevRegX)
@@ -487,7 +501,7 @@ void World::update()
 
 void World::del(cube::CubRegion& cubReg, osg::Vec3d wcpos)
 {
-  std::map<osg::Geometry*, RenderGroup::DataUpdate> updateGeomMap;
+  RenderGroup::DataUpdateContainer updateGeomMap;
 
   cubReg.SetCubType(cube::Block::Air);
   cubReg.SetCubRendered(false);
@@ -507,7 +521,7 @@ void World::del(cube::CubRegion& cubReg, osg::Vec3d wcpos)
 
 void World::add(cube::CubRegion& cubReg, osg::Vec3d wcpos, bool recalcLight)
 {
-  std::map<osg::Geometry*, RenderGroup::DataUpdate> updateGeomMap;
+  RenderGroup::DataUpdateContainer updateGeomMap;
 
   if(!cubReg.GetCubRendered())
   {
@@ -590,7 +604,7 @@ void World::AddCub(osg::Vec3d vec, Block::BlockType cubeType)
         if(scubReg.GetCubType() == cube::Block::Pumpkin)
         {
           // временный блок
-          std::map<osg::Geometry*, RenderGroup::DataUpdate> updateGeomMap;
+          RenderGroup::DataUpdateContainer updateGeomMap;
 
           cube::Light::fillingLocLight(scubReg, vec + norm, 1.0f, &updateGeomMap);
 

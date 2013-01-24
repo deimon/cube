@@ -171,6 +171,32 @@ void Region::ResetGeom()
   }
 }
 
+void Region::UpdateCubs(double curTime, RenderGroup::DataUpdateContainer* dataUpdate)
+{
+  std::map<Cub*, CubUpdateData>::iterator it = _updatedCubs.begin();
+  for(;it != _updatedCubs.end(); it++)
+  {
+    if(it->second.nextTimeUpdate < curTime)
+    {
+      Block* block = BLOCKPRODUCER.GetBlock(it->first->_type);
+      if(block)
+      {
+        block->Update(curTime, *(it->second.cubReg), it->second.wpos, dataUpdate);
+      }
+    }
+  }
+
+  for(int i = 0; i < _deleteUpdatedCubs.size(); i++)
+  {
+    std::map<Cub*, Region::CubUpdateData>::iterator it = _updatedCubs.find(_deleteUpdatedCubs[i]);
+    if(it != _updatedCubs.end())
+    {
+      delete it->second.cubReg;
+      _updatedCubs.erase(it);
+    }
+  }
+}
+
 //*******************************************************
 //**class CubRegion
 
@@ -209,4 +235,16 @@ void CubRegion::SetCubBlend(bool blend)
 
     _cub._blend = blend;
   }
+}
+
+void CubRegion::Updated(osg::Vec3d wcpos, double nextTimeUpdate)
+{
+  _region->_updatedCubs[&_cub].wpos = wcpos;
+  _region->_updatedCubs[&_cub].nextTimeUpdate = nextTimeUpdate;
+  _region->_updatedCubs[&_cub].cubReg = new CubRegion(_region, _cub, _geomIndex);
+}
+
+void CubRegion::NotUpdated()
+{
+  _region->_deleteUpdatedCubs.push_back(&_cub);
 }

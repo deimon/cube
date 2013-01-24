@@ -15,7 +15,7 @@ namespace cube
 
   protected:
   };
-  REGISTER_BLOCK(IronstoneBlock);
+  REGISTER_BLOCK(Block::Ironstone, IronstoneBlock);
 }
 
 #endif

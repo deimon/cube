@@ -15,7 +15,7 @@ namespace cube
 
   protected:
   };
-  REGISTER_BLOCK(ObjGrassBlock);
+  REGISTER_BLOCK(Block::ObjGrass, ObjGrassBlock);
 }
 
 #endif

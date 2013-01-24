@@ -15,7 +15,7 @@ namespace cube
 
   protected:
   };
-  REGISTER_BLOCK(PumpkinBlock);
+  REGISTER_BLOCK(Block::Pumpkin, PumpkinBlock);
 }
 
 #endif

@@ -3,10 +3,17 @@
 
 #include <map>
 #include "singleton.h"
+#include "RenderGroup.h"
+
+namespace osg
+{
+  class Vec3d;
+}
 
 namespace cube
 {
   class Region;
+  class CubRegion;
 
   class Block
   {
@@ -34,7 +41,7 @@ namespace cube
 
     virtual void Generate(Region* reg) = 0;
 
-    virtual void Update() {};
+    virtual void Update(double curTime, cube::CubRegion& cubReg, osg::Vec3d wcpos, RenderGroup::DataUpdateContainer* dataUpdate) {};
 
     protected:
       BlockType _type;
@@ -46,7 +53,7 @@ namespace cube
     
     ~BlockProducer()
     {
-      std::map<std::string, Block*>::iterator it = _bloks.begin();
+      std::map<Block::BlockType, Block*>::iterator it = _bloks.begin();
       while(_bloks.begin() != _bloks.end())
       {
         delete it->second;
@@ -56,17 +63,25 @@ namespace cube
       }
     }
 
-    void AddBlock(const std::string& name, Block* block) { if(_bloks.count(name) == 0) _bloks[name] = block; }
+    void AddBlock(Block::BlockType bType, Block* block) { if(_bloks.count(bType) == 0) _bloks[bType] = block; }
 
     void Generate(Region* reg)
     {
-      std::map<std::string, Block*>::iterator it = _bloks.begin();
+      std::map<Block::BlockType, Block*>::iterator it = _bloks.begin();
       for(; it != _bloks.end(); it++)
         it->second->Generate(reg);
     }
 
+    Block* GetBlock(Block::BlockType bType)
+    {
+      if(_bloks.count(bType) != 0)
+        return _bloks[bType];
+      else
+        return NULL;
+    }
+
   private:
-    std::map<std::string, Block*> _bloks;
+    std::map<Block::BlockType, Block*> _bloks;
   };
 
   static BlockProducer BLOCKPRODUCER;
@@ -74,13 +89,13 @@ namespace cube
   class RegisterBlock
   {
   public: 
-    RegisterBlock(const std::string& name, Block* block)
+    RegisterBlock(Block::BlockType bType, Block* block)
     {
-      BLOCKPRODUCER.AddBlock(name, block);
+      BLOCKPRODUCER.AddBlock(bType, block);
     }
   };
 
-  #define REGISTER_BLOCK(TYPE) static RegisterBlock rb##TYPE(#TYPE, new TYPE);
+  #define REGISTER_BLOCK(TYPE1, TYPE2) static RegisterBlock rb##TYPE2(TYPE1, new TYPE2);
 }
 
 #endif
