@@ -29,9 +29,6 @@ namespace cube
     void CreateMap(int rnd);
     void update(double time);
 
-    void del(cube::CubRegion& cubReg, osg::Vec3d wcpos);
-    void add(cube::CubRegion& cubReg, osg::Vec3d wcpos, bool recalcLight = false);
-
     void RemoveCub(osg::Vec3d vec);
     void AddCub(osg::Vec3d vec, Block::BlockType cubeType);
     void UpdateRegionGeoms(cube::Region* rg, bool addToScene = true);

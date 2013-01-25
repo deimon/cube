@@ -5,6 +5,7 @@
 #include <regionManager.h>
 #include <geoMaker.h>
 #include <RenderGroup.h>
+#include <gridUtils.h>
 
 #include <OpenThreads/Thread>
 
@@ -499,122 +500,30 @@ void World::update(double time)
   }
 }
 
-void World::del(cube::CubRegion& cubReg, osg::Vec3d wcpos)
-{
-  RenderGroup::DataUpdateContainer updateGeomMap;
-
-  cubReg.SetCubType(cube::Block::Air);
-  cubReg.SetCubRendered(false);
-
-  bool blend = cubReg.GetCubBlend();
-  cubReg.SetCubBlend(false);
-
-  osg::Geometry* curGeom = cubReg.GetRegion()->GetGeometry(cubReg.GetGeomIndex(), blend);
-
-  updateGeomMap[curGeom] = RenderGroup::DataUpdate(curGeom, cubReg.GetRegion(), cubReg.GetGeomIndex(), blend);
-
-  //*************************************
-  cube::Light::RecalcAndFillingLight(cubReg, wcpos, &updateGeomMap);
-
-  _renderGroup->PushToUpdate(&updateGeomMap);
-}
-
-void World::add(cube::CubRegion& cubReg, osg::Vec3d wcpos, bool recalcLight)
-{
-  RenderGroup::DataUpdateContainer updateGeomMap;
-
-  if(!cubReg.GetCubRendered())
-  {
-    cubReg.SetCubRendered(true);
-  }
-
-  osg::Geometry* curGeom = cubReg.GetRegion()->GetGeometry(cubReg.GetGeomIndex(), cubReg.GetCubBlend());
-
-  updateGeomMap[curGeom] = RenderGroup::DataUpdate(curGeom, cubReg.GetRegion(), cubReg.GetGeomIndex(), cubReg.GetCubBlend());
-
-  //*************************************
-  if(recalcLight)
-  {
-    cube::Light::FindLightSourceAndFillingLight(cubReg, wcpos, &updateGeomMap);
-  }
-
-  _renderGroup->PushToUpdate(&updateGeomMap);
-}
-
-
 void World::RemoveCub(osg::Vec3d vec)
 {
-  int geomIndex = vec.z() / GEOM_SIZE;
+  RenderGroup::DataUpdateContainer updateGeomMap;
 
-  if(geomIndex < 0 || geomIndex > GEOM_COUNT)
-    return;
+  GridUtils::RemoveCub(vec, &updateGeomMap);
 
-  cube::Region* reg = RegionManager::Instance().GetRegion(Region::ToRegionIndex(vec.x()), Region::ToRegionIndex(vec.y()));
-  osg::Vec3d cvec = vec - reg->GetPosition();
-  cube::CubRegion cubReg = reg->GetCub(cvec.x(), cvec.y(), cvec.z());
-
-  del(cubReg, vec);
-
-  for(int i = CubInfo::FirstSide; i <= CubInfo::EndSide; i++)
-  {
-    CubInfo::CubeSide side = (CubInfo::CubeSide)i;
-    osg::Vec3d wcvec = vec + CubInfo::Instance().GetNormal(side);
-    cvec = wcvec;
-
-    cube::Region* sideReg = RegionManager::Instance().GetRegion(Region::ToRegionIndex(cvec.x()), Region::ToRegionIndex(cvec.y()));
-    cvec -= sideReg->GetPosition();
-    cube::CubRegion scubReg = sideReg->GetCub(cvec.x(), cvec.y(), cvec.z());
-
-    int geomSideIndex = cvec.z() / GEOM_SIZE;
-
-    if(scubReg.GetCubType() != cube::Block::Air && 
-      (!scubReg.GetCubRendered() || reg != sideReg || geomIndex != geomSideIndex || cubReg.GetCubBlend() != scubReg.GetCubBlend()))
-    {
-      add(scubReg, wcvec);
-    }
-  }
+  _renderGroup->PushToUpdate(&updateGeomMap);
 }
 
 void World::AddCub(osg::Vec3d vec, Block::BlockType cubeType)
 {
+  RenderGroup::DataUpdateContainer updateGeomMap;
+
   cube::Region* reg = RegionManager::Instance().GetRegion(Region::ToRegionIndex(vec.x()), Region::ToRegionIndex(vec.y()));
   osg::Vec3d cvec = vec - reg->GetPosition();
 
   CubInfo::CubeSide side = cube::MathUtils::CubIntersection(reg, cvec.x(), cvec.y(), cvec.z(), _you, vec);
 
   osg::Vec3d norm = CubInfo::Instance().GetNormal(side);
-  {
-    cvec = vec + norm;
+  cvec = vec + norm;
 
-    reg = RegionManager::Instance().GetRegion(Region::ToRegionIndex(cvec.x()), Region::ToRegionIndex(cvec.y()));
-    cvec -= reg->GetPosition();
-    cube::CubRegion scubReg = reg->GetCub(cvec.x(), cvec.y(), cvec.z());
+  GridUtils::AddCub(cvec, cubeType, &updateGeomMap);
 
-    if(scubReg.GetCubType() == cube::Block::Air)
-    {
-      scubReg.SetCubType(cubeType);
-      if(cubeType == cube::Block::Water)
-      {
-        scubReg.SetCubBlend(true);
-      }
-      else
-      {
-        //scubReg.GetCubLight() = 0.1f;
-
-        if(scubReg.GetCubType() == cube::Block::Pumpkin)
-        {
-          // временный блок
-          RenderGroup::DataUpdateContainer updateGeomMap;
-
-          cube::Light::fillingLocLight(scubReg, vec + norm, 1.0f, &updateGeomMap);
-
-          _renderGroup->PushToUpdate(&updateGeomMap);
-        }
-      }
-
-      add(scubReg, vec + norm, true);
-    }
-  }
+  _renderGroup->PushToUpdate(&updateGeomMap);
 }
 
 void World::UpdateRegionGeoms(cube::Region* rg, bool addToScene)
