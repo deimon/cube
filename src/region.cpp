@@ -181,7 +181,10 @@ void Region::UpdateCubs(double curTime, RenderGroup::DataUpdateContainer* dataUp
       Block* block = BLOCKPRODUCER.GetBlock(it->first->_type);
       if(block)
       {
-        block->Update(curTime, *(it->second.cubReg), it->second.wpos, dataUpdate);
+        osg::Vec3d wcpos = it->second.wpos;
+        wcpos.x() = (wcpos.x() < 0? 16 : 0) + ((int)wcpos.x() % REGION_WIDTH) + GetPosition().x() + 0.1;
+
+        block->Update(curTime, *(it->second.cubReg), wcpos, dataUpdate);
       }
     }
   }
@@ -195,6 +198,8 @@ void Region::UpdateCubs(double curTime, RenderGroup::DataUpdateContainer* dataUp
       _updatedCubs.erase(it);
     }
   }
+
+  _deleteUpdatedCubs.clear();
 }
 
 //*******************************************************

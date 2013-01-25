@@ -226,7 +226,7 @@ void World::update(double time)
     for(int i = -1; i <= 1; i++)
     for(int j = -1; j <= 1; j++)
     {
-      cube::Region* reg = RegionManager::Instance().ContainsRegion(curRegX, curRegY);
+      cube::Region* reg = RegionManager::Instance().ContainsRegion(curRegX + i, curRegY + j);
       if(reg && reg->InScene())
         reg->UpdateCubs(time, &updateGeomMap);
     }
