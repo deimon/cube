@@ -30,7 +30,8 @@ namespace cube
 
     static int random(int a, int b)
     {
-      return osg::round(a + ((float)rand() / RAND_MAX) * (b - a));
+      int r = a + ((float)rand() / RAND_MAX) * (b + 1 - a);
+      return r > b ? b : r;
     }
   };
 }
