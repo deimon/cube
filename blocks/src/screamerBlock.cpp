@@ -2,6 +2,9 @@
 #include <region.h>
 #include <regionManager.h>
 #include <mathUtils.h>
+#include <gridUtils.h>
+
+#include <osg/Math>
 
 using namespace cube;
 
@@ -38,14 +41,17 @@ void ScreamerBlock::Update(double curTime, cube::CubRegion& cubReg, osg::Vec3d w
   {
     cube::CubRegion scubReg = RegionManager::Instance().GetCub(csvec.x(), csvec.y(), csvec.z());
    
-    if(scubReg.GetCubType() != Block::Air && scubReg.GetCubType() != Block::Screamer)
+    //if(scubReg.GetCubType() != Block::Air && scubReg.GetCubType() != Block::Screamer)
     {
-      cubReg.NotUpdated();
-
       scubReg.SetCubType(Screamer);
       scubReg.Updated(csvec, curTime + 1.0);
-      osg::Geometry* curGeom = cubReg.GetRegion()->GetGeometry(scubReg.GetGeomIndex(), scubReg.GetCubBlend());
+      osg::Geometry* curGeom = scubReg.GetRegion()->GetGeometry(scubReg.GetGeomIndex(), scubReg.GetCubBlend());
       (*dataUpdate)[curGeom] = RenderGroup::DataUpdate(curGeom, scubReg.GetRegion(), scubReg.GetGeomIndex(), scubReg.GetCubBlend());
+
+      cubReg.NotUpdated();
+      wcpos.x() = osg::round(wcpos.x()) + 0.1;
+      wcpos.y() = osg::round(wcpos.y()) + 0.1;
+      GridUtils::RemoveCub(wcpos, dataUpdate);
     }
   }
 }
