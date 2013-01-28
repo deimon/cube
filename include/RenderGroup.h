@@ -59,7 +59,7 @@ namespace cube
     DataUpdateContainer _dataUpdate;
 
   protected:
-    void updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset, bool blend = false, bool updateScene = false);
+    void updateGeom(osg::Geometry* newGeom, RenderGroup::DataUpdate& du, bool updateScene = false);
 
     osg::Geode* _geode[2];
 

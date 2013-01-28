@@ -69,7 +69,7 @@ void RenderGroup::Update()
   for(; i != _dataUpdate.end(); i++)
   {
     //if(_dataUpdate[i]._geom)
-    updateGeom(i->second._geom, i->second._reg, i->second._zCubOff, i->second._blend, true);
+    updateGeom(i->first, i->second, true);
   }
   _dataUpdate.clear();
 }
@@ -92,7 +92,9 @@ void RenderGroup::UpdateRegionGeoms(cube::Region* rg, bool addToScene)
 
       osg::Geometry* curGeom = rg->GetGeometry(offset, s == 1);
 
-      updateGeom(curGeom, rg, offset * GEOM_SIZE, s == 1, addToScene);
+      RenderGroup::DataUpdate du(curGeom, rg, offset, s == 1);
+
+      updateGeom(curGeom, du, addToScene);
     }
 }
 
@@ -104,7 +106,10 @@ void RenderGroup::FillRegionGeoms(cube::Region* rg)
       osg::Geometry* curGeom = rg->GetGeometry(offset, s == 1);
 
       if(curGeom != NULL)
+      {
         _geode[s]->addDrawable(curGeom);
+        rg->SetGeomInScene(offset, s == 1, true);
+      }
     }
 }
 
@@ -121,6 +126,7 @@ void RenderGroup::ClearRegionGeoms(cube::Region* rg)
         if(geom)
         {
           _geode[s]->removeDrawable(geom);
+          rg->SetGeomInScene(i, s == 1, false);
           rg->SetGeometry(i, NULL, s == 1);
         }
       }
@@ -130,8 +136,12 @@ void RenderGroup::ClearRegionGeoms(cube::Region* rg)
     else
       if(!rg->_geomToClear.empty())
       {
-        for(int i = 0; i < rg->_geomToClear.size(); i++)
-          _geode[rg->_geomToClear[i].first]->removeDrawable(rg->_geomToClear[i].second);
+        std::map<int, std::pair<int, osg::Geometry*>>::iterator it = rg->_geomToClear.begin();
+        for(; it != rg->_geomToClear.end(); it++)
+        {
+          _geode[it->second.first]->removeDrawable(it->second.second);
+          rg->SetGeomInScene(it->first, it->second.first == 1, false);
+        }
 
         rg->_geomToClear.clear();
       }
@@ -168,8 +178,14 @@ osg::Geometry* NewOSGGeom()
   return curGeom;
 }
 
-void RenderGroup::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset, bool blend, bool updateScene)
+//void RenderGroup::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset, bool blend, bool updateScene)
+void RenderGroup::updateGeom(osg::Geometry* newGeom, RenderGroup::DataUpdate& du, bool updateScene)
 {
+  osg::Geometry* geom = du._geom;
+  cube::Region* reg = du._reg;
+  int zOffset = du._zCubOff;
+  bool blend = du._blend;
+
   int geomIndex = zOffset / GEOM_SIZE;
 
   geom = reg->GetGeometry(geomIndex, blend);
@@ -182,13 +198,19 @@ void RenderGroup::updateGeom(osg::Geometry* geom, cube::Region* reg, int zOffset
       reg->SetGeometry(geomIndex, geom, blend);
 
       if(updateScene)
+      {
         _geode[blend?1:0]->addDrawable(geom);
+        reg->SetGeomInScene(geomIndex, blend, true);
+      }
     }
   }
   else
   {
     if(updateScene)
+    {
       _geode[blend?1:0]->removeDrawable(geom);
+      reg->SetGeomInScene(geomIndex, blend, false);
+    }
     reg->SetGeometry(geomIndex, NULL, blend);
     return;
   }
