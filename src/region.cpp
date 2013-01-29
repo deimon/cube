@@ -43,8 +43,8 @@ void Region::CubFilling()
   {
     _geom[0][z] = NULL;
     _geom[1][z] = NULL;
-    _geomInScene[0][z] = false;
-    _geomInScene[1][z] = false;
+    _newGeom[0][z] = NULL;
+    _newGeom[1][z] = NULL;
     _renderedCubCount[0][z] = 0;
     _renderedCubCount[1][z] = 0;
     _airCubCount[0][z] = CUBS_IN_GEOM;
@@ -154,6 +154,19 @@ cube::CubRegion Region::GetCub(int x, int y, int z)
   return CubRegion(this, _m[x][y][z], z / GEOM_SIZE);
 }
 
+osg::Geometry* Region::GetOrCreateNewGeometry(int k, bool blend)
+{
+  osg::Geometry* geom = _newGeom[blend ? 1 : 0][k];
+
+  if(geom == NULL)
+  {
+    geom = new osg::Geometry;
+    _newGeom[blend ? 1 : 0][k] = geom;
+  }
+
+  return geom;
+}
+
 void Region::ResetGeom()
 {
   if(_geometryCreated)
@@ -164,7 +177,7 @@ void Region::ResetGeom()
         osg::Geometry* geom = GetGeometry(i, s == 1);
         if(geom)
         {
-          _geomToClear[i] = std::make_pair(s, geom);
+          _geomToClear[geom] = s;
           SetGeometry(i, NULL, s == 1);
         }
       }

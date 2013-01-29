@@ -36,7 +36,8 @@ namespace cube
     osg::Geometry* GetGeometry(int k, bool blend = false){ return _geom[blend ? 1 : 0][k]; }
     void SetGeometry(int k, osg::Geometry* geom, bool blend = false){ _geom[blend ? 1 : 0][k] = geom; }
 
-    void SetGeomInScene(int k, bool blend, bool inScene){ _geomInScene[blend ? 1 : 0][k] = inScene; }
+    void SetNewGeometry(int k, osg::Geometry* geom, bool blend = false){ _newGeom[blend ? 1 : 0][k] = geom; }
+    osg::Geometry* GetOrCreateNewGeometry(int k, bool blend = false);
 
     void SetHeight(int i, int j, int value) { _height[i + 1][j + 1] = value; }
     int GetHeight(int i, int j) { return _height[i + 1][j + 1]; }
@@ -66,7 +67,7 @@ namespace cube
 
     void UpdateCubs(double curTime, RenderGroup::DataUpdateContainer* dataUpdate);
 
-    std::map<int, std::pair<int, osg::Geometry*>> _geomToClear; //map<geometryNum(0-GEOM_COUNT), pair<geomNum(0-1), Geometry*>>
+    std::map<osg::Geometry*, int> _geomToClear; //map<Geometry*, geomNum(0-1)>>
 
   protected:
 
@@ -101,7 +102,7 @@ namespace cube
     osg::Vec3d _position;
 
     osg::Geometry* _geom[2][GEOM_COUNT];
-    bool _geomInScene[2][GEOM_COUNT];
+    osg::Geometry* _newGeom[2][GEOM_COUNT];
 
     struct CubUpdateData
     {

@@ -144,12 +144,83 @@ private:
   cube::World* _world;
 };
 
+class UpdateGeomThread : public OpenThreads::Thread
+{
+public:
+
+  UpdateGeomThread(cube::World* world)
+    : _world(world)
+    , _completed(true)
+  {
+    if (!isRunning()) start();
+  }
+
+  virtual void quit(bool waitForThreadToExit = true)
+  {
+    _done = true;
+    if(isRunning() && waitForThreadToExit)
+      join();
+  }
+
+  bool IsCompleted() { return _completed; }
+  void Calculate() { _completed = false; }
+
+  RenderGroup::DataUpdateContainer _updateGeomMap;
+
+  void Clear()
+  {
+    while(!_completed)
+      OpenThreads::Thread::microSleep(100);
+  }
+
+protected:
+  ~UpdateGeomThread() { quit(); }
+
+private:
+  virtual void run()
+  {
+    _done = false;
+
+    while (!_done)
+    {
+      microSleep(100);
+      if(!_completed)
+      {
+        RenderGroup::DataUpdateContainer _tmpData;
+
+        int count = 10;
+        RenderGroup::DataUpdateContainer::iterator it = _updateGeomMap.begin();
+        for(; it != _updateGeomMap.end() && count; it++)
+        {
+          count--;
+          _tmpData[it->first] = it->second;
+        }
+
+        it = _tmpData.begin();
+        for(; it != _tmpData.end(); it++)
+          _updateGeomMap.erase(it->first);
+
+        _world->_renderGroup->Update(&_tmpData);
+
+        _completed = true;
+      }
+    }
+  }
+
+  bool _done;
+
+  bool _completed;
+
+  cube::World* _world;
+};
+
 World::World()
 {
   _hudMode = false;
   _mapCreated = false;
   _newMap = false;
   _cgThread = new CreateGeomThread(this);
+  _ugThread = new UpdateGeomThread(this);
 }
 
 void World::update(double time)
@@ -221,22 +292,33 @@ void World::update(double time)
   int curRegX = Region::ToRegionIndex(_you.x());
   int curRegY = Region::ToRegionIndex(_you.y());
 
-  {
-    RenderGroup::DataUpdateContainer updateGeomMap;
-
-    for(int i = -1; i <= 1; i++)
-    for(int j = -1; j <= 1; j++)
-    {
-      cube::Region* reg = RegionManager::Instance().ContainsRegion(curRegX + i, curRegY + j);
-      if(reg && reg->InScene())
-        reg->UpdateCubs(time, &updateGeomMap);
-    }
-
-    _renderGroup->PushToUpdate(&updateGeomMap);
-  }
+  //{
+  //  for(int i = -1; i <= 1; i++)
+  //  for(int j = -1; j <= 1; j++)
+  //  {
+  //    cube::Region* reg = RegionManager::Instance().ContainsRegion(curRegX + i, curRegY + j);
+  //    if(reg && reg->InScene())
+  //      reg->UpdateCubs(time, &_dataUpdate);
+  //  }
+  //}
 
   // пересоздание измененных геометрий (удаление/добавление кубика, распространение света и т.д.)
-  _renderGroup->Update();
+  if(_ugThread->IsCompleted())
+  {
+    _renderGroup->ToScene();
+
+    if(!_dataUpdate.empty())
+    {
+      RenderGroup::DataUpdateContainer::iterator it = _dataUpdate.begin();
+      for(; it != _dataUpdate.end(); it++)
+      {
+        _ugThread->_updateGeomMap[it->first] = it->second;
+      }
+      _dataUpdate.clear();
+
+      _ugThread->Calculate();
+    }
+  }
 
   // добавление и удаление из очереди в сцену по 1 региону за фрейм
   if(!_addToSceneRegions.empty() && _frame == 0)
@@ -502,17 +584,11 @@ void World::update(double time)
 
 void World::RemoveCub(osg::Vec3d vec)
 {
-  RenderGroup::DataUpdateContainer updateGeomMap;
-
-  GridUtils::RemoveCub(vec, &updateGeomMap);
-
-  _renderGroup->PushToUpdate(&updateGeomMap);
+  GridUtils::RemoveCub(vec, &_dataUpdate);
 }
 
 void World::AddCub(osg::Vec3d vec, Block::BlockType cubeType)
 {
-  RenderGroup::DataUpdateContainer updateGeomMap;
-
   cube::Region* reg = RegionManager::Instance().GetRegion(Region::ToRegionIndex(vec.x()), Region::ToRegionIndex(vec.y()));
   osg::Vec3d cvec = vec - reg->GetPosition();
 
@@ -521,9 +597,7 @@ void World::AddCub(osg::Vec3d vec, Block::BlockType cubeType)
   osg::Vec3d norm = CubInfo::Instance().GetNormal(side);
   cvec = vec + norm;
 
-  GridUtils::AddCub(cvec, cubeType, &updateGeomMap);
-
-  _renderGroup->PushToUpdate(&updateGeomMap);
+  GridUtils::AddCub(cvec, cubeType, &_dataUpdate);
 }
 
 void World::UpdateRegionGeoms(cube::Region* rg, bool addToScene)
@@ -625,7 +699,6 @@ void World::createMap()
 void World::destroyMap()
 {
   _cgThread->Clear();
-  _renderGroup->ClearDataUpdate();
   _delRegionsForVisual.clear();
   _addToSceneRegions.clear();
 

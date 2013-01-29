@@ -3,6 +3,7 @@
 
 #include "region.h"
 #include "singleton.h"
+#include <RenderGroup.h>
 
 #define DUBUGMODE
 #ifdef DUBUGMODE
@@ -11,6 +12,7 @@
 #endif
 
 class CreateGeomThread;
+class UpdateGeomThread;
 
 namespace cube
 {
@@ -59,8 +61,10 @@ namespace cube
     RegionsList _addToSceneRegions;
 
     CreateGeomThread* _cgThread;
+    UpdateGeomThread* _ugThread;
 
     RenderGroup* _renderGroup;
+    RenderGroup::DataUpdateContainer _dataUpdate;
 
     int _frame;
     int _radius;
@@ -71,6 +75,7 @@ namespace cube
 
   public:
     friend class CreateGeomThread;
+    friend class UpdateGeomThread;
   };
 }
 #endif

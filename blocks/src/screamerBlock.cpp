@@ -45,7 +45,9 @@ void ScreamerBlock::Update(double curTime, cube::CubRegion& cubReg, osg::Vec3d w
     {
       scubReg.SetCubType(Screamer);
       scubReg.Updated(csvec, curTime + 1.0);
-      osg::Geometry* curGeom = scubReg.GetRegion()->GetGeometry(scubReg.GetGeomIndex(), scubReg.GetCubBlend());
+      
+      osg::Geometry* curGeom = scubReg.GetRegion()->GetOrCreateNewGeometry(scubReg.GetGeomIndex(), scubReg.GetCubBlend());
+
       (*dataUpdate)[curGeom] = RenderGroup::DataUpdate(curGeom, scubReg.GetRegion(), scubReg.GetGeomIndex(), scubReg.GetCubBlend());
 
       cubReg.NotUpdated();
