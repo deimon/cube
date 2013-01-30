@@ -86,6 +86,9 @@ void RenderGroup::ToScene()
     int zOffset = it->second._zCubOff;
     bool blend = it->second._blend;
 
+    if(!reg->InScene())
+      continue;
+
     int geomIndex = zOffset / GEOM_SIZE;
 
     osg::Geometry* oldGeom = reg->GetGeometry(geomIndex, blend);

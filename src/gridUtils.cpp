@@ -75,7 +75,8 @@ void GridUtils::del(cube::CubRegion& cubReg, osg::Vec3d wcpos, RenderGroup::Data
 
   osg::Geometry* curGeom = cubReg.GetRegion()->GetOrCreateNewGeometry(cubReg.GetGeomIndex(), blend);
 
-  (*updateGeomMap)[curGeom] = RenderGroup::DataUpdate(curGeom, cubReg.GetRegion(), cubReg.GetGeomIndex(), blend);
+  if(updateGeomMap->find(curGeom) == updateGeomMap->end())
+    (*updateGeomMap)[curGeom] = RenderGroup::DataUpdate(curGeom, cubReg.GetRegion(), cubReg.GetGeomIndex(), blend);
 
   //*************************************
   cube::Light::RecalcAndFillingLight(cubReg, wcpos, updateGeomMap);
@@ -90,7 +91,8 @@ void GridUtils::add(cube::CubRegion& cubReg, osg::Vec3d wcpos, bool recalcLight,
 
   osg::Geometry* curGeom = cubReg.GetRegion()->GetOrCreateNewGeometry(cubReg.GetGeomIndex(), cubReg.GetCubBlend());
 
-  (*updateGeomMap)[curGeom] = RenderGroup::DataUpdate(curGeom, cubReg.GetRegion(), cubReg.GetGeomIndex(), cubReg.GetCubBlend());
+  if(updateGeomMap->find(curGeom) == updateGeomMap->end())
+    (*updateGeomMap)[curGeom] = RenderGroup::DataUpdate(curGeom, cubReg.GetRegion(), cubReg.GetGeomIndex(), cubReg.GetCubBlend());
 
   //*************************************
   if(recalcLight)

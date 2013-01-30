@@ -15,7 +15,7 @@ ScreamerBlock::ScreamerBlock()
 
 void ScreamerBlock::Generate(Region* reg)
 {
-  //for(int n = 0; n < 3; n++)
+  for(int n = 0; n < 3; n++)
   {
     int i = MathUtils::random(0, REGION_WIDTH - 1);
     int j = MathUtils::random(0, REGION_WIDTH - 1);
@@ -25,7 +25,7 @@ void ScreamerBlock::Generate(Region* reg)
     if(cubReg.GetCubType() == cube::Block::Air)
     {
       cubReg.SetCubType(cube::Block::Screamer);
-      osg::Vec3d wcpos(i + reg->GetPosition().x(), j + reg->GetPosition().y(), reg->GetHeight(i, j) + 1);
+      osg::Vec3d wcpos(i + reg->GetPosition().x() + 0.1, j + reg->GetPosition().y() + 0.1, reg->GetHeight(i, j) + 1 + 0.1);
       cubReg.Updated(wcpos, 0.0);
     }
   }
@@ -41,18 +41,22 @@ void ScreamerBlock::Update(double curTime, cube::CubRegion& cubReg, osg::Vec3d w
   {
     cube::CubRegion scubReg = RegionManager::Instance().GetCub(csvec.x(), csvec.y(), csvec.z());
    
-    //if(scubReg.GetCubType() != Block::Air && scubReg.GetCubType() != Block::Screamer)
+    //if(/*scubReg.GetCubType() != Block::Air &&*/ scubReg.GetCubType() != Block::Screamer)
     {
       scubReg.SetCubType(Screamer);
-      scubReg.Updated(csvec, curTime + 1.0);
+      scubReg.Updated(csvec, curTime + 0.1);
+
+      if(!scubReg.GetCubRendered())
+      {
+        scubReg.SetCubRendered(true);
+      }
       
       osg::Geometry* curGeom = scubReg.GetRegion()->GetOrCreateNewGeometry(scubReg.GetGeomIndex(), scubReg.GetCubBlend());
 
-      (*dataUpdate)[curGeom] = RenderGroup::DataUpdate(curGeom, scubReg.GetRegion(), scubReg.GetGeomIndex(), scubReg.GetCubBlend());
+      if(dataUpdate->find(curGeom) == dataUpdate->end())
+        (*dataUpdate)[curGeom] = RenderGroup::DataUpdate(curGeom, scubReg.GetRegion(), scubReg.GetGeomIndex(), scubReg.GetCubBlend());
 
       cubReg.NotUpdated();
-      wcpos.x() = osg::round(wcpos.x()) + 0.1;
-      wcpos.y() = osg::round(wcpos.y()) + 0.1;
       GridUtils::RemoveCub(wcpos, dataUpdate);
     }
   }

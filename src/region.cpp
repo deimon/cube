@@ -188,6 +188,9 @@ void Region::ResetGeom()
 
 void Region::UpdateCubs(double curTime, RenderGroup::DataUpdateContainer* dataUpdate)
 {
+  //std::map<Cub*, CubUpdateData> _tmpCubs;
+  //_tmpCubs.swap(_updatedCubs);
+
   std::map<Cub*, CubUpdateData>::iterator it = _updatedCubs.begin();
   for(;it != _updatedCubs.end(); it++)
   {
@@ -197,7 +200,7 @@ void Region::UpdateCubs(double curTime, RenderGroup::DataUpdateContainer* dataUp
       if(block)
       {
         osg::Vec3d wcpos = it->second.wpos;
-        wcpos.x() = (wcpos.x() < 0? 16 : 0) + ((int)wcpos.x() % REGION_WIDTH) + GetPosition().x();
+        wcpos.x() = (wcpos.x() < 0? 15.1 : 0.1) + ((int)wcpos.x() % REGION_WIDTH) + GetPosition().x();
 
         block->Update(curTime, *(it->second.cubReg), wcpos, dataUpdate);
       }
