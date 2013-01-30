@@ -90,7 +90,10 @@ void RenderGroup::ToScene()
 
     osg::Geometry* oldGeom = reg->GetGeometry(geomIndex, blend);
 
-    if(reg->_renderedCubCount[blend?1:0][geomIndex] > 0)
+    osg::Vec3Array* coords = dynamic_cast<osg::Vec3Array*>(geom->getVertexArray());
+
+    //if(reg->_renderedCubCount[blend?1:0][geomIndex] > 0)
+    if(coords->size() != 0)
     {
       reg->SetGeometry(geomIndex, geom, blend);
 
@@ -214,7 +217,7 @@ void RenderGroup::updateGeom(osg::Geometry* newGeom, RenderGroup::DataUpdate& du
   if(thread)
   {
     geom = NewOSGGeom(geom);
-    reg->SetNewGeometry(geomIndex, NULL, blend);
+    //reg->SetNewGeometry(geomIndex, NULL, blend);
   }
   else
   {

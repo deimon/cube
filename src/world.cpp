@@ -292,15 +292,15 @@ void World::update(double time)
   int curRegX = Region::ToRegionIndex(_you.x());
   int curRegY = Region::ToRegionIndex(_you.y());
 
-  //{
-  //  for(int i = -1; i <= 1; i++)
-  //  for(int j = -1; j <= 1; j++)
-  //  {
-  //    cube::Region* reg = RegionManager::Instance().ContainsRegion(curRegX + i, curRegY + j);
-  //    if(reg && reg->InScene())
-  //      reg->UpdateCubs(time, &_dataUpdate);
-  //  }
-  //}
+  {
+    for(int i = -1; i <= 1; i++)
+    for(int j = -1; j <= 1; j++)
+    {
+      cube::Region* reg = RegionManager::Instance().ContainsRegion(curRegX + i, curRegY + j);
+      if(reg && reg->InScene())
+        reg->UpdateCubs(time, &_dataUpdate);
+    }
+  }
 
   // пересоздание измененных геометрий (удаление/добавление кубика, распространение света и т.д.)
   if(_ugThread->IsCompleted())
@@ -312,6 +312,7 @@ void World::update(double time)
       RenderGroup::DataUpdateContainer::iterator it = _dataUpdate.begin();
       for(; it != _dataUpdate.end(); it++)
       {
+        it->second._reg->SetNewGeometry(it->second._zCubOff / GEOM_SIZE, NULL, it->second._blend);
         _ugThread->_updateGeomMap[it->first] = it->second;
       }
       _dataUpdate.clear();
