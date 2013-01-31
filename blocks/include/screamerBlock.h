@@ -13,7 +13,7 @@ namespace cube
 
     void Generate(Region* reg);
     
-    void Update(double curTime, cube::CubRegion& cubReg, osg::Vec3d wcpos, RenderGroup::DataUpdateContainer* dataUpdate);
+    void Update(double updateTime, double curTime, cube::CubRegion& cubReg, osg::Vec3d wcpos, RenderGroup::DataUpdateContainer* dataUpdate);
 
   protected:
   };

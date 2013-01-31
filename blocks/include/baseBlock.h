@@ -34,17 +34,19 @@ namespace cube
       Screamer = 10
     };
 
-    Block(BlockType type)
+    Block(BlockType type, double deltaTimeUpdate = 0.0)
       : _type(type)
+      , _deltaTimeUpdate(deltaTimeUpdate)
     {
     }
 
     virtual void Generate(Region* reg) = 0;
 
-    virtual void Update(double curTime, cube::CubRegion& cubReg, osg::Vec3d wcpos, RenderGroup::DataUpdateContainer* dataUpdate) {};
+    virtual void Update(double updateTime, double curTime, cube::CubRegion& cubReg, osg::Vec3d wcpos, RenderGroup::DataUpdateContainer* dataUpdate) {};
 
     protected:
       BlockType _type;
+      double _deltaTimeUpdate;
   };
 
   class BlockProducer

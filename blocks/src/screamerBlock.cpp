@@ -9,7 +9,7 @@
 using namespace cube;
 
 ScreamerBlock::ScreamerBlock()
-: Block(Screamer)
+: Block(Screamer, 1.0)
 {
 }
 
@@ -31,33 +31,41 @@ void ScreamerBlock::Generate(Region* reg)
   }
 }
 
-void ScreamerBlock::Update(double curTime, cube::CubRegion& cubReg, osg::Vec3d wcpos, RenderGroup::DataUpdateContainer* dataUpdate)  //wcpos - world cube position
+void ScreamerBlock::Update(double updateTime, double curTime, cube::CubRegion& cubReg, osg::Vec3d wcpos, RenderGroup::DataUpdateContainer* dataUpdate)  //wcpos - world cube position
 {
-  CubInfo::CubeSide side = (CubInfo::CubeSide)MathUtils::random(0, 5);
+  int stepCount = (curTime - (updateTime - _deltaTimeUpdate)) / _deltaTimeUpdate;
 
-  osg::Vec3d csvec = wcpos + CubInfo::Instance().GetNormal(side); //csvec - cube side vector
-
-  if(csvec.z() > 0.0 && csvec.z() < 127.0)
+  for(int i = 0; i < stepCount;)
   {
-    cube::CubRegion scubReg = RegionManager::Instance().GetCub(csvec.x(), csvec.y(), csvec.z());
-   
-    //if(/*scubReg.GetCubType() != Block::Air &&*/ scubReg.GetCubType() != Block::Screamer)
+    CubInfo::CubeSide side = (CubInfo::CubeSide)MathUtils::random(0, 5);
+
+    osg::Vec3d csvec = wcpos + CubInfo::Instance().GetNormal(side); //csvec - cube side vector
+
+    if(csvec.z() > 0.0 && csvec.z() < 127.0)
     {
-      scubReg.SetCubType(Screamer);
-      scubReg.Updated(csvec, curTime + 0.1);
+      i++;
+      cube::CubRegion scubReg = RegionManager::Instance().GetCub(csvec.x(), csvec.y(), csvec.z());
+     
+      if(i == stepCount)
+      {
+        scubReg.SetCubType(Screamer);
+        scubReg.Updated(csvec, curTime + _deltaTimeUpdate);
+
+        cubReg.NotUpdated();
+      }
 
       if(!scubReg.GetCubRendered())
       {
         scubReg.SetCubRendered(true);
       }
-      
+
       osg::Geometry* curGeom = scubReg.GetRegion()->GetOrCreateNewGeometry(scubReg.GetGeomIndex(), scubReg.GetCubBlend());
 
       if(dataUpdate->find(curGeom) == dataUpdate->end())
         (*dataUpdate)[curGeom] = RenderGroup::DataUpdate(curGeom, scubReg.GetRegion(), scubReg.GetGeomIndex(), scubReg.GetCubBlend());
 
-      cubReg.NotUpdated();
       GridUtils::RemoveCub(wcpos, dataUpdate);
+      wcpos = csvec;
     }
   }
 }

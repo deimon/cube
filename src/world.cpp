@@ -289,8 +289,8 @@ void World::update(double time)
   int curRegY = Region::ToRegionIndex(_you.y());
 
   {
-    for(int i = -1; i <= 1; i++)
-    for(int j = -1; j <= 1; j++)
+    for(int i = -2; i <= 2; i++)
+    for(int j = -2; j <= 2; j++)
     {
       cube::Region* reg = RegionManager::Instance().ContainsRegion(curRegX + i, curRegY + j);
       if(reg && reg->InScene())

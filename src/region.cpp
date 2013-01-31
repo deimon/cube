@@ -202,7 +202,7 @@ void Region::UpdateCubs(double curTime, RenderGroup::DataUpdateContainer* dataUp
         osg::Vec3d wcpos = it->second.wpos;
         wcpos.x() = (wcpos.x() < 0? 15.1 : 0.1) + ((int)wcpos.x() % REGION_WIDTH) + GetPosition().x();
 
-        block->Update(curTime, *(it->second.cubReg), wcpos, dataUpdate);
+        block->Update(it->second.nextTimeUpdate, curTime, *(it->second.cubReg), wcpos, dataUpdate);
       }
     }
   }
