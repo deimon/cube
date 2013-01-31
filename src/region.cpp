@@ -188,11 +188,11 @@ void Region::ResetGeom()
 
 void Region::UpdateCubs(double curTime, RenderGroup::DataUpdateContainer* dataUpdate)
 {
-  //std::map<Cub*, CubUpdateData> _tmpCubs;
-  //_tmpCubs.swap(_updatedCubs);
+  std::map<Cub*, CubUpdateData> _tmpCubs;
+  _tmpCubs.swap(_updatedCubs);
 
-  std::map<Cub*, CubUpdateData>::iterator it = _updatedCubs.begin();
-  for(;it != _updatedCubs.end(); it++)
+  std::map<Cub*, CubUpdateData>::iterator it = _tmpCubs.begin();
+  for(;it != _tmpCubs.end(); it++)
   {
     if(it->second.nextTimeUpdate < curTime)
     {
@@ -209,13 +209,17 @@ void Region::UpdateCubs(double curTime, RenderGroup::DataUpdateContainer* dataUp
 
   for(int i = 0; i < _deleteUpdatedCubs.size(); i++)
   {
-    std::map<Cub*, Region::CubUpdateData>::iterator it = _updatedCubs.find(_deleteUpdatedCubs[i]);
-    if(it != _updatedCubs.end())
+    std::map<Cub*, Region::CubUpdateData>::iterator it = _tmpCubs.find(_deleteUpdatedCubs[i]);
+    if(it != _tmpCubs.end())
     {
       delete it->second.cubReg;
-      _updatedCubs.erase(it);
+      _tmpCubs.erase(it);
     }
   }
+
+  it = _tmpCubs.begin();
+  for(;it != _tmpCubs.end(); it++)
+    _updatedCubs[it->first] = it->second;
 
   _deleteUpdatedCubs.clear();
 }
