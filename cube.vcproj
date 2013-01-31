@@ -262,9 +262,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="0"
+				AdditionalOptions="/MP"
+				Optimization="3"
 				EnableIntrinsicFunctions="false"
-				AdditionalIncludeDirectories="./include;./blocks/include;&quot;..\..\..\3rdparty\x64\osg-3.0.0\include&quot;"
+				AdditionalIncludeDirectories="./include;./blocks/include;./osg/include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -285,7 +286,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="osg.lib osgUtil.lib osgDB.lib osgGA.lib osgViewer.lib osgText.lib osgManipulator.lib OpenThreads.lib"
 				LinkIncremental="0"
-				AdditionalLibraryDirectories="&quot;..\..\..\3rdparty\x64\osg-3.0.0\lib&quot;"
+				AdditionalLibraryDirectories="./osg/lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				OptimizeReferences="2"
