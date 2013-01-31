@@ -47,15 +47,16 @@ namespace cube
     };
 
     typedef std::map<osg::Geometry*, RenderGroup::DataUpdate> DataUpdateContainer;
+    typedef std::list<RenderGroup::DataUpdate> DataUpdateContainerVector;
 
-    void Update(DataUpdateContainer* updateGeomMap);
+    void Update(DataUpdateContainerVector* updateGeomMap);
     void ToScene();
 
     void UpdateRegionGeoms(cube::Region* rg, bool addToScene);
     void FillRegionGeoms(cube::Region* rg);
     void ClearRegionGeoms(cube::Region* rg);
 
-    DataUpdateContainer _dataToScene;
+    DataUpdateContainerVector _dataToScene;
 
   protected:
     void updateGeom(osg::Geometry* newGeom, RenderGroup::DataUpdate& du, bool updateScene, bool thread = false);

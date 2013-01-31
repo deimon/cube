@@ -63,28 +63,26 @@ RenderGroup::RenderGroup(cube::World *world)
   }
 }
 
-void RenderGroup::Update(DataUpdateContainer* updateGeomMap)
+void RenderGroup::Update(DataUpdateContainerVector* updateGeomMap)
 {
-  DataUpdateContainer::iterator i = updateGeomMap->begin();
-  for(; i != updateGeomMap->end(); i++)
+  while(!updateGeomMap->empty())
   {
-    //if(_dataUpdate[i]._geom)
-    updateGeom(i->first, i->second, false, true);
+    updateGeom(NULL, updateGeomMap->front(), false, true);
+    _dataToScene.push_back(updateGeomMap->front());
 
-    _dataToScene[i->first] = i->second;
+    updateGeomMap->pop_front();
   }
-  updateGeomMap->clear();
 }
 
 void RenderGroup::ToScene()
 {
-  DataUpdateContainer::iterator it = _dataToScene.begin();
-  for(; it != _dataToScene.end(); it++)
+  while(!_dataToScene.empty())
   {
-    osg::Geometry* geom = it->second._geom;
-    cube::Region* reg = it->second._reg;
-    int zOffset = it->second._zCubOff;
-    bool blend = it->second._blend;
+    osg::Geometry* geom = _dataToScene.front()._geom;
+    cube::Region* reg = _dataToScene.front()._reg;
+    int zOffset = _dataToScene.front()._zCubOff;
+    bool blend = _dataToScene.front()._blend;
+    _dataToScene.pop_front();
 
     if(!reg->InScene())
       continue;
@@ -112,8 +110,6 @@ void RenderGroup::ToScene()
       osg::ref_ptr<osg::Geometry> deleters = geom;
     }
   }
-
-  _dataToScene.clear();
 }
 
 void RenderGroup::UpdateRegionGeoms(cube::Region* rg, bool addToScene)

@@ -165,7 +165,7 @@ public:
   bool IsCompleted() { return _completed; }
   void Calculate() { _completed = false; }
 
-  RenderGroup::DataUpdateContainer _updateGeomMap;
+  RenderGroup::DataUpdateContainerVector _updateGeomMap;
 
   void Clear()
   {
@@ -186,19 +186,15 @@ private:
       microSleep(100);
       if(!_completed)
       {
-        RenderGroup::DataUpdateContainer _tmpData;
+        RenderGroup::DataUpdateContainerVector _tmpData;
 
         int count = 10;
-        RenderGroup::DataUpdateContainer::iterator it = _updateGeomMap.begin();
-        for(; it != _updateGeomMap.end() && count; it++)
+        while(!_updateGeomMap.empty() && count)
         {
           count--;
-          _tmpData[it->first] = it->second;
+          _tmpData.push_back(_updateGeomMap.front());
+          _updateGeomMap.pop_front();
         }
-
-        it = _tmpData.begin();
-        for(; it != _tmpData.end(); it++)
-          _updateGeomMap.erase(it->first);
 
         _world->_renderGroup->Update(&_tmpData);
 
@@ -313,7 +309,7 @@ void World::update(double time)
       for(; it != _dataUpdate.end(); it++)
       {
         it->second._reg->SetNewGeometry(it->second._zCubOff / GEOM_SIZE, NULL, it->second._blend);
-        _ugThread->_updateGeomMap[it->first] = it->second;
+        _ugThread->_updateGeomMap.push_back(it->second);
       }
       _dataUpdate.clear();
 
