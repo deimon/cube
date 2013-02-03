@@ -49,14 +49,12 @@ namespace cube
     typedef std::map<osg::Geometry*, RenderGroup::DataUpdate> DataUpdateContainer;
     typedef std::list<RenderGroup::DataUpdate> DataUpdateContainerVector;
 
-    void Update(DataUpdateContainerVector* updateGeomMap);
-    void ToScene();
+    void Update(DataUpdateContainerVector* updateGeomMap, DataUpdateContainerVector& dataToScene);
+    void ToScene(DataUpdateContainerVector& dataToScene);
 
     void UpdateRegionGeoms(cube::Region* rg, bool addToScene);
     void FillRegionGeoms(cube::Region* rg);
     void ClearRegionGeoms(cube::Region* rg);
-
-    DataUpdateContainerVector _dataToScene;
 
   protected:
     void updateGeom(osg::Geometry* newGeom, RenderGroup::DataUpdate& du, bool updateScene, bool thread = false);

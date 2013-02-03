@@ -148,9 +148,10 @@ class UpdateGeomThread : public OpenThreads::Thread
 {
 public:
 
-  UpdateGeomThread(cube::World* world)
+  UpdateGeomThread(cube::World* world, int count)
     : _world(world)
     , _completed(true)
+    , _count(count)
   {
     if (!isRunning()) start();
   }
@@ -166,11 +167,14 @@ public:
   void Calculate() { _completed = false; }
 
   RenderGroup::DataUpdateContainerVector _updateGeomMap;
+  RenderGroup::DataUpdateContainerVector _dataToScene;
 
   void Clear()
   {
     while(!_completed)
       OpenThreads::Thread::microSleep(100);
+
+    _updateGeomMap.clear();
   }
 
 protected:
@@ -188,7 +192,7 @@ private:
       {
         RenderGroup::DataUpdateContainerVector _tmpData;
 
-        int count = 10;
+        int count = _count;
         while(!_updateGeomMap.empty() && count)
         {
           count--;
@@ -196,7 +200,7 @@ private:
           _updateGeomMap.pop_front();
         }
 
-        _world->_renderGroup->Update(&_tmpData);
+        _world->_renderGroup->Update(&_tmpData, _dataToScene);
 
         _completed = true;
       }
@@ -208,6 +212,8 @@ private:
   bool _completed;
 
   cube::World* _world;
+
+  int _count;
 };
 
 World::World()
@@ -216,7 +222,8 @@ World::World()
   _mapCreated = false;
   _newMap = false;
   _cgThread = new CreateGeomThread(this);
-  _ugThread = new UpdateGeomThread(this);
+  _ugThread = new UpdateGeomThread(this, 30);
+  _ugAddRemoveThread = new UpdateGeomThread(this, 10);
 }
 
 void World::update(double time)
@@ -301,7 +308,7 @@ void World::update(double time)
   // пересоздание измененных геометрий (удаление/добавление кубика, распространение света и т.д.)
   if(_ugThread->IsCompleted())
   {
-    _renderGroup->ToScene();
+    _renderGroup->ToScene(_ugThread->_dataToScene);
 
     if(!_dataUpdate.empty())
     {
@@ -314,6 +321,24 @@ void World::update(double time)
       _dataUpdate.clear();
 
       _ugThread->Calculate();
+    }
+  }
+
+  if(_ugAddRemoveThread->IsCompleted())
+  {
+    _renderGroup->ToScene(_ugAddRemoveThread->_dataToScene);
+
+    if(!_dataUpdateAddRemove.empty())
+    {
+      RenderGroup::DataUpdateContainer::iterator it = _dataUpdateAddRemove.begin();
+      for(; it != _dataUpdateAddRemove.end(); it++)
+      {
+        it->second._reg->SetNewGeometry(it->second._zCubOff / GEOM_SIZE, NULL, it->second._blend);
+        _ugAddRemoveThread->_updateGeomMap.push_back(it->second);
+      }
+      _dataUpdateAddRemove.clear();
+
+      _ugAddRemoveThread->Calculate();
     }
   }
 
@@ -581,7 +606,7 @@ void World::update(double time)
 
 void World::RemoveCub(osg::Vec3d vec)
 {
-  GridUtils::RemoveCub(vec, &_dataUpdate);
+  GridUtils::RemoveCub(vec, &_dataUpdateAddRemove);
 }
 
 void World::AddCub(osg::Vec3d vec, Block::BlockType cubeType)
@@ -594,7 +619,7 @@ void World::AddCub(osg::Vec3d vec, Block::BlockType cubeType)
   osg::Vec3d norm = CubInfo::Instance().GetNormal(side);
   cvec = vec + norm;
 
-  GridUtils::AddCub(cvec, cubeType, &_dataUpdate);
+  GridUtils::AddCub(cvec, cubeType, &_dataUpdateAddRemove);
 }
 
 void World::UpdateRegionGeoms(cube::Region* rg, bool addToScene)
@@ -696,6 +721,8 @@ void World::createMap()
 void World::destroyMap()
 {
   _cgThread->Clear();
+  _ugThread->Clear();
+  _ugAddRemoveThread->Clear();
   _delRegionsForVisual.clear();
   _addToSceneRegions.clear();
 

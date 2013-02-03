@@ -62,9 +62,11 @@ namespace cube
 
     CreateGeomThread* _cgThread;
     UpdateGeomThread* _ugThread;
+    UpdateGeomThread* _ugAddRemoveThread;
 
     RenderGroup* _renderGroup;
     RenderGroup::DataUpdateContainer _dataUpdate;
+    RenderGroup::DataUpdateContainer _dataUpdateAddRemove;
 
     int _frame;
     int _radius;
