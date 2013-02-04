@@ -62,7 +62,7 @@ osg::Group* GetGeometry()
   for(int y = 0; y < 32; y++)
   for(int z = 0; z < 32; z++)
   {
-    m[x][y][z] = perlin->Get((float)x/100.0f, (float)y/100.0f, (float)z/100.0f) > -0.1f? 1 : 0;
+    m[x][y][z] = perlin->Get3D((float)x/100.0f, (float)y/100.0f, (float)z/100.0f) > -0.1f? 1 : 0;
   }
 
   m[0][0][0] = 0;

@@ -30,7 +30,7 @@ void GeoMaker::CubFilling(cube::Region* rg)
         {
           cube::CubRegion cubReg = rg->GetCub(i, j, k);
           if(cubReg.GetCubType() != cube::Block::Air && 
-            _perlin3d->Get((float)(i + rg->GetX() * REGION_WIDTH)/30.0f, (float)(j + rg->GetY() * REGION_WIDTH)/30.0f, (float)k/20.0f) < -0.4f)
+            _perlin3d->Get3D((float)(i + rg->GetX() * REGION_WIDTH)/30.0f, (float)(j + rg->GetY() * REGION_WIDTH)/30.0f, (float)k/20.0f) < -0.4f)
           {
             cubReg.SetCubType(cube::Block::Air);
 
@@ -156,13 +156,25 @@ void GeoMaker::GenNoise(cube::Region* rg)
   int xOffset = rg->GetX() * REGION_WIDTH;
   int yOffset = rg->GetY() * REGION_WIDTH;
 
+  float amp;
+
   for(int i = -1; i < REGION_WIDTH + 1; i++)
   {
+    if(abs(rg->GetX()) == World::Instance()._worldRadius)
+    {
+      if(rg->GetX() > 0)
+        amp = 1.0f - (float)i / REGION_WIDTH;
+      else
+        amp = 0.02f + (float)i / REGION_WIDTH;
+    }
+    else
+      amp = 1.0f;
+
     for(int j = -1; j < REGION_WIDTH + 1; j++)
     {
       int height = 4
-        + (_perlin2d->Get(float(i + xOffset) / 100.0f, float(j + yOffset) / 100.0f) * 0.5f + 0.5f) * (80)
-        + (_perlin2d->Get(float(i + xOffset) / 20.0f, float(j + yOffset) / 20.0f) * 0.5f + 0.5f) * (25);
+        + (_perlin2d->Get2D(float(i + xOffset) / 100.0f, float(j + yOffset) / 100.0f, amp) * 0.5f + 0.5f) * (80)
+        + (_perlin2d->Get2D(float(i + xOffset) / 20.0f, float(j + yOffset) / 20.0f, amp) * 0.5f + 0.5f) * (25);
 
       rg->SetHeight(i, j, height);
 
@@ -191,13 +203,25 @@ void GeoMaker::GenOffsideNoise(cube::Region* rg)
   int xOffset = rg->GetX() * REGION_WIDTH;
   int yOffset = rg->GetY() * REGION_WIDTH;
 
+  float amp;
+
   for(int i = -1; i < REGION_WIDTH + 1; i++)
   {
+    if(abs(rg->GetX()) == World::Instance()._worldRadius)
+    {
+      if(rg->GetX() > 0)
+        amp = 1.0f - (float)i / REGION_WIDTH;
+      else
+        amp = 0.02f + (float)i / REGION_WIDTH;
+    }
+    else
+      amp = 1.0f;
+
     for(int j = -1; j < REGION_WIDTH + 1; j++)
     {
       int height = 4
-        + (_perlin2d->Get(float(i + xOffset) / 100.0f, float(j + yOffset) / 100.0f) * 0.5f + 0.5f) * (80)
-        + (_perlin2d->Get(float(i + xOffset) / 20.0f, float(j + yOffset) / 20.0f) * 0.5f + 0.5f) * (25);
+        + (_perlin2d->Get2D(float(i + xOffset) / 100.0f, float(j + yOffset) / 100.0f, amp) * 0.5f + 0.5f) * (80)
+        + (_perlin2d->Get2D(float(i + xOffset) / 20.0f, float(j + yOffset) / 20.0f, amp) * 0.5f + 0.5f) * (25);
 
       rg->SetHeight(i, j, height);
 

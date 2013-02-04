@@ -21,15 +21,20 @@ public:
     mStart = true;
   }
 
-  float Get(float x,float y)
+  void SetAmplitude(float amplitude)
+  {
+    mAmplitude = amplitude;
+  }
+
+  float Get2D(float x,float y, float amp = 0.0f)
   {
     float vec[2];
     vec[0] = x;
     vec[1] = y;
-    return perlin_noise_2D(vec);
+    return perlin_noise_2D(vec, amp);
   };
 
-  float Get(float x,float y,float z)
+  float Get3D(float x,float y,float z)
   {
     float vec[3];
     vec[0] = x;
@@ -40,7 +45,7 @@ public:
 
 private:
   void init_perlin(int n,float p);
-  float perlin_noise_2D(float vec[2]);
+  float perlin_noise_2D(float vec[2], float amp = 0.0f);
   float perlin_noise_3D(float vec[3]);
 
   float noise1(float arg);

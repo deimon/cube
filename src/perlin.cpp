@@ -205,12 +205,13 @@ void Perlin::init(void)
 }
 
 
-float Perlin::perlin_noise_2D(float vec[2])
+float Perlin::perlin_noise_2D(float vec[2], float amp)
 {
   int terms    = mOctaves;
 	float freq   = mFrequency;
 	float result = 0.0f;
-  float amp = mAmplitude;
+  if(abs(amp) < 0.01)
+    amp = mAmplitude;
 
   vec[0]*=mFrequency;
   vec[1]*=mFrequency;
