@@ -9,7 +9,7 @@ void AddModifiedGeom(cube::CubRegion& cubReg, osg::Vec3d wcpos, std::map<osg::Ge
   cube::Region* reg = RegionManager::Instance().GetRegion(Region::ToRegionIndex(wcpos.x()), Region::ToRegionIndex(wcpos.y()));
   wcpos -= reg->GetPosition();
   int geomIndex = wcpos.z() / GEOM_SIZE;
-  osg::Geometry* geom = reg->GetOrCreateNewGeometry(geomIndex);
+  osg::Geometry* geom = reg->GetOrCreateNewGeometry(geomIndex, cubReg.GetCubBlend());
 
   if(updateGeomMap->find(geom) == updateGeomMap->end())
     (*updateGeomMap)[geom] = RenderGroup::DataUpdate(geom, reg, geomIndex, cubReg.GetCubBlend());
@@ -21,7 +21,7 @@ void AddModifiedGeom(cube::CubRegion& cubReg, osg::Vec3d wcpos, std::map<osg::Ge
   if(posX == 0)
   {
     cube::Region* sreg = RegionManager::Instance().ContainsRegion(reg->GetX() - 1, reg->GetY());
-    geom = sreg->GetOrCreateNewGeometry(geomIndex);
+    geom = sreg->GetOrCreateNewGeometry(geomIndex, cubReg.GetCubBlend());
 
     if(updateGeomMap->find(geom) == updateGeomMap->end())
       (*updateGeomMap)[geom] = RenderGroup::DataUpdate(geom, sreg, geomIndex, cubReg.GetCubBlend());
@@ -30,7 +30,7 @@ void AddModifiedGeom(cube::CubRegion& cubReg, osg::Vec3d wcpos, std::map<osg::Ge
   if(posX == REGION_WIDTH - 1)
   {
     cube::Region* sreg = RegionManager::Instance().ContainsRegion(reg->GetX() + 1, reg->GetY());
-    geom = sreg->GetOrCreateNewGeometry(geomIndex);
+    geom = sreg->GetOrCreateNewGeometry(geomIndex, cubReg.GetCubBlend());
 
     if(updateGeomMap->find(geom) == updateGeomMap->end())
       (*updateGeomMap)[geom] = RenderGroup::DataUpdate(geom, sreg, geomIndex, cubReg.GetCubBlend());
@@ -39,7 +39,7 @@ void AddModifiedGeom(cube::CubRegion& cubReg, osg::Vec3d wcpos, std::map<osg::Ge
   if(posY == 0)
   {
     cube::Region* sreg = RegionManager::Instance().ContainsRegion(reg->GetX(), reg->GetY() - 1);
-    geom = sreg->GetOrCreateNewGeometry(geomIndex);
+    geom = sreg->GetOrCreateNewGeometry(geomIndex, cubReg.GetCubBlend());
 
     if(updateGeomMap->find(geom) == updateGeomMap->end())
       (*updateGeomMap)[geom] = RenderGroup::DataUpdate(geom, sreg, geomIndex, cubReg.GetCubBlend());
@@ -48,7 +48,7 @@ void AddModifiedGeom(cube::CubRegion& cubReg, osg::Vec3d wcpos, std::map<osg::Ge
   if(posY == REGION_WIDTH - 1)
   {
     cube::Region* sreg = RegionManager::Instance().ContainsRegion(reg->GetX(), reg->GetY() + 1);
-    geom = sreg->GetOrCreateNewGeometry(geomIndex);
+    geom = sreg->GetOrCreateNewGeometry(geomIndex, cubReg.GetCubBlend());
 
     if(updateGeomMap->find(geom) == updateGeomMap->end())
       (*updateGeomMap)[geom] = RenderGroup::DataUpdate(geom, sreg, geomIndex, cubReg.GetCubBlend());
@@ -58,7 +58,7 @@ void AddModifiedGeom(cube::CubRegion& cubReg, osg::Vec3d wcpos, std::map<osg::Ge
   {
     if(geomIndex > 0)
     {
-      geom = reg->GetOrCreateNewGeometry(geomIndex - 1);
+      geom = reg->GetOrCreateNewGeometry(geomIndex - 1, cubReg.GetCubBlend());
 
       if(updateGeomMap->find(geom) == updateGeomMap->end())
         (*updateGeomMap)[geom] = RenderGroup::DataUpdate(geom, reg, geomIndex - 1, cubReg.GetCubBlend());
@@ -69,7 +69,7 @@ void AddModifiedGeom(cube::CubRegion& cubReg, osg::Vec3d wcpos, std::map<osg::Ge
   {
     if(geomIndex + 1 < GEOM_COUNT)
     {
-      geom = reg->GetOrCreateNewGeometry(geomIndex + 1);
+      geom = reg->GetOrCreateNewGeometry(geomIndex + 1, cubReg.GetCubBlend());
 
       if(updateGeomMap->find(geom) == updateGeomMap->end())
         (*updateGeomMap)[geom] = RenderGroup::DataUpdate(geom, reg, geomIndex + 1, cubReg.GetCubBlend());

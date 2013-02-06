@@ -56,17 +56,27 @@ const osg::Vec3& CubInfo::GetNormal(CubInfo::CubeSide cubeSide)
   return _normals[cubeSide];
 }
 
-const osg::Vec3& CubInfo::GetVertex(CubInfo::CubeSide cubeSide, int numVertex)
+const osg::Vec3d& CubInfo::GetVertex(CubInfo::CubeSide cubeSide, int numVertex)
 {
   return _vertex[cubeSide][numVertex];
 }
 
-void CubInfo::FillVertCoord(CubInfo::CubeSide cubeSide, osg::Vec3Array* coords, osg::Vec3d offset)
+void CubInfo::FillVertCoord(CubInfo::CubeSide cubeSide, osg::Vec3Array* coords, osg::Vec3d offset, cube::CubRegion* cubReg)
 {
-  coords->push_back(offset + _vertex[cubeSide][0]);
-  coords->push_back(offset + _vertex[cubeSide][1]);
-  coords->push_back(offset + _vertex[cubeSide][2]);
-  coords->push_back(offset + _vertex[cubeSide][3]);
+  if(cubReg != NULL && cubReg->GetCubType() == Block::Water)
+  {
+    coords->push_back(offset + osg::componentMultiply(_vertex[cubeSide][0], osg::Vec3d(1.0, 1.0, cubReg->GetCubState() * 0.2 + 0.2)));
+    coords->push_back(offset + osg::componentMultiply(_vertex[cubeSide][1], osg::Vec3d(1.0, 1.0, cubReg->GetCubState() * 0.2 + 0.2)));
+    coords->push_back(offset + osg::componentMultiply(_vertex[cubeSide][2], osg::Vec3d(1.0, 1.0, cubReg->GetCubState() * 0.2 + 0.2)));
+    coords->push_back(offset + osg::componentMultiply(_vertex[cubeSide][3], osg::Vec3d(1.0, 1.0, cubReg->GetCubState() * 0.2 + 0.2)));
+  }
+  else
+  {
+    coords->push_back(offset + _vertex[cubeSide][0]);
+    coords->push_back(offset + _vertex[cubeSide][1]);
+    coords->push_back(offset + _vertex[cubeSide][2]);
+    coords->push_back(offset + _vertex[cubeSide][3]);
+  }
 }
 
 void CubInfo::CrossFillVertCoord(osg::Vec3Array* coords, osg::Vec3d offset, int side)
@@ -313,6 +323,12 @@ void TextureInfo::init()
   _csTextures[Block::Water][CubInfo::X_FACE] = 61;
   _csTextures[Block::Water][CubInfo::Y_FACE] = 61;
   _csTextures[Block::Water][CubInfo::Z_FACE] = 61;
+  _csColor[Block::Water][CubInfo::X_BACK] = osg::Vec4d(1.0, 1.0, 1.0, 2.5);
+  _csColor[Block::Water][CubInfo::Y_BACK] = osg::Vec4d(1.0, 1.0, 1.0, 2.5);
+  _csColor[Block::Water][CubInfo::Z_BACK] = osg::Vec4d(1.0, 1.0, 1.0, 2.5);
+  _csColor[Block::Water][CubInfo::X_FACE] = osg::Vec4d(1.0, 1.0, 1.0, 2.5);
+  _csColor[Block::Water][CubInfo::Y_FACE] = osg::Vec4d(1.0, 1.0, 1.0, 2.5);
+  _csColor[Block::Water][CubInfo::Z_FACE] = osg::Vec4d(1.0, 1.0, 1.0, 2.5);
 
   _csTextures[Block::Ironstone][CubInfo::X_BACK] = 209;
   _csTextures[Block::Ironstone][CubInfo::Y_BACK] = 209;

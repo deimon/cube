@@ -43,6 +43,8 @@ namespace cube
     int _newRnd;
     int _worldRadius;
 
+    double _curTime;
+
     bool IsMapCreated() { return _mapCreated; }
     bool IsHudMode() { return _hudMode; }
     void SetHudMode(bool hudMode) { _hudMode = hudMode; }

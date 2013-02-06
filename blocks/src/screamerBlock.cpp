@@ -15,20 +15,20 @@ ScreamerBlock::ScreamerBlock()
 
 void ScreamerBlock::Generate(Region* reg)
 {
-  for(int n = 0; n < 3; n++)
-  {
-    int i = MathUtils::random(0, REGION_WIDTH - 1);
-    int j = MathUtils::random(0, REGION_WIDTH - 1);
+  //for(int n = 0; n < 3; n++)
+  //{
+  //  int i = MathUtils::random(0, REGION_WIDTH - 1);
+  //  int j = MathUtils::random(0, REGION_WIDTH - 1);
 
-    cube::CubRegion cubReg = reg->GetCub(i, j, reg->GetHeight(i, j) + 1);
+  //  cube::CubRegion cubReg = reg->GetCub(i, j, reg->GetHeight(i, j) + 1);
 
-    if(cubReg.GetCubType() == cube::Block::Air)
-    {
-      cubReg.SetCubType(cube::Block::Screamer);
-      osg::Vec3d wcpos(i + reg->GetPosition().x() + 0.1, j + reg->GetPosition().y() + 0.1, reg->GetHeight(i, j) + 1 + 0.1);
-      cubReg.Updated(wcpos, 0.0);
-    }
-  }
+  //  if(cubReg.GetCubType() == cube::Block::Air)
+  //  {
+  //    cubReg.SetCubType(cube::Block::Screamer);
+  //    osg::Vec3d wcpos(i + reg->GetPosition().x() + 0.1, j + reg->GetPosition().y() + 0.1, reg->GetHeight(i, j) + 1 + 0.1);
+  //    cubReg.Updated(wcpos, 0.0);
+  //  }
+  //}
 }
 
 void ScreamerBlock::Update(double updateTime, double curTime, cube::CubRegion& cubReg, osg::Vec3d wcpos, RenderGroup::DataUpdateContainer* dataUpdate)  //wcpos - world cube position

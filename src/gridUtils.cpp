@@ -50,6 +50,8 @@ void GridUtils::AddCub(osg::Vec3d vec, Block::BlockType cubeType, RenderGroup::D
     if(cubeType == cube::Block::Water)
     {
       scubReg.SetCubBlend(true);
+      scubReg.SetCubState(4);
+      scubReg.Updated(vec, World::Instance()._curTime + 1.0);
     }
     else
     {
@@ -62,6 +64,11 @@ void GridUtils::AddCub(osg::Vec3d vec, Block::BlockType cubeType, RenderGroup::D
     }
 
     add(scubReg, vec, true, updateGeomMap);
+
+    if(scubReg.GetCubType() == cube::Block::Screamer)
+    {
+      scubReg.Updated(vec, World::Instance()._curTime + 1.0);
+    }
   }
 }
 

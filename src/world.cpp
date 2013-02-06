@@ -175,6 +175,7 @@ public:
       OpenThreads::Thread::microSleep(100);
 
     _updateGeomMap.clear();
+    _dataToScene.clear();
   }
 
 protected:
@@ -228,6 +229,8 @@ World::World()
 
 void World::update(double time)
 {
+  _curTime = time;
+
   if(_newMap)
   {
     if(_mapCreated)

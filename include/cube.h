@@ -25,6 +25,7 @@ namespace cube
       , _blend(false)
       , _light(0.1f)
       , _locLight(0.0f)
+      , _state(0)
     {
     }
 
@@ -34,6 +35,7 @@ namespace cube
     bool _blend;
     float _light;
     float _locLight;
+    char _state;
 
     friend class CubRegion;
     friend class Region;
@@ -58,9 +60,9 @@ namespace cube
 
     CubInfo();
     const osg::Vec3& GetNormal(CubInfo::CubeSide cubeSide);
-    const osg::Vec3& GetVertex(CubInfo::CubeSide cubeSide, int numVertex);
+    const osg::Vec3d& GetVertex(CubInfo::CubeSide cubeSide, int numVertex);
 
-    void FillVertCoord(CubInfo::CubeSide cubeSide, osg::Vec3Array* coords, osg::Vec3d offset);
+    void FillVertCoord(CubInfo::CubeSide cubeSide, osg::Vec3Array* coords, osg::Vec3d offset, cube::CubRegion* cubReg = NULL);
     void CrossFillVertCoord(osg::Vec3Array* coords, osg::Vec3d offset, int side);
     void FillColorBuffer(CubInfo::CubeSide cubeSide, osg::Vec4Array* colors, osg::Vec3d pos, osg::Vec4d color);
     void SimpleFillColorBuffer(osg::Vec4Array* colors, osg::Vec4d color);
@@ -68,7 +70,7 @@ namespace cube
   protected:
 
     std::map<CubInfo::CubeSide, osg::Vec3> _normals;
-    std::map<CubInfo::CubeSide, std::map<int, osg::Vec3> > _vertex;
+    std::map<CubInfo::CubeSide, std::map<int, osg::Vec3d> > _vertex;
   };
 
   //***************************************************************************

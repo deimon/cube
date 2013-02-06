@@ -142,6 +142,9 @@ namespace cube
     void Updated(osg::Vec3d wcpos, double nextTimeUpdate);
     void NotUpdated();
 
+    void SetCubState(char state) { _cub._state = state; }
+    char GetCubState() { return _cub._state; }
+
   protected:
     Region* _region;
     Cub& _cub;

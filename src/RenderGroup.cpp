@@ -307,9 +307,10 @@ void RenderGroup::updateGeom(osg::Geometry* newGeom, RenderGroup::DataUpdate& du
         || scubReg.GetCubType() == cube::Block::LeavesWood 
         || scubReg.GetCubType() == cube::Block::TruncWood
         || (scubReg.GetCubType() == cube::Block::Water && cubReg.GetCubType() != cube::Block::Water)
+        || (scubReg.GetCubType() == cube::Block::Water && cubReg.GetCubType() == cube::Block::Water && scubReg.GetCubState() < cubReg.GetCubState())
         || scubReg.GetCubType() == cube::Block::ObjGrass )
       {
-        CubInfo::Instance().FillVertCoord(cside, coords, pos);
+        CubInfo::Instance().FillVertCoord(cside, coords, pos, &cubReg);
 
         _texInfo->FillTexCoord(cubReg.GetCubType(), cside, tcoords);
 
