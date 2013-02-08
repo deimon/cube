@@ -35,6 +35,11 @@ void GridUtils::RemoveCub(osg::Vec3d vec, RenderGroup::DataUpdateContainer* upda
     {
       add(scubReg, wcvec, false, updateGeomMap);
     }
+
+    if(scubReg.GetCubType() == cube::Block::Water)
+    {
+      scubReg.Updated(wcvec, World::Instance()._curTime + 0.5);
+    }
   }
 }
 
