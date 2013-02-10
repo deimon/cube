@@ -271,12 +271,12 @@ void TextureInfo::init()
   _csTextures[Block::Water][CubInfo::X_FACE] = 61;
   _csTextures[Block::Water][CubInfo::Y_FACE] = 61;
   _csTextures[Block::Water][CubInfo::Z_FACE] = 61;
-  _csColor[Block::Water][CubInfo::X_BACK] = osg::Vec4d(1.0, 1.0, 1.0, 2.5);
-  _csColor[Block::Water][CubInfo::Y_BACK] = osg::Vec4d(1.0, 1.0, 1.0, 2.5);
-  _csColor[Block::Water][CubInfo::Z_BACK] = osg::Vec4d(1.0, 1.0, 1.0, 2.5);
-  _csColor[Block::Water][CubInfo::X_FACE] = osg::Vec4d(1.0, 1.0, 1.0, 2.5);
-  _csColor[Block::Water][CubInfo::Y_FACE] = osg::Vec4d(1.0, 1.0, 1.0, 2.5);
-  _csColor[Block::Water][CubInfo::Z_FACE] = osg::Vec4d(1.0, 1.0, 1.0, 2.5);
+  _csColor[Block::Water][CubInfo::X_BACK] = osg::Vec4d(1.0, 1.0, 1.0, 1.5);
+  _csColor[Block::Water][CubInfo::Y_BACK] = osg::Vec4d(1.0, 1.0, 1.0, 1.5);
+  _csColor[Block::Water][CubInfo::Z_BACK] = osg::Vec4d(1.0, 1.0, 1.0, 1.5);
+  _csColor[Block::Water][CubInfo::X_FACE] = osg::Vec4d(1.0, 1.0, 1.0, 1.5);
+  _csColor[Block::Water][CubInfo::Y_FACE] = osg::Vec4d(1.0, 1.0, 1.0, 1.5);
+  _csColor[Block::Water][CubInfo::Z_FACE] = osg::Vec4d(1.0, 1.0, 1.0, 1.5);
 
   _csTextures[Block::Ironstone][CubInfo::X_BACK] = 209;
   _csTextures[Block::Ironstone][CubInfo::Y_BACK] = 209;
