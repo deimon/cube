@@ -49,6 +49,8 @@ namespace cube
     bool IsHudMode() { return _hudMode; }
     void SetHudMode(bool hudMode) { _hudMode = hudMode; }
 
+    osg::Uniform* GetSunUniform() { return _renderGroup->_worldLight; } 
+
   protected:
     void startFilling(World* world, int radius, int i, int j);
     void createMap();

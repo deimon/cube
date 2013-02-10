@@ -64,7 +64,8 @@ namespace cube
 
     void FillVertCoord(CubInfo::CubeSide cubeSide, osg::Vec3Array* coords, osg::Vec3d offset, cube::CubRegion* cubReg = NULL);
     void CrossFillVertCoord(osg::Vec3Array* coords, osg::Vec3d offset, int side);
-    void FillColorBuffer(CubInfo::CubeSide cubeSide, osg::Vec4Array* colors, osg::Vec3d pos, osg::Vec4d color);
+    void FillColorBufferLight(CubInfo::CubeSide cubeSide, osg::FloatArray* colors, osg::Vec3d pos, osg::Vec4d color);
+    void FillColorBufferLocLight(CubInfo::CubeSide cubeSide, osg::FloatArray* colors, osg::Vec3d pos, osg::Vec4d color);
     void SimpleFillColorBuffer(osg::Vec4Array* colors, osg::Vec4d color);
 
   protected:

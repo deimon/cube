@@ -56,6 +56,8 @@ RenderGroup::RenderGroup(cube::World *world)
     program->addShader(vs);
     program->addShader(fs);
     ss->setAttributeAndModes(program, osg::StateAttribute::ON | osg::StateAttribute::PROTECTED);
+    program->addBindAttribLocation("light", 6);
+    program->addBindAttribLocation("locLight", 7);
     ss->addUniform(new osg::Uniform("texture", 0));
 
     _worldLight = new osg::Uniform("sun", 0.6f);
@@ -180,21 +182,29 @@ osg::Geometry* NewOSGGeom(osg::Geometry* geom = NULL)
 
   osg::Vec3Array* coords;
   osg::Vec4Array* colours;
+  osg::FloatArray* lightBuf;
+  osg::FloatArray* locLightBuf;
   osg::Vec3Array* normals;
   osg::Vec2Array* tcoords;
   osg::DrawArrays* drawArr;
 
   coords = new osg::Vec3Array();
   colours = new osg::Vec4Array();
+  lightBuf = new osg::FloatArray();
+  locLightBuf = new osg::FloatArray();
   normals = new osg::Vec3Array();
   drawArr = new osg::DrawArrays(osg::PrimitiveSet::QUADS, 0, 4);
   tcoords = new osg::Vec2Array();
 
   curGeom->setVertexArray(coords);
   curGeom->setColorArray(colours);
+  curGeom->setVertexAttribArray(6, lightBuf);
+  curGeom->setVertexAttribArray(7, locLightBuf);
   curGeom->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+  curGeom->setVertexAttribBinding(6, osg::Geometry::BIND_PER_VERTEX);
+  curGeom->setVertexAttribBinding(7, osg::Geometry::BIND_PER_VERTEX);
   curGeom->setNormalArray(normals);
-  curGeom->setNormalBinding(osg::Geometry::BIND_PER_PRIMITIVE);
+  curGeom->setNormalBinding(osg::Geometry::BIND_PER_VERTEX);
 
   curGeom->addPrimitiveSet(drawArr);
 
@@ -249,6 +259,8 @@ void RenderGroup::updateGeom(osg::Geometry* newGeom, RenderGroup::DataUpdate& du
 
   osg::Vec3Array* coords;
   osg::Vec4Array* colours;
+  osg::FloatArray* lightBuf;
+  osg::FloatArray* locLightBuf;
   osg::Vec3Array* normals;
   osg::Vec2Array* tcoords;
 
@@ -256,12 +268,16 @@ void RenderGroup::updateGeom(osg::Geometry* newGeom, RenderGroup::DataUpdate& du
 
   coords = dynamic_cast<osg::Vec3Array*>(geom->getVertexArray());
   colours = dynamic_cast<osg::Vec4Array*>(geom->getColorArray());
+  lightBuf = dynamic_cast<osg::FloatArray*>(geom->getVertexAttribArray(6));
+  locLightBuf = dynamic_cast<osg::FloatArray*>(geom->getVertexAttribArray(7));
   normals = dynamic_cast<osg::Vec3Array*>(geom->getNormalArray());
   drawArr = dynamic_cast<osg::DrawArrays*>(geom->getPrimitiveSet(0));
   tcoords = dynamic_cast<osg::Vec2Array*>(geom->getTexCoordArray(0));
 
   coords->clear();
   colours->clear();
+  lightBuf->clear();
+  locLightBuf->clear();
   normals->clear();
   tcoords->clear();
 
@@ -287,8 +303,13 @@ void RenderGroup::updateGeom(osg::Geometry* newGeom, RenderGroup::DataUpdate& du
 
         _texInfo->FillTexCoord(cubReg.GetCubType(), CubInfo::X_BACK, tcoords);
 
+        CubInfo::Instance().FillColorBufferLight(CubInfo::X_BACK, lightBuf, pos, color);
+        CubInfo::Instance().FillColorBufferLocLight(CubInfo::X_BACK, locLightBuf, pos, color);
         CubInfo::Instance().SimpleFillColorBuffer(colours, color);
 
+        normals->push_back(CubInfo::Instance().GetNormal(CubInfo::X_BACK));
+        normals->push_back(CubInfo::Instance().GetNormal(CubInfo::X_BACK));
+        normals->push_back(CubInfo::Instance().GetNormal(CubInfo::X_BACK));
         normals->push_back(CubInfo::Instance().GetNormal(CubInfo::X_BACK));
       }
 
@@ -317,8 +338,13 @@ void RenderGroup::updateGeom(osg::Geometry* newGeom, RenderGroup::DataUpdate& du
 
         osg::Vec4d color = _texInfo->GetSideColor(cubReg.GetCubType(), cside);
 
-        CubInfo::Instance().FillColorBuffer(cside, colours, pos, color);
+        CubInfo::Instance().FillColorBufferLight(cside, lightBuf, pos, color);
+        CubInfo::Instance().FillColorBufferLocLight(cside, locLightBuf, pos, color);
+        CubInfo::Instance().SimpleFillColorBuffer(colours, color);
 
+        normals->push_back(CubInfo::Instance().GetNormal(cside));
+        normals->push_back(CubInfo::Instance().GetNormal(cside));
+        normals->push_back(CubInfo::Instance().GetNormal(cside));
         normals->push_back(CubInfo::Instance().GetNormal(cside));
       }
     }

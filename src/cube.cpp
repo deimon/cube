@@ -93,7 +93,7 @@ void CubInfo::CrossFillVertCoord(osg::Vec3Array* coords, osg::Vec3d offset, int 
   coords->push_back(offset + _vertex[cs1][ver2]);
 }
 
-void CubInfo::FillColorBuffer(CubInfo::CubeSide cubeSide, osg::Vec4Array* colors, osg::Vec3d pos, osg::Vec4d color)
+void CubInfo::FillColorBufferLight(CubInfo::CubeSide cubeSide, osg::FloatArray* colors, osg::Vec3d pos, osg::Vec4d color)
 {
   float sum[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
@@ -113,7 +113,7 @@ void CubInfo::FillColorBuffer(CubInfo::CubeSide cubeSide, osg::Vec4Array* colors
           posC = posV + osg::Vec3d(i, j, 0.0f);
 
         cube::CubRegion cubReg = cube::RegionManager::Instance().GetCub(posC.x(), posC.y(), posC.z());
-        float li = cubReg.GetCubLight() + cubReg.GetCubLocLight();
+        float li = cubReg.GetCubLight();
         if(li > 1.0f)
           li = 1.0f;
         sum[n] += li;
@@ -125,10 +125,48 @@ void CubInfo::FillColorBuffer(CubInfo::CubeSide cubeSide, osg::Vec4Array* colors
   //for(int n = 0; n < 4; n++)
   //  sum[n] += 0.05f;
 
-  colors->push_back(color * sum[0]);
-  colors->push_back(color * sum[1]);
-  colors->push_back(color * sum[2]);
-  colors->push_back(color * sum[3]);
+  colors->push_back(sum[0]);
+  colors->push_back(sum[1]);
+  colors->push_back(sum[2]);
+  colors->push_back(sum[3]);
+}
+
+void CubInfo::FillColorBufferLocLight(CubInfo::CubeSide cubeSide, osg::FloatArray* colors, osg::Vec3d pos, osg::Vec4d color)
+{
+  float sum[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+
+  for(int n = 0; n < 4; n++)
+  {
+    osg::Vec3d posV = pos + _vertex[cubeSide][n] + (_normals[cubeSide] / 5.0 + osg::Vec3d(0.1f, 0.1f, 0.1f)); //osg::Vec3d(0.1f, -0.1f, 0.1f);
+    for(int i = -1; i < 1; i++)
+      for(int j = -1; j < 1; j++)
+      {
+        osg::Vec3d posC;
+
+        if(cubeSide == CubInfo::Y_BACK || cubeSide == CubInfo::Y_FACE)
+          posC = posV + osg::Vec3d(i, 0.0f, j);
+        else if(cubeSide == CubInfo::X_BACK || cubeSide == CubInfo::X_FACE)
+          posC = posV + osg::Vec3d(0.0f, i, j);
+        else if(cubeSide == CubInfo::Z_BACK || cubeSide == CubInfo::Z_FACE)
+          posC = posV + osg::Vec3d(i, j, 0.0f);
+
+        cube::CubRegion cubReg = cube::RegionManager::Instance().GetCub(posC.x(), posC.y(), posC.z());
+        float li = cubReg.GetCubLocLight();
+        if(li > 1.0f)
+          li = 1.0f;
+        sum[n] += li;
+      }
+
+      sum[n] /= 4.0f;
+  }
+
+  //for(int n = 0; n < 4; n++)
+  //  sum[n] += 0.05f;
+
+  colors->push_back(sum[0]);
+  colors->push_back(sum[1]);
+  colors->push_back(sum[2]);
+  colors->push_back(sum[3]);
 }
 
 void CubInfo::SimpleFillColorBuffer(osg::Vec4Array* colors, osg::Vec4d color)

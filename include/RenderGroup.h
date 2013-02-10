@@ -56,14 +56,14 @@ namespace cube
     void FillRegionGeoms(cube::Region* rg);
     void ClearRegionGeoms(cube::Region* rg);
 
+    osg::Uniform* _worldLight;
+
   protected:
     void updateGeom(osg::Geometry* newGeom, RenderGroup::DataUpdate& du, bool updateScene, bool thread = false);
 
     osg::Geode* _geode[2];
 
     TextureInfo* _texInfo;
-
-    osg::Uniform* _worldLight;
   };
 }
 
